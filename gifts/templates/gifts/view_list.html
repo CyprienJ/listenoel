@@ -1,0 +1,170 @@
+{% extends "gifts/base.html" %}
+{% block title %}Liste de {{ person.name }}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="mb-0">🎁 Liste de {{ person.name }}</h2>
+  <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+    ← Retour
+  </a>
+</div>
+
+{% if current and current.id == person.id %}
+<div class="mb-3 text-end">
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGiftModal">
+    ➕ Ajouter un cadeau
+  </button>
+</div>
+{% endif %}
+
+<table class="table table-hover table-striped align-middle">
+  <thead class="table-dark">
+    <tr>
+      <th>Nom</th>
+      <th>Description</th>
+      <th>Lien</th>
+      <th>Statut</th>
+      {% if current and current.id == person.id %}
+      <th>Actions</th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in gifts_with_info %}
+    <tr>
+      <td>{{ item.gift.title }}</td>
+      <td>{{ item.gift.description }}</td>
+      <td>
+        {% if item.gift.url %}
+        <a href="{{ item.gift.url }}" target="_blank">Voir</a>
+        {% endif %}
+      </td>
+      <td>
+      {% if current and current.id == person.id %}
+        Votre cadeau
+      {% elif item.is_reserved %}
+        {% if item.reserved_by.id == current.id %}
+          <span class="badge bg-success">Pris par vous</span>
+          <form method="post" action="{% url 'unreserve_gift' item.gift.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-warning">Annuler</button>
+          </form>
+        {% else %}
+          <span class="badge bg-danger">Pris par {{ item.reserved_by.name }}</span>
+        {% endif %}
+      {% else %}
+        <button class="btn btn-sm btn-success" onclick="reserve({{ item.gift.id }})">
+          Je prends
+        </button>
+      {% endif %}
+    </td>
+
+
+      {% if current and current.id == person.id %}
+      <td class="d-flex gap-2">
+        <!-- Modifier -->
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editGiftModal{{ item.gift.id }}">
+          Modifier
+        </button>
+
+        <!-- Supprimer -->
+        <form method="post" action="{% url 'delete_gift' item.gift.id %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Supprimer ce cadeau ?');">
+            Supprimer
+          </button>
+        </form>
+      </td>
+      {% endif %}
+
+    </tr>
+
+    <!-- Modale édition -->
+    {% if current and current.id == person.id %}
+    <div class="modal fade" id="editGiftModal{{ item.gift.id }}" tabindex="-1" aria-labelledby="editGiftModalLabel{{ item.gift.id }}" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <h5 class="modal-title" id="editGiftModalLabel{{ item.gift.id }}">Modifier le cadeau</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+
+          <form method="post" action="{% url 'edit_gift' item.gift.id %}">
+            {% csrf_token %}
+            <div class="modal-body">
+              <div class="mb-3">
+                <input type="text" name="title" class="form-control" placeholder="Nom du cadeau" value="{{ item.gift.title }}" required>
+              </div>
+              <div class="mb-3">
+                <input type="text" name="description" class="form-control" placeholder="Description" value="{{ item.gift.description }}">
+              </div>
+              <div class="mb-3">
+                <input type="url" name="url" class="form-control" placeholder="Lien" value="{{ item.gift.url }}">
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+              <button type="submit" class="btn btn-primary">Modifier</button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Modale ajout cadeau -->
+{% if current and current.id == person.id %}
+<div class="modal fade" id="addGiftModal" tabindex="-1" aria-labelledby="addGiftModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="addGiftModalLabel">Ajouter un cadeau</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+
+      <form method="post" action="{% url 'add_gift' %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <input type="text" name="title" class="form-control" placeholder="Nom du cadeau" required>
+          </div>
+          <div class="mb-3">
+            <input type="text" name="description" class="form-control" placeholder="Description (optionnel)">
+          </div>
+          <div class="mb-3">
+            <input type="url" name="url" class="form-control" placeholder="Lien (optionnel)">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">Ajouter</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script>
+function reserve(giftId) {
+  fetch(`/reserve/${giftId}/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": "{{ csrf_token }}"
+    }
+  }).then(() => location.reload());
+}
+</script>
+
+{% endblock %}
