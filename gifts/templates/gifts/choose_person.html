@@ -1,0 +1,42 @@
+{% extends "gifts/base.html" %}
+{% block title %}Connexion{% endblock %}
+
+{% block content %}
+
+<h1 class="h4 mb-3 text-center">Connexion - {{ family.name }}</h1>
+
+<div class="row justify-content-center">
+  <div class="col-md-6">
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h1 class="h4 mb-3 text-center">Connexion</h1>
+
+        {% if error %}
+          <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <select name="person_id" class="form-select" required>
+              <option value="">Sélectionnez votre nom</option>
+              {% for p in persons %}
+                <option value="{{ p.id }}">{{ p.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <input type="password" name="password" class="form-control" placeholder="Mot de passe" required>
+          </div>
+
+          <button class="btn btn-primary w-100">Se connecter</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
