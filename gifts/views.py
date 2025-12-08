@@ -39,7 +39,7 @@ def dashboard(request):
     if not current:
         return redirect("choose_person")
 
-    persons = Person.objects.exclude(id=current.id)
+    persons = Person.objects.filter(family=current.family).order_by("name").exclude(id=current.id)
 
     return render(request, "gifts/dashboard.html", {
         "current": current,
