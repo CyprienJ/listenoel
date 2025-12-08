@@ -25,6 +25,7 @@
       <th>Description</th>
       <th>Lien</th>
       <th>Statut</th>
+      <th>Date de création</th>
       {% if current and current.id == person.id %}
       <th>Actions</th>
       {% endif %}
@@ -59,6 +60,7 @@
         </button>
       {% endif %}
     </td>
+      <td>{{item.gift.created_at |date:"d M Y H:i"}}</td>
 
 
       {% if current and current.id == person.id %}
