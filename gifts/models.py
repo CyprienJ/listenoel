@@ -1,3 +1,4 @@
+from django.contrib.auth.hashers import make_password, check_password
 from django.db import models
 from django.utils import timezone
 
@@ -9,8 +10,14 @@ class Family(models.Model):
 
 class Person(models.Model):
     name = models.CharField(max_length=100)
-    password = models.CharField(max_length=100)
+    password = models.CharField(max_length=128)
     family = models.ForeignKey(Family, on_delete=models.CASCADE, related_name="members")
+
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.password)
 
     def __str__(self):
         return f"{self.name} ({self.family.name})"

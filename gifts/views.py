@@ -1,4 +1,5 @@
 import random
+import re
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponseForbidden
@@ -103,7 +104,7 @@ def choose_person_in_family(request, family_id):
         remember_me = request.POST.get("remember_me") == "on"
 
         person = persons.filter(id=pid).first()
-        if person and person.password == pwd:
+        if person and person.check_password(pwd):
             # Connexion réussie → stocker l'id et rediriger vers dashboard
             request.session["person_id"] = person.id
 
@@ -197,4 +198,58 @@ def unreserve_gift(request, gift_id):
     # Redirige vers la liste du propriétaire du cadeau
     gift = get_object_or_404(Gift, id=gift_id)
     return redirect("view_list", person_id=gift.owner.id)
+
+@require_POST
+def change_password(request):
+    current = get_current_person(request)
+    if not current:
+        return HttpResponseForbidden("Non autorisé")
+
+    old_password = request.POST.get("old_password")
+    new_password = request.POST.get("new_password")
+    confirm_password = request.POST.get("confirm_password")
+
+    if not current.check_password(old_password):
+        return render(request, "gifts/change_password.html", {
+            "error": "Ancien mot de passe incorrect",
+            "current": current
+        })
+
+    if new_password != confirm_password:
+        return render(request, "gifts/change_password.html", {
+            "error": "Les nouveaux mots de passe ne correspondent pas",
+            "current": current
+        })
+
+    if not new_password:
+        return render(request, "gifts/change_password.html", {
+            "error": "Le nouveau mot de passe ne peut pas être vide",
+            "current": current
+        })
+
+    errors = []
+    if len(new_password) < 8:
+        errors.append("Au moins 8 caractères")
+    if not re.search(r"[A-Z]", new_password):
+        errors.append("Au moins une majuscule")
+    if not re.search(r"[a-z]", new_password):
+        errors.append("Au moins une minuscule")
+    if not re.search(r"[0-9]", new_password):
+        errors.append("Au moins un chiffre")
+
+    if errors:
+        return render(request, "gifts/change_password.html", {
+            "error": "Le mot de passe ne respecte pas les critères : " + ", ".join(errors),
+            "current": current
+        })
+
+    current.set_password(new_password)
+    current.save()
+    return redirect("dashboard")  # Redirige vers le dashboard après succès
+
+def change_password_form(request):
+    current = get_current_person(request)
+    if not current:
+        return redirect("choose_person")
+    return render(request, "gifts/change_password.html", {"current": current})
 

@@ -12,4 +12,7 @@ urlpatterns = [
     path('edit-gift/<int:gift_id>/', views.edit_gift, name='edit_gift'),
     path('delete-gift/<int:gift_id>/', views.delete_gift, name='delete_gift'),
     path('logout/', views.logout, name='logout'),
+    path("change-password/", views.change_password_form, name="change_password_form"),
+    path("change-password/submit/", views.change_password, name="change_password"),
+
 ]
