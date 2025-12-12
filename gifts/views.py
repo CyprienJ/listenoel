@@ -1,3 +1,5 @@
+import random
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponseForbidden
 from django.db import transaction, IntegrityError
@@ -41,9 +43,15 @@ def dashboard(request):
 
     persons = Person.objects.filter(family=current.family).order_by("name").exclude(id=current.id)
 
+    christmas_emojis = [
+        "🎄", "🎁", "🎅", "🤶", "🧑‍🎄", "⛄", "☃️", "❄️", "🌨️", "✨", "🌟", "⭐", "🔔", "🕯️", "🍫", "🦌", "🛷", "🎶", "🎉", "🎊",
+    ]
+    greeting_emoji = random.choice(christmas_emojis)
+
     return render(request, "gifts/dashboard.html", {
         "current": current,
-        "persons": persons
+        "persons": persons,
+        "greeting_emoji": greeting_emoji,
     })
 
 

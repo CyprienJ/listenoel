@@ -2,34 +2,42 @@
 {% block title %}Accueil{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">Bonjour {{ current.name }} 👋</h2>
+<h2 class="mb-4 text-center">Bonjour {{ current.name }} {{ greeting_emoji }}</h2>
 
-<div class="row">
+<style>
+  .dashboard-card {
+    width: 100%;
+  }
 
-  <div class="col-md-6">
-    <div class="card shadow-sm mb-4">
-      <div class="card-body">
-        <h5 class="card-title">Voir une liste</h5>
-        <ul class="list-group list-group-flush">
-          {% for p in persons %}
-            <li class="list-group-item">
-              <a href="{% url 'view_list' p.id %}" class="text-decoration-none">
-                {{ p.name }}
-              </a>
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
+  @media (min-width: 992px) {
+    .dashboard-card {
+      width: 50%;
+    }
+  }
+</style>
+
+<div class="d-grid gap-4">
+
+  <div class="card shadow-sm dashboard-card mx-auto">
+    <div class="card-body text-center">
+      <a href="{% url 'view_list' current.id %}" class="btn btn-success btn-lg w-100">
+        Voir ma liste
+      </a>
     </div>
   </div>
 
-  <div class="col-md-6">
-    <div class="card shadow-sm">
-      <div class="card-body text-center">
-        <a href="{% url 'view_list' current.id %}" class="btn btn-success btn-lg w-100">
-          Voir ma liste
-        </a>
-      </div>
+  <div class="card shadow-sm dashboard-card mx-auto">
+    <div class="card-body">
+      <h5 class="card-title">Voir une liste</h5>
+      <ul class="list-group list-group-flush">
+        {% for p in persons %}
+          <li class="list-group-item">
+            <a href="{% url 'view_list' p.id %}" class="text-decoration-none">
+              {{ p.name }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
     </div>
   </div>
 
