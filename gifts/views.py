@@ -7,34 +7,13 @@ from django.views.decorators.http import require_POST
 
 from .models import Person, Gift, Reservation, Family
 
+FOURTEEN_DAYS = 60 * 60 * 24 * 14
 
 def get_current_person(request):
     person_id = request.session.get("person_id")
     if not person_id:
         return None
     return Person.objects.filter(id=person_id).first()
-
-
-def choose_person(request):
-    persons = Person.objects.all().order_by("name")
-
-    if request.method == "POST":
-        pid = request.POST.get("person_id")
-        pwd = request.POST.get("password", "")
-
-        person = Person.objects.filter(id=pid).first()
-        if person and person.password == pwd:
-            # mot de passe correct → stocke l'id dans la session
-            request.session["person_id"] = person.id
-            return redirect("dashboard")
-        else:
-            return render(request, "gifts/choose_person.html", {
-                "persons": persons,
-                "error": "Nom ou mot de passe incorrect"
-            })
-
-    return render(request, "gifts/choose_person.html", {"persons": persons})
-
 
 def dashboard(request):
     current = get_current_person(request)
@@ -107,6 +86,9 @@ def reserve_gift(request, gift_id):
     return JsonResponse({"success": True})
 
 def choose_family(request):
+    current = get_current_person(request)
+    if current:
+        return redirect("dashboard")
     families = Family.objects.all().order_by("name")
     return render(request, "gifts/choose_family.html", {"families": families})
 
@@ -118,11 +100,18 @@ def choose_person_in_family(request, family_id):
     if request.method == "POST":
         pid = request.POST.get("person_id")
         pwd = request.POST.get("password", "")
+        remember_me = request.POST.get("remember_me") == "on"
 
         person = persons.filter(id=pid).first()
         if person and person.password == pwd:
             # Connexion réussie → stocker l'id et rediriger vers dashboard
             request.session["person_id"] = person.id
+
+            if remember_me:
+                request.session.set_expiry(FOURTEEN_DAYS)
+            else:
+                request.session.set_expiry(0)
+
             return redirect("dashboard")
         else:
             return render(request, "gifts/choose_person.html", {
