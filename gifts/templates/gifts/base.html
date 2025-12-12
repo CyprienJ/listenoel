@@ -36,30 +36,38 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
   <div class="container d-flex justify-content-between">
-    <span class="navbar-brand">🎁 Wishlist</span>
+    <a class="navbar-brand" href="{% url 'dashboard' %}">🎁 Wishlist</a>  <!-- Changé en lien cliquable vers dashboard -->
 
     <div class="d-flex align-items-center gap-3">
-      <div class="d-flex align-items-center gap-2">
-        <label for="themeSelect" class="small text-body-secondary mb-0">Thème</label>
-        <select id="themeSelect" class="form-select form-select-sm" style="width: 170px;">
-          <option value="auto">🖥️ Par défaut (OS)</option>
-          <option value="light">☀️ Clair</option>
-          <option value="dark">🌙 Sombre</option>
-        </select>
-      </div>
-
       {% if current %}
-        <span class="text-white">
+        <span class="text-white me-2">
           Connecté : {{ current.name }}
         </span>
 
-        <a href="{% url 'logout' %}" class="btn btn-outline-light btn-sm">
-          Se déconnecter
-        </a>
-        <a href="{% url 'change_password_form' %}" class="btn btn-outline-light btn-sm">
-          Changer de mot de passe
-        </a>
-
+        <!-- Nouveau dropdown pour les préférences -->
+        <div class="dropdown">
+          <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="preferencesDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            Préférences
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="preferencesDropdown">
+            <!-- Sélecteur de thème intégré -->
+            <li class="px-3 py-2">
+              <div class="d-flex align-items-center gap-2">
+                <label for="themeSelect" class="small text-body-secondary mb-0">Thème</label>
+                <select id="themeSelect" class="form-select form-select-sm" style="width: 170px;">
+                  <option value="auto">🖥️ Par défaut (OS)</option>
+                  <option value="light">☀️ Clair</option>
+                  <option value="dark">🌙 Sombre</option>
+                </select>
+              </div>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <!-- Lien Changer de mot de passe -->
+            <li><a class="dropdown-item" href="{% url 'change_password_form' %}">Changer de mot de passe</a></li>
+            <!-- Lien Se déconnecter -->
+            <li><a class="dropdown-item" href="{% url 'logout' %}">Se déconnecter</a></li>
+          </ul>
+        </div>
       {% endif %}
     </div>
   </div>
