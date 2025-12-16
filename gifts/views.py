@@ -6,7 +6,7 @@ from django.http import JsonResponse, HttpResponseForbidden
 from django.db import transaction, IntegrityError
 from django.views.decorators.http import require_POST
 
-from .models import Person, Gift, Reservation, Family
+from .models import Person, Gift, Reservation, Group
 
 FOURTEEN_DAYS = 60 * 60 * 24 * 14
 
@@ -19,9 +19,9 @@ def get_current_person(request):
 def dashboard(request):
     current = get_current_person(request)
     if not current:
-        return redirect("choose_person")
+        return redirect("choose_group")
 
-    persons = Person.objects.filter(family=current.family).order_by("name").exclude(id=current.id)
+    persons = Person.objects.filter(group=current.group).order_by("name").exclude(id=current.id)
 
     christmas_emojis = [
         "🎄", "🎁", "🎅", "🤶", "🧑‍🎄", "⛄", "☃️", "❄️", "🌨️", "✨", "🌟", "⭐", "🔔", "🕯️", "🍫", "🦌", "🛷", "🎶", "🎉", "🎊",
@@ -86,17 +86,17 @@ def reserve_gift(request, gift_id):
 
     return JsonResponse({"success": True})
 
-def choose_family(request):
+def choose_group(request):
     current = get_current_person(request)
     if current:
         return redirect("dashboard")
-    families = Family.objects.all().order_by("name")
-    return render(request, "gifts/choose_family.html", {"families": families})
+    groups = Group.objects.all().order_by("name")
+    return render(request, "gifts/choose_group.html", {"groups": groups})
 
 
-def choose_person_in_family(request, family_id):
-    family = Family.objects.get(id=family_id)
-    persons = family.members.all().order_by("name")
+def choose_person_in_group(request, group_id):
+    group = Group.objects.get(id=group_id)
+    persons = group.members.all().order_by("name")
 
     if request.method == "POST":
         pid = request.POST.get("person_id")
@@ -116,13 +116,13 @@ def choose_person_in_family(request, family_id):
             return redirect("dashboard")
         else:
             return render(request, "gifts/choose_person.html", {
-                "family": family,
+                "group": group,
                 "persons": persons,
                 "error": "Nom ou mot de passe incorrect"
             })
 
     return render(request, "gifts/choose_person.html", {
-        "family": family,
+        "group": group,
         "persons": persons
     })
 
@@ -150,7 +150,7 @@ def add_gift(request):
 
 def logout(request):
     request.session.flush()
-    return redirect("choose_family")
+    return redirect("choose_group")
 
 @require_POST
 def delete_gift(request, gift_id):
