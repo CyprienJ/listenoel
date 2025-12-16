@@ -1,5 +1,5 @@
 {% extends "gifts/base.html" %}
-{% block title %}Choisir une famille{% endblock %}
+{% block title %}Choisir un groupe{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -7,12 +7,12 @@
 
     <div class="card shadow-sm">
       <div class="card-body">
-        <h1 class="h4 mb-3 text-center">Choisissez votre famille</h1>
+        <h1 class="h4 mb-3 text-center">Choisissez votre groupe</h1>
 
         <ul class="list-group">
-          {% for f in families %}
+          {% for g in groups %}
             <li class="list-group-item">
-              <a href="{% url 'choose_person_in_family' f.id %}">{{ f.name }}</a>
+              <a href="{% url 'choose_person_in_group' g.id %}">{{ g.name }}</a>
             </li>
           {% endfor %}
         </ul>
