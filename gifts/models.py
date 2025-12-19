@@ -30,9 +30,15 @@ class Gift(models.Model):
     description = models.TextField(blank=True)
     url = models.URLField(blank=True)
     created_at = models.DateTimeField(default=timezone.now)
+    created_by = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="created_gifts")
 
     def __str__(self):
         return f"{self.title} ({self.owner.name})"
+
+    def save(self, *args, **kwargs):
+        if not self.created_by:
+            self.created_by = self.owner
+        super().save(*args, **kwargs)
 
 
 class Reservation(models.Model):

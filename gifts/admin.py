@@ -25,7 +25,7 @@ class PersonAdmin(admin.ModelAdmin):
 
 @admin.register(Gift)
 class GiftAdmin(admin.ModelAdmin):
-    list_display = ("title", "owner")
+    list_display = ("title", "owner", "created_by")
 
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):
