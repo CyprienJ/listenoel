@@ -39,31 +39,43 @@ def view_list(request, person_id):
     current = get_current_person(request)
     person = get_object_or_404(Person, id=person_id)
 
-    gifts = Gift.objects.filter(owner=person).order_by("created_at")
+    all_gifts = Gift.objects.filter(owner=person).order_by("created_at")
 
-    gifts_with_info = []
+    gifts = []
+    surprises = []
 
     if current and current.id == person.id:
-        # Propriétaire : on ne montre pas les réservations
-        for g in gifts:
-            gifts_with_info.append({
-                "gift": g,
-                "is_reserved": None,
-                "reserved_by": None
-            })
+        for g in all_gifts:
+            if g.created_by.id == g.owner.id:
+                gifts.append({
+                    "gift": g,
+                    "is_reserved": None,
+                    "reserved_by": None
+                })
     else:
-        reservations = {r.gift_id: r for r in Reservation.objects.filter(gift__in=gifts)}
-        for g in gifts:
+        reservations = {r.gift.id: r for r in Reservation.objects.filter(gift__in=all_gifts)}
+        for g in all_gifts:
             r = reservations.get(g.id)
-            gifts_with_info.append({
-                "gift": g,
-                "is_reserved": bool(r),
-                "reserved_by": r.reserver if r else None
-            })
+            if g.created_by.id == g.owner.id:
+                gifts.append({
+                    "gift": g,
+                    "is_reserved": bool(r),
+                    "reserved_by": r.reserver if r else None
+                })
+            else :
+                surprises.append({
+                    "gift": g,
+                    "is_reserved": bool(r),
+                    "reserved_by": r.reserver if r else None
+                })
+
 
     return render(request, "gifts/view_list.html", {
         "person": person,
-        "gifts_with_info": gifts_with_info,
+        "gifts": gifts,
+        "presence_gift": len(gifts) > 0,
+        "surprises": surprises,
+        "presence_surprises": len(surprises) > 0,
         "current": current
     })
 
@@ -128,8 +140,9 @@ def choose_person_in_group(request, group_id):
 
 
 @require_POST
-def add_gift(request):
+def add_gift(request, owner_id):
     current = get_current_person(request)
+    owner = get_object_or_404(Person, id=owner_id)
     if not current:
         return HttpResponseForbidden("Non autorisé")
 
@@ -141,12 +154,13 @@ def add_gift(request):
         return redirect("view_list", person_id=current.id)
 
     Gift.objects.create(
-        owner=current,
+        owner=owner,
         title=title,
         description=description,
-        url=url
+        url=url,
+        created_by=current,
     )
-    return redirect("view_list", person_id=current.id)
+    return redirect("view_list", person_id=owner.id)
 
 def logout(request):
     request.session.flush()
