@@ -1,22 +1,22 @@
 from django.contrib import admin
-from .models import Group, Person, Gift, Reservation
+from .models import Group, User, Gift, Reservation
 from django import forms
 
-class PersonAdminForm(forms.ModelForm):
+class UserAdminForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput, required=False)
 
     class Meta:
-        model = Person
+        model = User
         fields = '__all__'
 
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
     list_display = ("name",)
 
-@admin.register(Person)
-class PersonAdmin(admin.ModelAdmin):
-    form = PersonAdminForm
-    list_display = ("name", "group", "password")
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    form = UserAdminForm
+    list_display = ("pseudo", "group", "password")
     list_filter = ("group",)
     def save_model(self, request, obj, form, change):
         if form.cleaned_data.get('password'):

@@ -8,8 +8,8 @@ class Group(models.Model):
     def __str__(self):
         return self.name
 
-class Person(models.Model):
-    name = models.CharField(max_length=100)
+class User(models.Model):
+    pseudo = models.CharField(max_length=100)
     password = models.CharField(max_length=128)
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="members")
 
@@ -20,20 +20,20 @@ class Person(models.Model):
         return check_password(raw_password, self.password)
 
     def __str__(self):
-        return f"{self.name} ({self.group.name})"
+        return f"{self.pseudo} ({self.group.name})"
 
 
 
 class Gift(models.Model):
-    owner = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="gifts")
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="gifts")
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     url = models.URLField(blank=True)
     created_at = models.DateTimeField(default=timezone.now)
-    created_by = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="created_gifts")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_gifts")
 
     def __str__(self):
-        return f"{self.title} ({self.owner.name})"
+        return f"{self.title} ({self.owner.pseudo})"
 
     def save(self, *args, **kwargs):
         if not self.created_by:
@@ -43,8 +43,8 @@ class Gift(models.Model):
 
 class Reservation(models.Model):
     gift = models.OneToOneField(Gift, on_delete=models.CASCADE, related_name="reservation")
-    reserver = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="reservations")
+    reserver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reservations")
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"{self.reserver.name} -> {self.gift.title}"
+        return f"{self.reserver.pseudo} -> {self.gift.title}"

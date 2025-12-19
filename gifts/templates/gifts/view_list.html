@@ -1,13 +1,13 @@
 {% extends "gifts/base.html" %}
-{% block title %}Liste de {{ person.name }}{% endblock %}
+{% block title %}Liste de {{ user.pseudo }}{% endblock %}
 
 {% block content %}
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-  {% if current and current.id == person.id%}
+  {% if current and current.id == user.id%}
     <h2 class="mb-0">🎁 Ma liste</h2>
   {% else %}
-    <h2 class="mb-0">🎁 Liste de {{ person.name }}</h2>
+    <h2 class="mb-0">🎁 Liste de {{ user.pseudo }}</h2>
   {% endif %}
   <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
     ← Retour
@@ -16,7 +16,7 @@
 
 <div class="mb-3 text-end">
   <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGiftModal">
-    {% if current and current.id == person.id %}
+    {% if current and current.id == user.id %}
     ➕ Ajouter un cadeau
     {% else %}
     ➕ Ajouter une surprise
@@ -25,14 +25,14 @@
 </div>
 
 {% if not presence_gift %}
-  {% if current and current.id != person.id %}
-    <h2>{{ person.name }} n'a pas demandé de cadeaux pour l'instant</h2>
+  {% if current and current.id != user.id %}
+    <h2>{{ user.pseudo }} n'a pas demandé de cadeaux pour l'instant</h2>
   {% else %}
     <h2>Vous n'avez pas demandé de cadeaux pour l'instant</h2>
   {% endif %}
 {% else %}
-  {% if current and current.id != person.id %}
-  <h2>Cadeaux demandés par {{ person.name }}</h2>
+  {% if current and current.id != user.id %}
+  <h2>Cadeaux demandés par {{ user.pseudo }}</h2>
   {% endif %}
   <table class="table table-hover table-striped align-middle">
     <thead class="table-dark">
@@ -40,11 +40,11 @@
         <th>Nom</th>
         <th>Description</th>
         <th>Lien</th>
-        {% if current and current.id != person.id %}
+        {% if current and current.id != user.id %}
         <th>Statut</th>
         {% endif %}
         <th>Date de création</th>
-        {% if current and current.id == person.id %}
+        {% if current and current.id == user.id %}
         <th>Actions</th>
         {% endif %}
       </tr>
@@ -59,7 +59,7 @@
             <a href="{{ item.gift.url }}" target="_blank">Voir</a>
             {% endif %}
           </td>
-          {% if current and current.id != person.id %}
+          {% if current and current.id != user.id %}
           <td>
 
             {% if item.is_reserved %}
@@ -70,7 +70,7 @@
                   <button type="submit" class="btn btn-sm btn-outline-warning">Annuler</button>
                 </form>
               {% else %}
-                <span class="badge bg-danger">Pris par {{ item.reserved_by.name }}</span>
+                <span class="badge bg-danger">Pris par {{ item.reserved_by.pseudo }}</span>
               {% endif %}
             {% else %}
               <button class="btn btn-sm btn-success" onclick="reserve({{ item.gift.id }})">
@@ -82,7 +82,7 @@
           <td>{{item.gift.created_at |date:"d M Y H:i"}}</td>
 
 
-          {% if current and current.id == person.id %}
+          {% if current and current.id == user.id %}
           <td class="d-flex gap-2">
             <!-- Modify -->
             <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editGiftModal{{ item.gift.id }}">
@@ -102,7 +102,7 @@
         </tr>
 
       <!-- Modale édition -->
-      {% if current and current.id == person.id %}
+      {% if current and current.id == user.id %}
       <div class="modal fade" id="editGiftModal{{ item.gift.id }}" tabindex="-1" aria-labelledby="editGiftModalLabel{{ item.gift.id }}" aria-hidden="true">
         <div class="modal-dialog">
           <div class="modal-content">
@@ -141,7 +141,7 @@
     </tbody>
 </table>
 {% endif %}
-{% if current and current.id != person.id%}
+{% if current and current.id != user.id%}
   {% if presence_surprises %}
     <h2>Cadeaux surprises par d'autres personnes</h2>
     <table class="table table-hover table-striped align-middle">
@@ -176,7 +176,7 @@
                   <button type="submit" class="btn btn-sm btn-outline-warning">Annuler</button>
                 </form>
               {% else %}
-                <span class="badge bg-danger">Pris par {{ item.reserved_by.name }}</span>
+                <span class="badge bg-danger">Pris par {{ item.reserved_by.pseudo }}</span>
               {% endif %}
             {% else %}
               <button class="btn btn-sm btn-success" onclick="reserve({{ item.gift.id }})">
@@ -186,7 +186,7 @@
           </td>
 
           <td>{{item.gift.created_at |date:"d M Y H:i"}}</td>
-          <td>{{ item.gift.created_by.name }}</td>
+          <td>{{ item.gift.created_by.pseudo }}</td>
           <td class="d-flex gap-2">
               <!-- Modify -->
               <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editGiftModal{{ item.gift.id }}">
@@ -217,7 +217,7 @@
 
       <div class="modal-header">
         <h5 class="modal-title" id="addGiftModalLabel">
-          {% if current and current.id == person.id %}
+          {% if current and current.id == user.id %}
           Ajouter un cadeau
           {% else %}
           Ajouter une surprise
@@ -226,7 +226,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
       </div>
 
-      <form method="post" action="{% url 'add_gift' person.id%}">
+      <form method="post" action="{% url 'add_gift' user.id%}">
         {% csrf_token %}
         <div class="modal-body">
           <div class="mb-3">

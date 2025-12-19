@@ -3,9 +3,9 @@ from . import views
 
 urlpatterns = [
     path('', views.choose_group, name='choose_group'),
-    path('group/<int:group_id>/', views.choose_person_in_group, name='choose_person_in_group'),
+    path('group/<int:group_id>/', views.choose_user_in_group, name='choose_user_in_group'),
     path('dashboard/', views.dashboard, name='dashboard'),
-    path('list/<int:person_id>/', views.view_list, name='view_list'),
+    path('list/<int:user_id>/', views.view_list, name='view_list'),
     path('reserve/<int:gift_id>/', views.reserve_gift, name='reserve_gift'),
     path('unreserve/<int:gift_id>/', views.unreserve_gift, name='unreserve_gift'),
     path('add-gift/<int:owner_id>/', views.add_gift, name='add_gift'),

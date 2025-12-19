@@ -20,10 +20,10 @@
           {% csrf_token %}
 
           <div class="mb-3">
-            <select name="person_id" class="form-select" required>
+            <select name="user_id" class="form-select" required>
               <option value="">Sélectionnez votre nom</option>
-              {% for p in persons %}
-                <option value="{{ p.id }}">{{ p.name }}</option>
+              {% for u in users %}
+                <option value="{{ u.id }}">{{ u.pseudo }}</option>
               {% endfor %}
             </select>
           </div>
