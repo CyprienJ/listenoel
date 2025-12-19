@@ -2,7 +2,7 @@
 {% block title %}Accueil{% endblock %}
 
 {% block content %}
-<h2 class="mb-4 text-center">Bonjour {{ current.name }} {{ greeting_emoji }}</h2>
+<h2 class="mb-4 text-center">Bonjour {{ current.pseudo }} {{ greeting_emoji }}</h2>
 
 <style>
   .dashboard-card {
@@ -30,10 +30,10 @@
     <div class="card-body">
       <h5 class="card-title">Voir une liste</h5>
       <ul class="list-group list-group-flush">
-        {% for p in persons %}
+        {% for u in users %}
           <li class="list-group-item">
-            <a href="{% url 'view_list' p.id %}" class="text-decoration-none">
-              {{ p.name }}
+            <a href="{% url 'view_list' u.id %}" class="text-decoration-none">
+              {{ u.pseudo }}
             </a>
           </li>
         {% endfor %}
