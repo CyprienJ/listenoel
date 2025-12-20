@@ -1,8 +1,9 @@
 {% extends "gifts/base.html" %}
-{% block title %}Accueil{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Home" %}{% endblock %}
 
 {% block content %}
-<h2 class="mb-4 text-center">Bonjour {{ current.pseudo }} {{ greeting_emoji }}</h2>
+<h2 class="mb-4 text-center">{% trans "Hello" %} {{ current.pseudo }} {{ greeting_emoji }}</h2>
 
 <style>
   .dashboard-card {
@@ -21,14 +22,14 @@
   <div class="card shadow-sm dashboard-card mx-auto">
     <div class="card-body text-center">
       <a href="{% url 'view_list' current.id %}" class="btn btn-success btn-lg w-100">
-        Voir ma liste
+        {% trans "View my list" %}
       </a>
     </div>
   </div>
 
   <div class="card shadow-sm dashboard-card mx-auto">
     <div class="card-body">
-      <h5 class="card-title">Voir une liste</h5>
+      <h5 class="card-title">{% trans "View other lists" %}</h5>
       <ul class="list-group list-group-flush">
         {% for u in users %}
           <li class="list-group-item">

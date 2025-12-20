@@ -1,0 +1,79 @@
+{% load i18n %}
+<table class="table table-hover table-striped align-middle">
+    <thead class="table-dark">
+    <tr>
+        <th>{% trans "Name" %}</th>
+        <th>{% trans "Description" %}</th>
+        <th>{% trans "Link" %}</th>
+        {% if not is_owner %}
+            <th>{% trans "Status" %}</th>
+        {% endif %}
+        <th>{% trans "Creation date" %}</th>
+        {% if show_creator %}
+            <th>{% trans "Created by" %}</th>
+        {% endif %}
+        {% if show_action %}
+            <th>{% trans "Actions" %}</th>
+        {% endif %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for item in items %}
+        <tr>
+            <td>{{ item.gift.title }}</td>
+            <td>{{ item.gift.description }}</td>
+            <td>
+                {% if item.gift.url %}
+                    <a href="{{ item.gift.url }}" target="_blank">{% trans "View" %}</a>
+                {% endif %}
+            </td>
+            {% if not is_owner %}
+
+                <td>
+                    {% if item.is_reserved %}
+                        {% if item.reserved_by.id == current.id %}
+                            <span class="badge bg-success">{% trans "Reserved by you" %}</span>
+                            <form method="post" action="{% url 'unreserve_gift' item.gift.id %}"
+                                  style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-warning">{% trans "Cancel" %}</button>
+                            </form>
+                        {% else %}
+                            <span class="badge bg-danger">{% trans "Reserved by" %} {{ item.reserved_by.pseudo }}</span>
+                        {% endif %}
+                    {% else %}
+                        <button class="btn btn-sm btn-success btn-reserve" data-gift-id="{{ item.gift.id }}">
+                            {% trans "Take" %}
+                        </button>
+                    {% endif %}
+                </td>
+            {% endif %}
+
+            <td>{{ item.gift.created_at|date:"d M Y H:i" }}</td>
+            {% if show_creator %}
+                <td>{{ item.gift.created_by.pseudo }}</td>
+            {% endif %}
+            {% if show_action %}
+                <td class="d-flex gap-2">
+                    {% if is_owner or item.gift.created_by.id == current.id %}
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                                data-bs-target="#{{ modal_prefix }}{{ item.gift.id }}">
+                            {% trans "Modify" %}
+                        </button>
+                        <form method="post" action="{% url 'delete_gift' item.gift.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger btn-delete"
+                                    data-confirm-msg="{% trans 'Delete this gift?' %}">
+                                {% trans "Delete" %}
+                            </button>
+                        </form>
+                    {% endif %}
+                </td>
+            {% endif %}
+
+        </tr>
+        {% include "gifts/includes/_edit_gift.html" with prefix=modal_prefix modal_title=modal_title %}
+    {% endfor %}
+    </tbody>
+</table>

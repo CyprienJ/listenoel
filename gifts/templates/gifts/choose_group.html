@@ -1,5 +1,6 @@
 {% extends "gifts/base.html" %}
-{% block title %}Choisir un groupe{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Choose your group" %}{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -7,12 +8,12 @@
 
     <div class="card shadow-sm">
       <div class="card-body">
-        <h1 class="h4 mb-3 text-center">Choisissez votre groupe</h1>
+        <h1 class="h4 mb-3 text-center">{% trans "Choose your group" %}</h1>
 
         <ul class="list-group">
           {% for g in groups %}
             <li class="list-group-item">
-              <a href="{% url 'choose_person_in_group' g.id %}">{{ g.name }}</a>
+              <a href="{% url 'choose_user_in_group' g.id %}">{{ g.name }}</a>
             </li>
           {% endfor %}
         </ul>

@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponseForbidden, HttpRequest
 from django.db import transaction, IntegrityError
 from django.views.decorators.http import require_POST
+from django.utils.translation import gettext as _
 
 from .models import User, Gift, Reservation, Group
 
@@ -84,7 +85,8 @@ def view_list(request: HttpRequest, user_id: int):
         "presence_gift": len(gifts) > 0,
         "surprises": surprises,
         "presence_surprises": len(surprises) > 0,
-        "current": current
+        "current": current,
+        "is_owner": current and current.id == user.id,
     })
 
 
@@ -92,17 +94,17 @@ def view_list(request: HttpRequest, user_id: int):
 def reserve_gift(request: HttpRequest, gift_id: int):
     current: User = get_current_user(request)
     if not current:
-        redirect("choose_user")
+        redirect("choose_group")
 
     gift = get_object_or_404(Gift, id=gift_id)
 
     if gift.owner_id == current.id:
-        return HttpResponseForbidden("Impossible sur votre propre liste")
+        return HttpResponseForbidden(_("Impossible on your own list"))
 
     try:
         Reservation.objects.create(gift=gift, reserver=current)
     except IntegrityError:
-        return JsonResponse({"success": False, "error": "Déjà réservé"}, status=409)
+        return JsonResponse({"success": False, "error": _("This gift is already taken")}, status=409)
 
     return JsonResponse({"success": True})
 
@@ -136,7 +138,7 @@ def choose_user_in_group(request: HttpRequest, group_id: int):
             return render(request, "gifts/choose_user.html", {
                 "group": group,
                 "users": users,
-                "error": "Nom ou mot de passe incorrect"
+                "error": _("Username or password incorrect")
             })
 
     return render(request, "gifts/choose_user.html", {
@@ -149,7 +151,7 @@ def add_gift(request: HttpRequest, owner_id: float):
     current: User = get_current_user(request)
     owner: User = get_object_or_404(User, id=owner_id)
     if not current:
-        redirect("choose_user")
+        redirect("choose_group")
 
     title: str = request.POST.get("title", "").strip()
     description: str = request.POST.get("description", "").strip()
@@ -189,7 +191,7 @@ def edit_gift(request: HttpRequest, gift_id: int):
     gift = get_object_or_404(Gift, id=gift_id)
 
     if not current or gift.owner != current:
-        redirect("choose_user")
+        redirect("choose_group")
 
     title = request.POST.get("title", "").strip()
     description = request.POST.get("description", "").strip()
@@ -201,13 +203,13 @@ def edit_gift(request: HttpRequest, gift_id: int):
         gift.url = url
         gift.save()
 
-    return redirect("view_list", user_id=current.id)
+    return redirect("view_list", user_id=gift.owner.id)
 
 @require_POST
 def unreserve_gift(request, gift_id):
     current = get_current_user(request)
     if not current:
-        redirect("choose_user")
+        redirect("choose_group")
 
     try:
         reservation = Reservation.objects.get(gift_id=gift_id, reserver=current)
@@ -223,7 +225,7 @@ def unreserve_gift(request, gift_id):
 def change_password(request: HttpRequest):
     current: User = get_current_user(request)
     if not current:
-        redirect("choose_user")
+        redirect("choose_group")
 
     old_password: str = request.POST.get("old_password")
     new_password: str = request.POST.get("new_password")
@@ -270,6 +272,6 @@ def change_password(request: HttpRequest):
 def change_password_form(request: HttpRequest):
     current: User = get_current_user(request)
     if not current:
-        return redirect("choose_user")
+        return redirect("choose_group")
     return render(request, "gifts/change_password.html", {"current": current})
 
