@@ -1,0 +1,299 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-20 16:48+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: config/settings.py:118
+msgid "French"
+msgstr "Français"
+
+#: config/settings.py:119
+msgid "English"
+msgstr "English"
+
+#: gifts/templates/gifts/base.html:43
+msgid "Wishlist"
+msgstr "Liste de souhaits"
+
+#: gifts/templates/gifts/base.html:48
+msgid "Logged in"
+msgstr "Connecté"
+
+#: gifts/templates/gifts/base.html:55
+msgid "Settings"
+msgstr "Paramètres"
+
+#: gifts/templates/gifts/base.html:62
+msgid "Theme"
+msgstr "Thème"
+
+#: gifts/templates/gifts/base.html:64
+msgid "Default (OS)"
+msgstr "Défaut (OS)"
+
+#: gifts/templates/gifts/base.html:65
+msgid "Bright"
+msgstr "Clair"
+
+#: gifts/templates/gifts/base.html:66
+msgid "Dark"
+msgstr "Sombre"
+
+#: gifts/templates/gifts/base.html:74
+#: gifts/templates/gifts/change_password.html:5
+#: gifts/templates/gifts/change_password.html:49
+msgid "Change password"
+msgstr "Changer de mot de passe"
+
+#: gifts/templates/gifts/base.html:75
+msgid "Log out"
+msgstr "Se déconnecter"
+
+#: gifts/templates/gifts/base.html:85
+msgid "Language selection"
+msgstr "Selection de la langue"
+
+#: gifts/templates/gifts/change_password.html:14
+msgid "Old password"
+msgstr "Ancien mot de passe"
+
+#: gifts/templates/gifts/change_password.html:24
+msgid "New password"
+msgstr "Nouveau mot de passe"
+
+#: gifts/templates/gifts/change_password.html:32
+msgid "At least 8 characters"
+msgstr "Au moins 8 caractères"
+
+#: gifts/templates/gifts/change_password.html:33
+msgid "At least one uppercase letter (A-Z)"
+msgstr "Au moins un caractère en majuscule"
+
+#: gifts/templates/gifts/change_password.html:34
+msgid "At least one lowercase letter (a-z)"
+msgstr "Au moins un caractère en minuscule"
+
+#: gifts/templates/gifts/change_password.html:35
+msgid "At least one digit (0–9)"
+msgstr "Au moins un chiffre"
+
+#: gifts/templates/gifts/change_password.html:40
+msgid "Confirm password"
+msgstr "Confirmer le nouveau mot de passe"
+
+#: gifts/templates/gifts/change_password.html:52
+msgid "Back to dashboard"
+msgstr "Retour à l'accueil"
+
+#: gifts/templates/gifts/choose_group.html:3
+#: gifts/templates/gifts/choose_group.html:11
+msgid "Choose your group"
+msgstr "Choisissez votre groupe"
+
+#: gifts/templates/gifts/choose_user.html:3
+#: gifts/templates/gifts/choose_user.html:7
+#: gifts/templates/gifts/choose_user.html:14
+msgid "Connection"
+msgstr "Connexion"
+
+#: gifts/templates/gifts/choose_user.html:25
+msgid "Select your name"
+msgstr "Sélectionnez votre nom"
+
+#: gifts/templates/gifts/choose_user.html:33
+msgid "Password"
+msgstr "Mot de passe"
+
+#: gifts/templates/gifts/choose_user.html:39
+msgid "Remember me (14 days)"
+msgstr "Se souvenir de moi (14 jours)"
+
+#: gifts/templates/gifts/choose_user.html:42
+msgid "Login"
+msgstr "Se connecter"
+
+#: gifts/templates/gifts/dashboard.html:3
+msgid "Home"
+msgstr "Accueil"
+
+#: gifts/templates/gifts/dashboard.html:6
+msgid "Hello"
+msgstr "Bonjour"
+
+#: gifts/templates/gifts/dashboard.html:25
+msgid "View my list"
+msgstr "Voir ma liste"
+
+#: gifts/templates/gifts/dashboard.html:32
+msgid "View other lists"
+msgstr "Voir une autre liste"
+
+#: gifts/templates/gifts/includes/_edit_gift.html:15
+#: gifts/templates/gifts/view_list.html:67
+msgid "Close"
+msgstr "Fermer"
+
+#: gifts/templates/gifts/includes/_edit_gift.html:26
+#: gifts/templates/gifts/includes/_edit_gift.html:27
+#: gifts/templates/gifts/view_list.html:77
+#: gifts/templates/gifts/view_list.html:78
+msgid "Gift name"
+msgstr "Nom du cadeau"
+
+#: gifts/templates/gifts/includes/_edit_gift.html:35
+#: gifts/templates/gifts/includes/_edit_gift.html:36
+#: gifts/templates/gifts/includes/_gift_table.html:6
+msgid "Description"
+msgstr "Description"
+
+#: gifts/templates/gifts/includes/_edit_gift.html:43
+#: gifts/templates/gifts/includes/_edit_gift.html:44
+#: gifts/templates/gifts/includes/_gift_table.html:7
+msgid "Link"
+msgstr "Lien"
+
+#: gifts/templates/gifts/includes/_edit_gift.html:51
+#: gifts/templates/gifts/includes/_gift_table.html:40
+#: gifts/templates/gifts/view_list.html:99
+msgid "Cancel"
+msgstr "Annuler"
+
+#: gifts/templates/gifts/includes/_edit_gift.html:52
+#: gifts/templates/gifts/includes/_gift_table.html:62
+msgid "Modify"
+msgstr "Modifier"
+
+#: gifts/templates/gifts/includes/_gift_table.html:5
+msgid "Name"
+msgstr "Nom"
+
+#: gifts/templates/gifts/includes/_gift_table.html:9
+msgid "Status"
+msgstr "Statut"
+
+#: gifts/templates/gifts/includes/_gift_table.html:11
+msgid "Creation date"
+msgstr "Date de création"
+
+#: gifts/templates/gifts/includes/_gift_table.html:13
+msgid "Created by"
+msgstr "Créé par"
+
+#: gifts/templates/gifts/includes/_gift_table.html:16
+msgid "Actions"
+msgstr "Actions"
+
+#: gifts/templates/gifts/includes/_gift_table.html:27
+msgid "View"
+msgstr "Voir"
+
+#: gifts/templates/gifts/includes/_gift_table.html:35
+msgid "Reserved by you"
+msgstr "Réservé par vous"
+
+#: gifts/templates/gifts/includes/_gift_table.html:43
+msgid "Reserved by"
+msgstr "Réservé par"
+
+#: gifts/templates/gifts/includes/_gift_table.html:47
+msgid "Take"
+msgstr "Prendre"
+
+#: gifts/templates/gifts/includes/_gift_table.html:67
+msgid "Delete this gift?"
+msgstr "Supprimer ce cadeau ?"
+
+#: gifts/templates/gifts/includes/_gift_table.html:68
+msgid "Delete"
+msgstr "Supprimer"
+
+#: gifts/templates/gifts/view_list.html:5
+#: gifts/templates/gifts/view_list.html:15
+msgid "My list"
+msgstr "Ma liste"
+
+#: gifts/templates/gifts/view_list.html:7
+#: gifts/templates/gifts/view_list.html:17
+msgid "List of"
+msgstr "Liste de"
+
+#: gifts/templates/gifts/view_list.html:20
+msgid "Back"
+msgstr "Retour"
+
+#: gifts/templates/gifts/view_list.html:27
+#: gifts/templates/gifts/view_list.html:61
+msgid "Add a gift"
+msgstr "Ajouter un cadeau"
+
+#: gifts/templates/gifts/view_list.html:29
+#: gifts/templates/gifts/view_list.html:63
+msgid "Add a surprise"
+msgstr "Ajouter une surprise"
+
+#: gifts/templates/gifts/view_list.html:36
+msgid "has not wished for any gifts yet"
+msgstr "n'a pas exprimé de souhait de cadeau pour le moment"
+
+#: gifts/templates/gifts/view_list.html:38
+msgid "You have not wished for any gifts yet"
+msgstr "Vous n'avez pas exprimé de souhait de cadeau pour le moment"
+
+#: gifts/templates/gifts/view_list.html:42
+msgid "Gifts wished by"
+msgstr "Cadeau souhaité par"
+
+#: gifts/templates/gifts/view_list.html:45
+msgid "Modify the gift"
+msgstr "Modifier le cadeau"
+
+#: gifts/templates/gifts/view_list.html:49
+msgid "Surprises gifts by others"
+msgstr "Surprises suggérés par d'autres"
+
+#: gifts/templates/gifts/view_list.html:50
+#, fuzzy
+#| msgid "Modify the gift"
+msgid "Modify the Surprise"
+msgstr "Modifier le cadeau"
+
+#: gifts/templates/gifts/view_list.html:85
+#: gifts/templates/gifts/view_list.html:86
+msgid "Description (optional)"
+msgstr "Description (optionnelle)"
+
+#: gifts/templates/gifts/view_list.html:92
+#: gifts/templates/gifts/view_list.html:93
+msgid "Link (optional)"
+msgstr "Lien (optionnel)"
+
+#: gifts/templates/gifts/view_list.html:100
+msgid "Add"
+msgstr "Ajouter"
+
+#: gifts/views.py:102
+msgid "Impossible on your own list"
+msgstr "Impossible sur votre propre liste"
+
+#: gifts/views.py:107
+msgid "This gift is already taken"
+msgstr "Ce cadeau est déjà réservé"
+
+#: gifts/views.py:141
+msgid "Username or password incorrect"
+msgstr "Nom ou mot de passe incorrect"

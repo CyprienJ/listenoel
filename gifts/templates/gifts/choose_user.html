@@ -1,16 +1,17 @@
 {% extends "gifts/base.html" %}
-{% block title %}Connexion{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Connection"%}{% endblock %}
 
 {% block content %}
 
-<h1 class="h4 mb-3 text-center">Connexion - {{ group.name }}</h1>
+<h1 class="h4 mb-3 text-center">{% trans "Connection" %} - {{ group.name }}</h1>
 
 <div class="row justify-content-center">
   <div class="col-md-6">
 
     <div class="card shadow-sm">
       <div class="card-body">
-        <h1 class="h4 mb-3 text-center">Connexion</h1>
+        <h1 class="h4 mb-3 text-center">{% trans "Connection" %}</h1>
 
         {% if error %}
           <div class="alert alert-danger">{{ error }}</div>
@@ -21,7 +22,7 @@
 
           <div class="mb-3">
             <select name="user_id" class="form-select" required>
-              <option value="">Sélectionnez votre nom</option>
+              <option value="">{% trans "Select your name" %}</option>
               {% for u in users %}
                 <option value="{{ u.id }}">{{ u.pseudo }}</option>
               {% endfor %}
@@ -29,16 +30,16 @@
           </div>
 
           <div class="mb-3">
-            <input type="password" name="password" class="form-control" placeholder="Mot de passe" required>
+            <input type="password" name="password" class="form-control" placeholder="{% trans "Password" %}" required>
           </div>
 
           <div class="mb-3 form-check">
             <input class="form-check-input" type="checkbox" id="remember_me" name="remember_me">
             <label class="form-check-label" for="remember_me">
-              Rester connecté (14 jours)
+              {% trans "Remember me (14 days)" %}
             </label>
           </div>
-          <button class="btn btn-primary w-100">Se connecter</button>
+          <button class="btn btn-primary w-100">{% trans "Login" %}</button>
         </form>
       </div>
     </div>
