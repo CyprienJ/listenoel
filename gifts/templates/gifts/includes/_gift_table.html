@@ -12,12 +12,12 @@
                              data-bs-toggle="modal"
                              data-bs-target="#viewGiftModal{{ item.gift.id }}"
                              style="cursor: pointer;">
-                            <div class="bg-primary-container p-3 rounded-4 me-3 text-primary">
+                            <div class="bg-primary-container p-3 rounded-4 me-3 text-primary flex-shrink-0">
                                 <i class="bi bi-gift fs-4"></i>
                             </div>
-                            <div>
-                                <h4 class="h6 fw-bold mb-1">{{ item.gift.title }}</h4>
-                                <p class="small text-muted mb-0 text-truncate" style="max-width: 250px;">
+                            <div class="min-width-0" style="min-width: 0;">
+                                <h4 class="h6 fw-bold mb-1 text-truncate">{{ item.gift.title }}</h4>
+                                <p class="small text-muted mb-0 text-truncate">
                                     {{ item.gift.description|default:_("No description") }}
                                 </p>
                             </div>
