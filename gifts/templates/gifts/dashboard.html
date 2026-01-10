@@ -1,46 +1,181 @@
 {% extends "gifts/base.html" %}
 {% load i18n %}
-{% block title %}{% trans "Home" %}{% endblock %}
+
+{% block title %}{% trans "Dashboard" %}{% endblock %}
 
 {% block content %}
-<h2 class="mb-4 text-center">{% trans "Hello" %} {{ current.pseudo }} {{ greeting_emoji }}</h2>
+    <div class="container py-4">
+        <!-- Message de bienvenue -->
+        <header class="text-center mb-5">
+            <h1 class="display-5 fw-bold text-primary">
+                <span id="emoji-trigger" class="cursor-pointer"
+                      title="{% trans 'Click me!' %}">{{ greeting_emoji }}</span>
+                {% trans "Hello" %}, {{ request.user.nickname|capfirst }} !
+            </h1>
+            <p class="text-muted">{% trans "Ready to prepare wonderful surprises?" %}</p>
+        </header>
 
-<style>
-  .dashboard-card {
-    width: 100%;
-  }
+        <div class="row g-4 justify-content-center">
 
-  @media (min-width: 992px) {
-    .dashboard-card {
-      width: 50%;
-    }
-  }
-</style>
+            <div class="col-md-5">
+                <div class="card h-100 border-0 shadow-sm rounded-5 auth-card text-center p-4">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                        <div class="bg-primary-container p-3 rounded-circle mb-3">
+                            <i class="bi bi-gift-fill fs-1 text-primary"></i>
+                        </div>
+                        <h3 class="fw-bold h4 mb-3">{% trans "My list" %}</h3>
+                        <p class="small text-muted mb-4">{% trans "Manage your personal desires and wishes." %}</p>
+                        <a href="{% url 'view_list' request.user.id %}"
+                           class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm">
+                            {% trans "View my list" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
 
-<div class="d-grid gap-4">
+            <!-- Carte : Les listes des autres -->
+            <div class="col-md-7">
+                <div class="card h-100 border-0 shadow-sm rounded-5 auth-card p-4">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-success-container p-2 rounded-3 me-3">
+                                    <i class="bi bi-people-fill text-success fs-4"></i>
+                                </div>
+                                <h3 class="h5 fw-bold mb-0">{% trans "My groups" %}</h3>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill"
+                                        data-bs-toggle="modal" data-bs-target="#createGroupModal">
+                                    <i class="bi bi-plus-lg"></i> {% trans "Create" %}
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill"
+                                        data-bs-toggle="modal" data-bs-target="#joinGroupModal">
+                                    <i class="bi bi-person-plus"></i> {% trans "Join" %}
+                                </button>
+                            </div>
+                        </div>
 
-  <div class="card shadow-sm dashboard-card mx-auto">
-    <div class="card-body text-center">
-      <a href="{% url 'view_list' current.id %}" class="btn btn-success btn-lg w-100">
-        {% trans "View my list" %}
-      </a>
+                        <div class="list-group list-group-flush rounded-4 overflow-hidden">
+                            {% for group in user_groups %}
+                                <a href="{% url 'group_detail' group.id %}"
+                                   class="list-group-item list-group-item-action border-0 py-3 d-flex align-items-center justify-content-between auth-input mb-2 rounded-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle me-3 bg-success">
+                                            {{ group.name|first|upper }}
+                                        </div>
+                                        <span class="fw-medium">{{ group.name }}</span>
+                                    </div>
+                                    <i class="bi bi-chevron-right text-muted"></i>
+                                </a>
+                            {% empty %}
+                                <div class="text-center py-4 text-muted">
+                                    <i class="bi bi-people fs-1 opacity-25 d-block mb-2"></i>
+                                    {% trans "You are not part of any group yet." %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
-  </div>
+{% endblock %}
 
-  <div class="card shadow-sm dashboard-card mx-auto">
-    <div class="card-body">
-      <h5 class="card-title">{% trans "View other lists" %}</h5>
-      <ul class="list-group list-group-flush">
-        {% for u in users %}
-          <li class="list-group-item">
-            <a href="{% url 'view_list' u.id %}" class="text-decoration-none">
-              {{ u.pseudo }}
-            </a>
-          </li>
-        {% endfor %}
-      </ul>
+{% block extra_body %}
+    <!-- Modal Create Group -->
+    <div class="modal fade" id="createGroupModal" tabindex="-1" aria-labelledby="createGroupModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-5">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="createGroupModalLabel">{% trans "Create a new group" %}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" action="{% url 'create_group' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="id_name" class="form-label small fw-bold">{% trans "Group Name" %}</label>
+                            <input type="text" name="name" class="form-control rounded-pill border-1 p-3" id="id_name"
+                                   required placeholder="ex: Famille Smith">
+                        </div>
+                        <p class="text-muted small">
+                            <i class="bi bi-info-circle"></i>
+                            {% trans "Once created, you will get a unique code to share." %}
+                        </p>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="submit"
+                                class="btn btn-primary w-100 rounded-pill py-3 fw-bold">{% trans "Create Group" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 
-</div>
+    <div class="modal fade" id="joinGroupModal" tabindex="-1" aria-labelledby="joinGroupModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-5">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="joinGroupModalLabel">{% trans "Join a group" %}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" action="{% url 'join_group' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="invite_token" class="form-label small fw-bold">{% trans "Group Code" %}</label>
+                            <input type="text" name="invite_token"
+                                   class="form-control rounded-pill border-1 p-3 text-center fw-bold"
+                                   id="invite_token" required placeholder="EX: A1B2C3D4" maxlength="12">
+                        </div>
+                        <p class="text-muted small">
+                            <i class="bi bi-info-circle"></i>
+                            {% trans "Enter the unique code shared by the group creator." %}
+                        </p>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="submit"
+                                class="btn btn-secondary w-100 rounded-pill py-3 fw-bold">{% trans "Join Group" %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        document.getElementById('emoji-trigger').addEventListener('click', function () {
+            const emojis = {{ rain_emojis|safe }};
+            const container = document.body;
+
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const emoji = document.createElement('div');
+                    emoji.className = 'emoji-rain';
+                    emoji.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+
+                    // Position aléatoire horizontale
+                    emoji.style.left = Math.random() * 100 + 'vw';
+
+                    // Durée de chute aléatoire (entre 2 et 5 secondes)
+                    const duration = Math.random() * 3 + 2;
+                    emoji.style.animationDuration = duration + 's';
+
+                    // Taille aléatoire
+                    emoji.style.fontSize = (Math.random() * 1.5 + 1) + 'rem';
+
+                    container.appendChild(emoji);
+
+                    // Supprimer l'élément après l'animation
+                    setTimeout(() => {
+                        emoji.remove();
+                    }, duration * 1000);
+                }, i * 100); // Délai progressif pour chaque emoji
+            }
+        });
+    </script>
 {% endblock %}

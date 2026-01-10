@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["listenoel.fr", "www.listenoel.fr", "127.0.0.1"]
+ALLOWED_HOSTS = ["noscadeaux.fr", "www.noscadeaux.fr", "127.0.0.1"]
 
 # Application definition
 
@@ -132,10 +132,22 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'gifts' / 'static',
 ]
-SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = 'DENY'
 
 SESSION_COOKIE_AGE = 60 * 60 * 24
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'welcome'
+
+AUTH_USER_MODEL = 'gifts.User'
+AUTHENTICATION_BACKENDS = [
+    'gifts.backends.CaseInsensitiveModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@listedecadeau.fr'

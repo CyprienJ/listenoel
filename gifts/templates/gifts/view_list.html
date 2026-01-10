@@ -4,106 +4,135 @@
     {% if is_owner %}
         {% trans "My list" %}
     {% else %}
-        {% trans "List of" %} {{ user.pseudo }}
+        {% trans "List of" %} {{ user.nickname|capfirst }}
     {% endif %}
 {% endblock %}
 
 {% block content %}
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        {% if is_owner %}
-            <h2 class="mb-0">🎁 {% trans "My list" %}</h2>
-        {% else %}
-            <h2 class="mb-0">🎁 {% trans "List of" %} {{ user.pseudo }}</h2>
-        {% endif %}
-        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
-            ← {% trans "Back" %}
-        </a>
+        <h2 class="fw-bold text-primary mb-0">
+            {% if is_owner %}
+                🎁 {% trans "My list" %}
+            {% else %}
+                🎁 {% trans "List of" %} {{ user.nickname|capfirst }}
+            {% endif %}
+        </h2>
+        <div class="mb-4">
+            {% if from_group_id %}
+                <a href="{% url 'group_detail' from_group_id %}" class="btn rounded-circle shadow-sm">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            {% else %}
+                <a href="{% url 'dashboard' %}" class="btn rounded-circle shadow-sm">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            {% endif %}
+        </div>
     </div>
 
-    <div class="mb-3 text-end">
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGiftModal">
+    <div class="mb-4 text-end">
+        <button class="btn btn-primary btn-lg rounded-pill shadow-sm" data-bs-toggle="modal"
+                data-bs-target="#addGiftModal">
             {% if is_owner %}
-                ➕ {% trans "Add a gift" %}
+                <i class="bi bi-plus-lg"></i> {% trans "Add a gift" %}
             {% else %}
-                ➕ {% trans "Add a surprise" %}
+                <i class="bi bi-magic"></i> {% trans "Add a surprise" %}
             {% endif %}
         </button>
     </div>
 
-    {% if not presence_gift %}
-        {% if not is_owner %}
-            <h2>{{ user.pseudo }} {% trans "has not wished for any gifts yet" %}</h2>
-        {% else %}
-            <h2>{% trans "You have not wished for any gifts yet" %}</h2>
-        {% endif %}
+    <!-- Gifts -->
+    {% if gifts %}
+        <div class="card border-0 shadow-sm rounded-4 mb-5">
+            <div class="card-body p-4">
+                <h3 class="h5 fw-bold mb-4">{% trans "Wishes from" %} {{ user.nickname|capfirst }}</h3>
+                {% include "gifts/includes/_gift_table.html" with items=gifts modal_prefix="editGiftModal" modal_title=_("Modify the gift") show_creator=False show_action=is_owner hide_status=is_owner %}
+            </div>
+        </div>
     {% else %}
-        {% if is_owner %}
-            <h2>{% trans "Gifts wished by" %} {{ user.pseudo }}</h2>
-        {% endif %}
-
-        {% include "gifts/includes/_gift_table.html" with items=gifts modal_prefix="editGiftModal" modal_title=_("Modify the gift") show_creator=False show_action=is_owner hide_status=is_owner %}
+        <div class="text-center py-5 rounded-5 mb-5">
+            <i class="bi bi-gift opacity-25" style="max-width: 100%;"></i>
+            <p class="lead text-muted mt-3">
+                {% if is_owner %}
+                    {% trans "You haven't wished for anything yet" %}
+                {% else %}
+                    {{ user.nickname|capfirst }} {% trans "hasn't wished for anything yet" %}
+                {% endif %}
+            </p>
+        </div>
     {% endif %}
 
-    {% if current and presence_surprises %}
-        <h2>{% trans "Surprises gifts by others" %}</h2>
-        {% include "gifts/includes/_gift_table.html" with items=surprises modal_prefix="editSurpriseModal" modal_title=_("Modify the Surprise") show_creator=True show_action=True%}
+    <!-- Surprises -->
+    {% if surprises %}
+        <div class="card border-0 shadow-sm rounded-4 bg-primary-container">
+            <div class="card-body p-4">
+                <h3 class="h5 fw-bold mb-4 text-primary">✨ {% trans "Surprises suggested by others" %}</h3>
+                {% include "gifts/includes/_gift_table.html" with items=surprises modal_prefix="editSurpriseModal" modal_title=_("Modify the surprise") show_creator=True show_action=True %}
+            </div>
+        </div>
     {% endif %}
 
     <!-- Modale to add a gift -->
-    <div class="modal fade" id="addGiftModal" tabindex="-1" aria-labelledby="addGiftModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addGiftModalLabel">
-                        {% if is_owner %}
-                            {% trans "Add a gift" %}
-                        {% else %}
-                            {% trans "Add a surprise" %}
-                        {% endif %}
+    <div class="modal fade" id="addGiftModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-5 shadow-lg auth-card">
+                <div class="modal-header border-0 p-4 pb-0">
+                    <h5 class="modal-title fw-bold">
+                        {% if is_owner %} {% trans "New wish" %} {% else %} {% trans "New surprise" %} {% endif %}
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                            aria-label="{% trans "Close" %}"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
                 <form method="post" action="{% url 'add_gift' user.id %}">
                     {% csrf_token %}
-                    <div class="modal-body">
+                    <div class="modal-body p-4">
                         <div class="mb-3">
-                            <input type="text"
-                                   name="title"
-                                   class="form-control"
-                                   placeholder="{% trans 'Gift name' %}"
-                                   aria-label="{% trans 'Gift name' %}"
-                                   required>
+                            <label class="form-label fw-medium">{% trans "Gift name" %}</label>
+                            <input type="text" name="title" class="form-control rounded-4 auth-input" required>
                         </div>
                         <div class="mb-3">
-                            <input type="text"
-                                   name="description"
-                                   class="form-control"
-                                   placeholder="{% trans 'Description (optional)' %}"
-                                   aria-label="{% trans 'Description (optional)' %}">
+                            <label class="form-label fw-medium">{% trans "Description" %}</label>
+                            <textarea name="description" class="form-control rounded-4 auth-input" rows="3"></textarea>
                         </div>
                         <div class="mb-3">
-                            <input type="url"
-                                   name="url"
-                                   class="form-control"
-                                   placeholder="{% trans 'Link (optional)' %}"
-                                   aria-label="{% trans 'Link (optional)' %}">
+                            <label class="form-label fw-medium">{% trans "Link (URL)" %}</label>
+                            <input type="url" name="url" class="form-control rounded-4 auth-input">
                         </div>
+                        <div class="mb-3">
+                                <label class="form-label fw-medium">{% trans "Visible in" %}</label>
+                                <div class="form-check small text-muted mb-2">
+                                    <i class="bi bi-info-circle"></i> {% trans "If none selected, visible to all your groups." %}
+                                </div>
+                                {% for group in user_groups %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="visible_in" value="{{ group.id }}" id="groupAdd{{ group.id }}">
+                                        <label class="form-check-label" for="groupAdd{{ group.id }}">
+                                            {{ group.name }}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
                     </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary"
+                    <div class="modal-footer border-0 p-4 pt-0">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill"
                                 data-bs-dismiss="modal">{% trans "Cancel" %}</button>
-                        <button type="submit" class="btn btn-primary">{% trans "Add" %}</button>
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill">{% trans "Add" %}</button>
                     </div>
                 </form>
-
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block extra_body %}
+    {% for item in gifts %}
+        {% include "gifts/includes/_edit_gift.html" with item=item prefix="editGiftModal" modal_title=_("Modify the gift") %}
+    {% endfor %}
+
+    {% for item in surprises %}
+        {% include "gifts/includes/_edit_gift.html" with item=item prefix="editSurpriseModal" modal_title=_("Modify the surprise") %}
+    {% endfor %}
 {% endblock %}
 
 {% block extra_js %}

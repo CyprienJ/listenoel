@@ -1,277 +1,324 @@
+import datetime
 import random
-import re
 
-from django.db.models import QuerySet
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login, update_session_auth_hash, logout as auth_logout
+from django.db.models import QuerySet, Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponseForbidden, HttpRequest
 from django.db import transaction, IntegrityError
 from django.views.decorators.http import require_POST
 from django.utils.translation import gettext as _
 
+from .forms import LocalUserCreationForm, GroupForm, UserProfileForm
 from .models import User, Gift, Reservation, Group
 
-# Fourteen days
-SESSION_EXPIRY_DURATION = 60 * 60 * 24 * 14
 
-def get_current_user(request: HttpRequest):
-    uid = request.session.get("user_id")
-    if not uid:
-        return None
-    return User.objects.filter(id=uid).first()
+@login_required
+def profile(request):
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Your profile has been updated!"))
+            return redirect('profile')
+    else:
+        form = UserProfileForm(instance=request.user)
 
-def dashboard(request: HttpRequest):
-    current: User = get_current_user(request)
-    if not current:
-        return redirect("choose_group")
+    return render(request, 'gifts/profile.html', {'form': form})
 
-    users: QuerySet[User] = (User.objects.filter(group=current.group)
-                               .order_by("pseudo")
-                                  .exclude(id=current.id))
+def welcome(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+    return render(request, 'gifts/welcome.html')
 
-    christmas_emojis = [
-        "🎄", "🎁", "🎅", "🤶", "🧑‍🎄", "⛄", "☃️", "❄️", "🌨️", "✨", "🌟", "⭐", "🔔", "🕯️", "🍫", "🦌", "🛷", "🎶", "🎉", "🎊",
-    ]
-    greeting_emoji: str = random.choice(christmas_emojis)
+@login_required
+@require_POST
+def delete_account(request):
+    user = request.user
+    auth_logout(request)
+    user.delete()
+    messages.success(request, _("Your account has been successfully deleted."))
+    return redirect('welcome')
+
+def register(request):
+    if request.method == 'POST':
+        form = LocalUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+
+            # subject = _("Welcome to Nos Cadeaux!")
+            # message = _(
+            #     "Hello %(nickname)s,\n\nYour account has been successfully created. Ready to prepare wonderful surprises?") % {
+            #               'nickname': user.nickname}
+            # send_mail(
+            #     subject,
+            #     message,
+            #     'noreply@noscadeaux.com',
+            #     [user.email],
+            #     fail_silently=True,
+            # )
+            # messages.success(request,
+            #                  _("Welcome! A confirmation email has been sent to %(email)s.") % {'email': user.email})
+
+            login(request, user, backend='gifts.backends.CaseInsensitiveModelBackend')
+            return redirect('dashboard')
+    else:
+        form = LocalUserCreationForm()
+    return render(request, 'registration/register.html', {'form': form})
+
+
+@login_required
+def dashboard(request):
+    user_groups = request.user.gift_groups.all()
+
+    current_emoji_set = emojis()
 
     return render(request, "gifts/dashboard.html", {
-        "current": current,
-        "users": users,
-        "greeting_emoji": greeting_emoji,
+        "user_groups": user_groups,
+        "greeting_emoji": random.choice(current_emoji_set),
+        "rain_emojis": current_emoji_set,
     })
 
 
+def emojis():
+    christmas_emojis = ["🎄", "🎁", "🎅", "🤶", "🧑‍🎄", "⛄", "✨", "🌟", "🔔", "🦌"]
+    gift_emojis = ["🎁", "🎈", "🎊", "🎉", "✨", "🍰", "🥳", "🎀"]
+    if datetime.date.today().month == 12 and datetime.date.today().day <= 25:
+        return christmas_emojis
+    else:
+        return gift_emojis
+
+
+@login_required
+@require_POST
+def create_group(request):
+    form = GroupForm(request.POST)
+    if form.is_valid():
+        group = form.save(commit=False)
+        group.created_by = request.user
+        group.save()
+        group.members.add(request.user)
+        msg = _("Group '%(name)s' created ! Share this code: %(token)s") % {
+            'name': group.name,
+            'token': group.invite_token
+        }
+        messages.success(request, msg)
+    else:
+        for error in form.errors.values():
+            messages.error(request, error.as_text())
+
+    return redirect('dashboard')
+
+
+@login_required
+@require_POST
+def join_group(request):
+    token = request.POST.get('invite_token', '').strip().upper()
+    if not token:
+        messages.error(request, _("Please enter a group code."))
+        return redirect('dashboard')
+
+    group = Group.objects.filter(invite_token=token).first()
+
+    if group:
+        if request.user in group.members.all():
+            messages.info(request, _("You are already a member of the group '%s'.") % group.name)
+        else:
+            group.members.add(request.user)
+            messages.success(request, _("You have joined the group '%s'!") % group.name)
+        return redirect('group_detail', group_id=group.id)
+    else:
+        messages.error(request, _("No group found with this code."))
+
+    return redirect('dashboard')
+
+
+@login_required
+def group_detail(request, group_id):
+    group = Group.objects.filter(id=group_id).first()
+
+    if not group:
+        return render(request, 'gifts/group_not_found.html', status=404)
+
+    if request.user not in group.members.all():
+        return HttpResponseForbidden(_("You are not a member of this group."))
+
+    return render(request, 'gifts/group_detail.html', {'group': group})
+
+
+@login_required
+@require_POST
+def leave_group(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    if request.user in group.members.all():
+        group.members.remove(request.user)
+        messages.success(request, _("You have left the group '%s'.") % group.name)
+    if group.members.count() == 0:
+        group.delete()
+    return redirect('dashboard')
+
+
+@login_required
 def view_list(request: HttpRequest, user_id: int):
-    # the current user, if any
-    current: User = get_current_user(request)
+    # the user whose list we're viewing
+    target_user = User.objects.filter(id=user_id).first()
 
-    # the user whose list we're viewing'
-    user: User = get_object_or_404(User, id=user_id)
+    if not target_user:
+        return render(request, "gifts/user_not_found.html", status=404)
 
-    all_gifts: QuerySet[Gift] = Gift.objects.filter(owner=user).order_by("created_at")
+    is_owner = (request.user.id == target_user.id)
+
+    if not is_owner:
+        common_groups = Group.objects.filter(members=request.user).filter(members=target_user).exists()
+        if not common_groups:
+            return render(request, "gifts/user_not_found.html", status=403)
+
+    all_gifts_query: QuerySet[Gift] = Gift.objects.filter(owner=target_user).order_by("created_at")
+
+    from_group_id = request.GET.get('from_group')
+    if from_group_id and not is_owner:
+        all_gifts_query = all_gifts_query.filter(
+            Q(visible_in__isnull=True) | Q(visible_in__id=from_group_id)
+        ).distinct()
+
+    all_gifts = all_gifts_query.prefetch_related('visible_in')
+    user_groups = request.user.gift_groups.all()
 
     gifts: list = []
     surprises: list = []
 
-    if current and current.id == user.id:
+    if is_owner:
         # Someone views their own list -> don't show surprises nor who reserved a gift
         for g in all_gifts:
-            if g.created_by.id == g.owner.id:
-                gifts.append({
-                    "gift": g,
-                    "is_reserved": None,
-                    "reserved_by": None
-                })
+            if g.created_by == g.owner:
+                gifts.append({"gift": g, "is_reserved": None})
     else:
         reservations = {r.gift.id: r for r in Reservation.objects.filter(gift__in=all_gifts)}
+        user_groups_ids = set(request.user.gift_groups.values_list('id', flat=True))
+
         for g in all_gifts:
             r = reservations.get(g.id)
-            if g.created_by.id == g.owner.id:
-                gifts.append({
-                    "gift": g,
-                    "is_reserved": bool(r),
-                    "reserved_by": r.reserver if r else None
-                })
-            else :
-                surprises.append({
-                    "gift": g,
-                    "is_reserved": bool(r),
-                    "reserved_by": r.reserver if r else None
-                })
 
+            show_reserver_name = False
+
+            if r:
+                reserver_groups_ids = set(r.reserver.gift_groups.values_list('id', flat=True))
+                if user_groups_ids & reserver_groups_ids:
+                    show_reserver_name = True
+
+            item = {
+                "gift": g,
+                "is_reserved": bool(r),
+                "reserved_by": r.reserver if r else None,
+                "show_reserver_name": show_reserver_name
+            }
+            if g.created_by == g.owner:
+                gifts.append(item)
+            else:
+                surprises.append(item)
 
     return render(request, "gifts/view_list.html", {
-        "user": user,
+        "user": target_user,
         "gifts": gifts,
-        "presence_gift": len(gifts) > 0,
         "surprises": surprises,
-        "presence_surprises": len(surprises) > 0,
-        "current": current,
-        "is_owner": current and current.id == user.id,
+        "is_owner": is_owner,
+        "from_group_id": from_group_id,
+        "user_groups": user_groups,
     })
 
 
+@login_required
 @transaction.atomic
 def reserve_gift(request: HttpRequest, gift_id: int):
-    current: User = get_current_user(request)
-    if not current:
-        redirect("choose_group")
-
     gift = get_object_or_404(Gift, id=gift_id)
 
-    if gift.owner_id == current.id:
+    if gift.owner == request.user:
         return HttpResponseForbidden(_("Impossible on your own list"))
 
     try:
-        Reservation.objects.create(gift=gift, reserver=current)
+        Reservation.objects.create(gift=gift, reserver=request.user)
     except IntegrityError:
         return JsonResponse({"success": False, "error": _("This gift is already taken")}, status=409)
 
     return JsonResponse({"success": True})
 
-def choose_group(request):
-    current = get_current_user(request)
-    if current:
-        return redirect("dashboard")
-    groups = Group.objects.all().order_by("name")
-    return render(request, "gifts/choose_group.html", {"groups": groups})
 
-
-def choose_user_in_group(request: HttpRequest, group_id: int):
-    group: Group = Group.objects.get(id=group_id)
-    users: User = group.members.all().order_by("pseudo")
-    if request.method == "POST":
-        uid: str = request.POST.get("user_id")
-        pwd: str = request.POST.get("password", "")
-        remember_me: bool = request.POST.get("remember_me") == "on"
-
-        user: User = users.filter(id=uid).first()
-        if user and user.check_password(pwd):
-            # Connexion successful -> store the id and redirect the user to the dashboard
-            request.session["user_id"] = user.id
-
-            if remember_me:
-                request.session.set_expiry(SESSION_EXPIRY_DURATION)
-            else:
-                request.session.set_expiry(0)
-            return redirect("dashboard")
-        else:
-            return render(request, "gifts/choose_user.html", {
-                "group": group,
-                "users": users,
-                "error": _("Username or password incorrect")
-            })
-
-    return render(request, "gifts/choose_user.html", {
-        "group": group,
-        "users": users
-    })
-
+@login_required
 @require_POST
-def add_gift(request: HttpRequest, owner_id: float):
-    current: User = get_current_user(request)
-    owner: User = get_object_or_404(User, id=owner_id)
-    if not current:
-        redirect("choose_group")
+def unreserve_gift(request, gift_id):
+    reservation = get_object_or_404(Reservation, gift_id=gift_id, reserver=request.user)
+    owner_id = reservation.gift.owner.id
+    reservation.delete()
+    return redirect("view_list", user_id=owner_id)
 
-    title: str = request.POST.get("title", "").strip()
-    description: str = request.POST.get("description", "").strip()
-    url: str = request.POST.get("url", "").strip()
 
-    if not title:
-        return redirect("view_list", user_id=current.id)
-
-    Gift.objects.create(
-        owner=owner,
-        title=title,
-        description=description,
-        url=url,
-        created_by=current,
-    )
+@login_required
+@require_POST
+def add_gift(request, owner_id):
+    owner = get_object_or_404(User, id=owner_id)
+    title = request.POST.get("title", "").strip()
+    if title:
+        gift = Gift.objects.create(
+            owner=owner,
+            title=title,
+            description=request.POST.get("description", "").strip(),
+            url=request.POST.get("url", "").strip(),
+            created_by=request.user,
+        )
+        group_ids = request.POST.getlist("visible_in")
+        if group_ids:
+            gift.visible_in.set(group_ids)
     return redirect("view_list", user_id=owner.id)
 
-def logout(request: HttpRequest):
-    request.session.flush()
-    return redirect("choose_group")
-
+@login_required
 @require_POST
-def delete_gift(request: HttpRequest, gift_id: int):
-    # the current user, if any
-    current: User = get_current_user(request)
-    gift: Gift = get_object_or_404(Gift, id=gift_id)
-
-    if not current or gift.created_by != current:
-        return HttpResponseForbidden("Non autorisé")
-
+def delete_gift(request, gift_id):
+    gift = get_object_or_404(Gift, id=gift_id, created_by=request.user)
+    owner_id = gift.owner.id
     gift.delete()
-    return redirect("view_list", user_id=gift.owner.id)
+    return redirect("view_list", user_id=owner_id)
 
+
+@login_required
 @require_POST
 def edit_gift(request: HttpRequest, gift_id: int):
-    current: User = get_current_user(request)
     gift = get_object_or_404(Gift, id=gift_id)
 
-    if not current or gift.owner != current:
-        redirect("choose_group")
-
     title = request.POST.get("title", "").strip()
-    description = request.POST.get("description", "").strip()
-    url = request.POST.get("url", "").strip()
 
     if title:
         gift.title = title
-        gift.description = description
-        gift.url = url
+        gift.description = request.POST.get("description", "").strip()
+        gift.url = request.POST.get("url", "").strip()
         gift.save()
 
+        group_ids = request.POST.getlist("visible_in")
+        gift.visible_in.set(group_ids)
+
     return redirect("view_list", user_id=gift.owner.id)
 
-@require_POST
-def unreserve_gift(request, gift_id):
-    current = get_current_user(request)
-    if not current:
-        redirect("choose_group")
 
-    try:
-        reservation = Reservation.objects.get(gift_id=gift_id, reserver=current)
-        reservation.delete()
-    except Reservation.DoesNotExist:
-        pass  # rien à faire si pas de réservation par cet utilisateur
+# ... existing code ...
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        old_password = request.POST.get('old_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
 
-    # Redirige vers la liste du propriétaire du cadeau
-    gift = get_object_or_404(Gift, id=gift_id)
-    return redirect("view_list", user_id=gift.owner.id)
+        if not request.user.check_password(old_password):
+            messages.error(request, _("Old password incorrect"))
+        elif new_password != confirm_password:
+            messages.error(request, _("The new passwords don't match."))
+        elif len(new_password) < 8:
+            messages.error(request, _("New password is too short."))
+        else:
+            request.user.set_password(new_password)
+            request.user.save()
+            update_session_auth_hash(request, request.user)
+            messages.success(request, _("Password successfully updated !"))
+            return redirect('dashboard')
 
-@require_POST
-def change_password(request: HttpRequest):
-    current: User = get_current_user(request)
-    if not current:
-        redirect("choose_group")
-
-    old_password: str = request.POST.get("old_password")
-    new_password: str = request.POST.get("new_password")
-    confirm_password: str = request.POST.get("confirm_password")
-
-    if not current.check_password(old_password):
-        return render(request, "gifts/change_password.html", {
-            "error": "Ancien mot de passe incorrect",
-            "current": current
-        })
-
-    if new_password != confirm_password:
-        return render(request, "gifts/change_password.html", {
-            "error": "Les nouveaux mots de passe ne correspondent pas",
-            "current": current
-        })
-
-    if not new_password:
-        return render(request, "gifts/change_password.html", {
-            "error": "Le nouveau mot de passe ne peut pas être vide",
-            "current": current
-        })
-
-    errors: list[str] = []
-    if len(new_password) < 8:
-        errors.append("Au moins 8 caractères")
-    if not re.search(r"[A-Z]", new_password):
-        errors.append("Au moins une majuscule")
-    if not re.search(r"[a-z]", new_password):
-        errors.append("Au moins une minuscule")
-    if not re.search(r"[0-9]", new_password):
-        errors.append("Au moins un chiffre")
-
-    if errors:
-        return render(request, "gifts/change_password.html", {
-            "error": "Le mot de passe ne respecte pas les critères : " + ", ".join(errors),
-            "current": current
-        })
-
-    current.set_password(new_password)
-    current.save()
-    return redirect("dashboard")  # Redirige vers le dashboard après succès
-
-def change_password_form(request: HttpRequest):
-    current: User = get_current_user(request)
-    if not current:
-        return redirect("choose_group")
-    return render(request, "gifts/change_password.html", {"current": current})
-
+    return render(request, 'gifts/change_password.html')

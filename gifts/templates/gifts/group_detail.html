@@ -1,0 +1,153 @@
+{% extends "gifts/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ group.name }}{% endblock %}
+
+{% block content %}
+    <div class="container py-4">
+        <!-- En-tête minimaliste -->
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <a href="{% url 'dashboard' %}" class="btn rounded-circle shadow-sm">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+            <div class="text-center">
+                <h1 class="h3 fw-bold mb-0 text-primary">{{ group.name }}</h1>
+                <div class="d-inline-flex align-items-center mt-2 cursor-pointer"
+                     onclick="copyInviteCode('{{ group.invite_token }}')" style="cursor: pointer;">
+                <span class="badge rounded-pill bg-primary-container text-primary px-3 py-2 border border-primary-subtle">
+                    <i class="bi bi-share-fill me-2"></i>
+                    <span id="inviteCodeText">{{ group.invite_token }}</span>
+                </span>
+                </div>
+            </div>
+            <button type="button" class="btn rounded-circle shadow-sm text-danger" data-bs-toggle="modal"
+                    data-bs-target="#leaveGroupModal">
+                <i class="bi bi-box-arrow-right"></i>
+            </button>
+
+            <!-- Button to leave the groupe-->
+            <div class="modal fade" id="leaveGroupModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 rounded-5 shadow-lg auth-card">
+                        <div class="modal-header border-0 p-4 pb-0">
+                            <h5 class="modal-title fw-bold">{% trans "Leave group?" %}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4 text-start">
+                            <p class="text-muted mb-0">
+                                {% trans "Are you sure you want to leave this group? You won't be able to see the shared lists anymore." %}
+                            </p>
+                        </div>
+                        <div class="modal-footer border-0 p-4 pt-0">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4"
+                                    data-bs-dismiss="modal">
+                                {% trans "Cancel" %}
+                            </button>
+                            <form method="post" action="{% url 'leave_group' group.id %}" class="m-0">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger rounded-pill px-4">
+                                    {% trans "Confirm" %}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section : Ma Liste -->
+        <div class="card border-0 shadow-sm rounded-5 bg-primary text-white mb-5 overflow-hidden">
+            <div class="card-body p-4 d-flex align-items-center justify-content-between">
+                <div>
+                    <h2 class="h4 fw-bold mb-1 text-primary">{% trans "My list" %}</h2>
+                    <p class="mb-0 opacity-75 small text-primary">{% trans "Update your wishes for this group" %}</p>
+                </div>
+                <a href="{% url 'view_list' request.user.id %}?from_group={{ group.id }}"
+                   class="btn rounded-pill px-4 fw-bold text-primary shadow-sm">
+                    {% trans "View" %}
+                </a>
+            </div>
+        </div>
+
+        <!-- Section : Membres du groupe -->
+        <div class="d-flex align-items-center mb-3">
+            <h3 class="h5 fw-bold mb-0">{% trans "Group members" %}</h3>
+        </div>
+
+        <div class="row g-3">
+            {% for member in group.members.all %}
+                {% if member != request.user %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card border-0 shadow-sm rounded-4 hover-lift">
+                            <a href="{% url 'view_list' member.id %}?from_group={{ group.id }}"
+                               class="text-decoration-none text-reset">
+                                <div class="card-body d-flex align-items-center p-3">
+                                    <div class="avatar-circle-small me-3">
+                                        {{ member.nickname|first|upper }}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <span class="fw-bold d-block">{{ member.nickname|capfirst }}</span>
+                                    </div>
+                                </div>
+                            </a>
+
+                        </div>
+                    </div>
+                {% endif %}
+            {% empty %}
+                <div class="col-12 text-center py-5 text-muted">
+                    <i class="bi bi-people fs-1 opacity-25 d-block mb-2"></i>
+                    {% trans "You are the only member here." %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {#    <style>#}
+    {#        .bg-primary-container {#}
+    {#            background-color: var(--bs-primary-bg-subtle);#}
+    {#        }#}
+    {##}
+    {#        .avatar-circle-small {#}
+    {#            width: 45px;#}
+    {#            height: 45px;#}
+    {#            background-color: #f8f9fa;#}
+    {#            color: var(--bs-primary);#}
+    {#            border: 1px solid var(--bs-primary-border-subtle);#}
+    {#            border-radius: 50%;#}
+    {#            display: flex;#}
+    {#            align-items: center;#}
+    {#            justify-content: center;#}
+    {#            font-weight: bold;#}
+    {#            font-size: 1.1rem;#}
+    {#        }#}
+    {##}
+    {#        .hover-lift {#}
+    {#            transition: transform 0.2s ease, shadow 0.2s ease;#}
+    {#        }#}
+    {##}
+    {#        .hover-lift:hover {#}
+    {#            transform: translateY(-3px);#}
+    {#            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .1) !important;#}
+    {#        }#}
+    {##}
+    {#        .cursor-pointer:active {#}
+    {#            transform: scale(0.95);#}
+    {#            transition: transform 0.1s;#}
+    {#        }#}
+    {#    </style>#}
+
+    <script>
+        function copyInviteCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                const textEl = document.getElementById('inviteCodeText');
+                const originalText = textEl.innerText;
+                textEl.innerText = "{% trans 'Copied!' %}";
+                setTimeout(() => {
+                    textEl.innerText = originalText;
+                }, 1500);
+            });
+        }
+    </script>
+{% endblock %}
