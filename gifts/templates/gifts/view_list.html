@@ -100,19 +100,20 @@
                             <input type="url" name="url" class="form-control rounded-4 auth-input">
                         </div>
                         <div class="mb-3">
-                                <label class="form-label fw-medium">{% trans "Visible in" %}</label>
-                                <div class="form-check small text-muted mb-2">
-                                    <i class="bi bi-info-circle"></i> {% trans "If none selected, visible to all your groups." %}
-                                </div>
-                                {% for group in user_groups %}
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="visible_in" value="{{ group.id }}" id="groupAdd{{ group.id }}">
-                                        <label class="form-check-label" for="groupAdd{{ group.id }}">
-                                            {{ group.name }}
-                                        </label>
-                                    </div>
-                                {% endfor %}
+                            <label class="form-label fw-medium">{% trans "Visible in" %}</label>
+                            <div class="form-check small text-muted mb-2">
+                                <i class="bi bi-info-circle"></i> {% trans "If none selected, visible to all your groups." %}
                             </div>
+                            {% for group in user_groups %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="visible_in"
+                                           value="{{ group.id }}" id="groupAdd{{ group.id }}">
+                                    <label class="form-check-label" for="groupAdd{{ group.id }}">
+                                        {{ group.name }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
                     </div>
                     <div class="modal-footer border-0 p-4 pt-0">
                         <button type="button" class="btn btn-outline-secondary rounded-pill"
@@ -127,10 +128,12 @@
 
 {% block extra_body %}
     {% for item in gifts %}
+        {% include "gifts/includes/_view_gift.html" with item=item show_creator=False %}
         {% include "gifts/includes/_edit_gift.html" with item=item prefix="editGiftModal" modal_title=_("Modify the gift") %}
     {% endfor %}
 
     {% for item in surprises %}
+        {% include "gifts/includes/_view_gift.html" with item=item show_creator=True %}
         {% include "gifts/includes/_edit_gift.html" with item=item prefix="editSurpriseModal" modal_title=_("Modify the surprise") %}
     {% endfor %}
 {% endblock %}

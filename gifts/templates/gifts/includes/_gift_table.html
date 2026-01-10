@@ -8,7 +8,10 @@
 
                     <!-- Colonne Info Principale -->
                     <div class="col-md-4">
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center cursor-pointer"
+                             data-bs-toggle="modal"
+                             data-bs-target="#viewGiftModal{{ item.gift.id }}"
+                             style="cursor: pointer;">
                             <div class="bg-primary-container p-3 rounded-4 me-3 text-primary">
                                 <i class="bi bi-gift fs-4"></i>
                             </div>
@@ -40,11 +43,13 @@
                                             <i class="bi bi-globe me-1"></i> {% trans "All groups" %}
                                         </span>
                                     {% elif visible_count == 1 %}
-                                        <span class="small text-info" title="{% trans 'Exclusive to one group' %}: {% for g in item.gift.visible_in.all %}{{ g.name }}{% endfor %}">
+                                        <span class="small text-info" title="{% trans 'Exclusive to one group' %}:
+                                                {% for g in item.gift.visible_in.all %}{{ g.name }}{% endfor %}">
                                             <i class="bi bi-star-fill me-1"></i> {% trans "Exclusive" %}
                                         </span>
                                     {% else %}
                                         <span class="small text-warning" title="
+
                                                 {% for g in item.gift.visible_in.all %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}">
                                             <i class="bi bi-eye-fill me-1"></i> {{ visible_count }} {% trans "groups" %}
                                         </span>
@@ -54,14 +59,16 @@
                                 {% with visible_count=item.gift.visible_in.count %}
 
                                     {% if visible_count == 0 %}
-                                        <span class="small text-muted" title="{% blocktrans with name=user.nickname|capfirst %}Visible on all of {{ name }}'s groups{% endblocktrans %}"><i
+                                        <span class="small text-muted"
+                                              title="{% blocktrans with name=user.nickname|capfirst %}Visible on all of {{ name }}'s groups{% endblocktrans %}"><i
                                                 class="bi bi-globe"></i> {% trans "Public" %}</span>
                                     {% elif visible_count == 1 %}
-                                                <span class="small text-muted" title="{% trans 'Exclusive to this group' %}">
+                                        <span class="small text-muted" title="{% trans 'Exclusive to this group' %}">
                                                     <i class="bi bi-star-half me-1"></i> {% trans "Exclusive" %}
                                                 </span>
                                     {% else %}
-                                        <span class="small text-muted" title="{% blocktrans with name=user.nickname|capfirst %}Not visible on all of {{ name }}'s groups{% endblocktrans %}"><i
+                                        <span class="small text-muted"
+                                              title="{% blocktrans with name=user.nickname|capfirst %}Not visible on all of {{ name }}'s groups{% endblocktrans %}"><i
                                                 class="bi bi-globe"></i> {% trans "Private" %}</span>
                                     {% endif %}
                                 {% endwith %}
@@ -106,7 +113,7 @@
                                         <span class="badge text-muted rounded-pill px-3 py-2 border">
                                             <i class="bi bi-lock-fill me-1"></i>
                                             {% if item.show_reserver_name %}
-                                                {% trans "Reserved by" %} {{ item.reserved_by.nickname }}
+                                                {% trans "Reserved by" %} {{ item.reserved_by.nickname|capfirst }}
                                             {% else %}
                                                 {% trans "Reserved on another group" %}
                                             {% endif %}

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-10 08:58+0000\n"
+"POT-Creation-Date: 2026-01-10 16:38+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -221,6 +221,7 @@ msgstr ""
 
 #: gifts/templates/gifts/group_detail.html:45
 #: gifts/templates/gifts/includes/_edit_gift.html:64
+#: gifts/templates/gifts/includes/_view_gift.html:51
 #: gifts/templates/gifts/profile.html:66
 #: gifts/templates/gifts/view_list.html:119
 msgid "Cancel"
@@ -264,6 +265,7 @@ msgid "Back to Dashboard"
 msgstr "Retour à l'accueil"
 
 #: gifts/templates/gifts/includes/_edit_gift.html:15
+#: gifts/templates/gifts/includes/_view_gift.html:85
 msgid "Close"
 msgstr "Fermer"
 
@@ -275,12 +277,14 @@ msgstr "Nom du cadeau"
 
 #: gifts/templates/gifts/includes/_edit_gift.html:35
 #: gifts/templates/gifts/includes/_edit_gift.html:36
+#: gifts/templates/gifts/includes/_view_gift.html:25
 #: gifts/templates/gifts/view_list.html:95
 msgid "Description"
 msgstr "Description"
 
 #: gifts/templates/gifts/includes/_edit_gift.html:43
 #: gifts/templates/gifts/includes/_edit_gift.html:44
+#: gifts/templates/gifts/includes/_view_gift.html:32
 msgid "Link"
 msgstr "Lien"
 
@@ -290,88 +294,117 @@ msgid "Visible in"
 msgstr "Visible dans"
 
 #: gifts/templates/gifts/includes/_edit_gift.html:65
-#: gifts/templates/gifts/includes/_gift_table.html:135
+#: gifts/templates/gifts/includes/_gift_table.html:138
 msgid "Modify"
 msgstr "Modifier"
 
-#: gifts/templates/gifts/includes/_gift_table.html:18
+#: gifts/templates/gifts/includes/_gift_table.html:21
 msgid "No description"
 msgstr "Aucune description"
 
-#: gifts/templates/gifts/includes/_gift_table.html:30
+#: gifts/templates/gifts/includes/_gift_table.html:33
 msgid "See link"
 msgstr "Voir le lien"
 
-#: gifts/templates/gifts/includes/_gift_table.html:40
+#: gifts/templates/gifts/includes/_gift_table.html:43
 msgid "All groups"
 msgstr "Tous les groupes"
 
-#: gifts/templates/gifts/includes/_gift_table.html:43
+#: gifts/templates/gifts/includes/_gift_table.html:46
 msgid "Exclusive to one group"
 msgstr "Exclusif à un groupe"
 
-#: gifts/templates/gifts/includes/_gift_table.html:44
-#: gifts/templates/gifts/includes/_gift_table.html:61
+#: gifts/templates/gifts/includes/_gift_table.html:47
+#: gifts/templates/gifts/includes/_gift_table.html:64
 msgid "Exclusive"
 msgstr "Exclusif"
 
-#: gifts/templates/gifts/includes/_gift_table.html:49
+#: gifts/templates/gifts/includes/_gift_table.html:52
 msgid "groups"
 msgstr "groupes"
 
-#: gifts/templates/gifts/includes/_gift_table.html:57
+#: gifts/templates/gifts/includes/_gift_table.html:60
 #, python-format
 msgid "Visible on all of %(name)s's groups"
 msgstr "Visible sur tous les groupes de %(name)s"
 
-#: gifts/templates/gifts/includes/_gift_table.html:58
+#: gifts/templates/gifts/includes/_gift_table.html:61
 msgid "Public"
 msgstr "Publique"
 
-#: gifts/templates/gifts/includes/_gift_table.html:60
+#: gifts/templates/gifts/includes/_gift_table.html:63
 msgid "Exclusive to this group"
 msgstr "Exclusif à ce groupe"
 
-#: gifts/templates/gifts/includes/_gift_table.html:64
+#: gifts/templates/gifts/includes/_gift_table.html:67
 #, python-format
 msgid "Not visible on all of %(name)s's groups"
 msgstr "Non visible sur tous les groupes de %(name)s"
 
-#: gifts/templates/gifts/includes/_gift_table.html:65
+#: gifts/templates/gifts/includes/_gift_table.html:68
 msgid "Private"
 msgstr "Privé"
 
-#: gifts/templates/gifts/includes/_gift_table.html:93
+#: gifts/templates/gifts/includes/_gift_table.html:96
 msgid "Reserved by you"
 msgstr "Réservé par vous"
 
-#: gifts/templates/gifts/includes/_gift_table.html:100
+#: gifts/templates/gifts/includes/_gift_table.html:103
 msgid "Cancel reservation"
 msgstr "Annuler la réservation"
 
-#: gifts/templates/gifts/includes/_gift_table.html:109
+#: gifts/templates/gifts/includes/_gift_table.html:112
+#: gifts/templates/gifts/includes/_view_gift.html:58
 msgid "Reserved by"
 msgstr "Réservé par"
 
-#: gifts/templates/gifts/includes/_gift_table.html:111
+#: gifts/templates/gifts/includes/_gift_table.html:114
 msgid "Reserved on another group"
 msgstr "Réservé sur un autre groupe"
 
-#: gifts/templates/gifts/includes/_gift_table.html:118
+#: gifts/templates/gifts/includes/_gift_table.html:121
 msgid "Reserve"
 msgstr "Réserver"
 
-#: gifts/templates/gifts/includes/_gift_table.html:146
+#: gifts/templates/gifts/includes/_gift_table.html:149
 msgid "Delete this gift?"
 msgstr "Supprimer ce cadeau ?"
 
-#: gifts/templates/gifts/includes/_gift_table.html:147
+#: gifts/templates/gifts/includes/_gift_table.html:150
 msgid "Delete"
 msgstr "Supprimer"
 
-#: gifts/templates/gifts/includes/_gift_table.html:162
+#: gifts/templates/gifts/includes/_gift_table.html:165
 msgid "No gifts here yet."
 msgstr "Aucun cadeau ici pour l'instant"
+
+#: gifts/templates/gifts/includes/_view_gift.html:7
+msgid "Gift Details"
+msgstr "Détails du cadeau"
+
+#: gifts/templates/gifts/includes/_view_gift.html:18
+msgid "Added on"
+msgstr "Ajouté le"
+
+#: gifts/templates/gifts/includes/_view_gift.html:34
+msgid "See on website"
+msgstr "Voir sur le site web"
+
+#: gifts/templates/gifts/includes/_view_gift.html:47
+msgid "You have reserved this gift"
+msgstr "Vous avez réservé ce cadeau"
+
+#: gifts/templates/gifts/includes/_view_gift.html:60
+msgid "This gift is already reserved"
+msgstr "Ce cadeau est déjà réservé"
+
+#: gifts/templates/gifts/includes/_view_gift.html:69
+msgid "Reserve this gift"
+msgstr "Réserver ce cadeau"
+
+#: gifts/templates/gifts/includes/_view_gift.html:79
+msgid "Suggested by"
+msgstr "Suggéré par"
 
 #: gifts/templates/gifts/profile.html:22
 msgid ""
@@ -447,6 +480,7 @@ msgstr "Souhaits de"
 
 #: gifts/templates/gifts/view_list.html:50
 #: gifts/templates/gifts/view_list.html:130
+#: gifts/templates/gifts/view_list.html:139
 msgid "Modify the gift"
 msgstr "Modifier le cadeau"
 
@@ -464,6 +498,7 @@ msgstr "Surprises suggérées par d'autres"
 
 #: gifts/templates/gifts/view_list.html:71
 #: gifts/templates/gifts/view_list.html:134
+#: gifts/templates/gifts/view_list.html:144
 msgid "Modify the surprise"
 msgstr "Modifier le cadeau"
 
@@ -604,22 +639,6 @@ msgstr "Votre profil a été mis à jour"
 #: gifts/views.py:42
 msgid "Your account has been successfully deleted."
 msgstr "Votre compte a bien été supprimé"
-
-#: gifts/views.py:51
-msgid "Welcome to Nos Cadeaux!"
-msgstr "Bienvenue sur Nos cadeaux"
-
-#: gifts/views.py:53
-#, python-format
-msgid ""
-"Hello %(nickname)s,\n"
-"\n"
-"Your account has been successfully created. Ready to prepare wonderful "
-"surprises?"
-msgstr ""
-"Bonjour %(nickname)s,\n"
-"\n"
-"Votre compte a bien été crée."
 
 #: gifts/views.py:103
 #, python-format
