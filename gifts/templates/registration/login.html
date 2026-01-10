@@ -1,0 +1,77 @@
+{% extends "gifts/base.html" %}
+{% load i18n %}
+
+{% block content %}
+    <div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+        <div class="card border-0 shadow-lg rounded-5 p-4 login-card" style="max-width: 400px; width: 100%;">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="brand-icon-container d-inline-block p-3 rounded-circle mb-3">
+                        <i class="bi bi-person-lock fs-2 text-primary"></i>
+                    </div>
+                    <h2 class="fw-bold card-title">{% trans "Welcome back" %} !</h2>
+                    <p class="card-subtitle text-muted">{% trans "Log in to see your lists" %}</p>
+                </div>
+
+                {% if form.errors %}
+                    <div class="alert alert-danger rounded-4 border-0 small mb-4 py-2">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        {% trans "Wrong email or password." %}
+                    </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-medium card-label">{% trans "Email" %}</label>
+                        <input type="email" name="username"
+                               class="form-control form-control-lg rounded-pill border-1 p-3"
+                               placeholder="{% trans 'Your email' %}"
+                               aria-label="{% trans 'Your email' %}"
+                               value="{{ form.username.value|default:'' }}">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-medium card-label">{% trans "Password" %}</label>
+                        <div class="input-group">
+                            <input type="password" name="password" id="id_password"
+                                   class="form-control rounded-start-pill border-1 p-3 border-0"
+                                   placeholder="{% trans 'Your password' %}"
+                                   aria-label="{% trans 'Your password' %}">
+                            <button class="btn border-0 rounded-end-pill px-3" type="button"
+                                    onclick="togglePassword('id_password', this)">
+                                <i class="bi bi-eye text-muted"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm mb-3">
+                        {% trans "Log in" %}
+                    </button>
+                </form>
+
+                <div class="text-center">
+                    <p class="small mb-0 card-footer-text">{% trans "No account yet ?" %}
+                        <a href="{% url 'register' %}"
+                           class="text-primary fw-bold text-decoration-none">{% trans "Register here" %}</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        function togglePassword(fieldId, btn) {
+            const field = document.getElementById(fieldId);
+            const icon = btn.querySelector('i');
+            if (field.type === "password") {
+                field.type = "text";
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                field.type = "password";
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
+            }
+        }
+    </script>
+{% endblock %}

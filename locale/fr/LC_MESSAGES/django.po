@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-20 16:48+0000\n"
+"POT-Creation-Date: 2026-01-10 08:58+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,274 +26,653 @@ msgstr "Français"
 msgid "English"
 msgstr "English"
 
-#: gifts/templates/gifts/base.html:43
-msgid "Wishlist"
-msgstr "Liste de souhaits"
+#: gifts/admin.py:13
+msgid "More information"
+msgstr "Plus d'informations"
 
-#: gifts/templates/gifts/base.html:48
-msgid "Logged in"
-msgstr "Connecté"
+#: gifts/forms.py:29
+msgid "Nickname"
+msgstr "Pseudo"
 
-#: gifts/templates/gifts/base.html:55
+#: gifts/forms.py:30 gifts/templates/registration/login.html:26
+msgid "Email"
+msgstr "Email"
+
+#: gifts/models.py:31
+msgid "A user with that email already exists."
+msgstr "Un utilisateur avec et email existe déjà"
+
+#: gifts/templates/gifts/base.html:44 gifts/templates/gifts/dashboard.html:4
+msgid "Dashboard"
+msgstr "Accueil"
+
+#: gifts/templates/gifts/base.html:74
 msgid "Settings"
 msgstr "Paramètres"
 
-#: gifts/templates/gifts/base.html:62
-msgid "Theme"
-msgstr "Thème"
+#: gifts/templates/gifts/base.html:79
+msgid "Appearance"
+msgstr "Apparence"
 
-#: gifts/templates/gifts/base.html:64
-msgid "Default (OS)"
-msgstr "Défaut (OS)"
+#: gifts/templates/gifts/base.html:81
+msgid "Auto"
+msgstr "Auto"
 
-#: gifts/templates/gifts/base.html:65
+#: gifts/templates/gifts/base.html:82
 msgid "Bright"
 msgstr "Clair"
 
-#: gifts/templates/gifts/base.html:66
+#: gifts/templates/gifts/base.html:83
 msgid "Dark"
 msgstr "Sombre"
 
-#: gifts/templates/gifts/base.html:74
-#: gifts/templates/gifts/change_password.html:5
-#: gifts/templates/gifts/change_password.html:49
-msgid "Change password"
-msgstr "Changer de mot de passe"
+#: gifts/templates/gifts/base.html:94
+msgid "Administration"
+msgstr "Administration"
 
-#: gifts/templates/gifts/base.html:75
+#: gifts/templates/gifts/base.html:103 gifts/templates/gifts/profile.html:11
+msgid "My Profile"
+msgstr "Mon profil"
+
+#: gifts/templates/gifts/base.html:110
 msgid "Log out"
 msgstr "Se déconnecter"
 
-#: gifts/templates/gifts/base.html:85
-msgid "Language selection"
-msgstr "Selection de la langue"
+#: gifts/templates/gifts/base.html:120 gifts/templates/gifts/welcome.html:17
+#: gifts/templates/registration/login.html:48
+msgid "Log in"
+msgstr "Se connecter"
 
-#: gifts/templates/gifts/change_password.html:14
+#: gifts/templates/gifts/change_password.html:4
+msgid "Security"
+msgstr "Sécurité"
+
+#: gifts/templates/gifts/change_password.html:21
+#: gifts/templates/gifts/profile.html:38
+msgid "Change password"
+msgstr "Changer de mot de passe"
+
+#: gifts/templates/gifts/change_password.html:22
+msgid "Ensure your account stays secure"
+msgstr "Assurez-vous que votre compte reste sécurisé"
+
+#: gifts/templates/gifts/change_password.html:30
 msgid "Old password"
 msgstr "Ancien mot de passe"
 
-#: gifts/templates/gifts/change_password.html:24
+#: gifts/templates/gifts/change_password.html:43
 msgid "New password"
 msgstr "Nouveau mot de passe"
 
-#: gifts/templates/gifts/change_password.html:32
+#: gifts/templates/gifts/change_password.html:53
+msgid "Requirements:"
+msgstr "Exigences :"
+
+#: gifts/templates/gifts/change_password.html:55
 msgid "At least 8 characters"
 msgstr "Au moins 8 caractères"
 
-#: gifts/templates/gifts/change_password.html:33
-msgid "At least one uppercase letter (A-Z)"
-msgstr "Au moins un caractère en majuscule"
+#: gifts/templates/gifts/change_password.html:56
+msgid "One uppercase letter"
+msgstr "Un caractère en majuscule"
 
-#: gifts/templates/gifts/change_password.html:34
-msgid "At least one lowercase letter (a-z)"
-msgstr "Au moins un caractère en minuscule"
+#: gifts/templates/gifts/change_password.html:57
+msgid "One lowercase letter"
+msgstr "Un caractère en minuscule"
 
-#: gifts/templates/gifts/change_password.html:35
-msgid "At least one digit (0–9)"
-msgstr "Au moins un chiffre"
+#: gifts/templates/gifts/change_password.html:58
+msgid "One digit"
+msgstr "Un chiffre"
 
-#: gifts/templates/gifts/change_password.html:40
-msgid "Confirm password"
+#: gifts/templates/gifts/change_password.html:65
+msgid "Confirm new password"
 msgstr "Confirmer le nouveau mot de passe"
 
-#: gifts/templates/gifts/change_password.html:52
-msgid "Back to dashboard"
-msgstr "Retour à l'accueil"
+#: gifts/templates/gifts/change_password.html:75
+msgid "Update Password"
+msgstr "Mettre à jour le mot de passe"
 
-#: gifts/templates/gifts/choose_group.html:3
-#: gifts/templates/gifts/choose_group.html:11
-msgid "Choose your group"
-msgstr "Choisissez votre groupe"
+#: gifts/templates/gifts/dashboard.html:12
+msgid "Click me!"
+msgstr "Appuyez !"
 
-#: gifts/templates/gifts/choose_user.html:3
-#: gifts/templates/gifts/choose_user.html:7
-#: gifts/templates/gifts/choose_user.html:14
-msgid "Connection"
-msgstr "Connexion"
-
-#: gifts/templates/gifts/choose_user.html:25
-msgid "Select your name"
-msgstr "Sélectionnez votre nom"
-
-#: gifts/templates/gifts/choose_user.html:33
-msgid "Password"
-msgstr "Mot de passe"
-
-#: gifts/templates/gifts/choose_user.html:39
-msgid "Remember me (14 days)"
-msgstr "Se souvenir de moi (14 jours)"
-
-#: gifts/templates/gifts/choose_user.html:42
-msgid "Login"
-msgstr "Se connecter"
-
-#: gifts/templates/gifts/dashboard.html:3
-msgid "Home"
-msgstr "Accueil"
-
-#: gifts/templates/gifts/dashboard.html:6
+#: gifts/templates/gifts/dashboard.html:13
 msgid "Hello"
 msgstr "Bonjour"
 
-#: gifts/templates/gifts/dashboard.html:25
+#: gifts/templates/gifts/dashboard.html:15
+msgid "Ready to prepare wonderful surprises?"
+msgstr "Prêt à préparer de belles surprises ?"
+
+#: gifts/templates/gifts/dashboard.html:26
+#: gifts/templates/gifts/group_detail.html:63
+#: gifts/templates/gifts/view_list.html:5
+#: gifts/templates/gifts/view_list.html:16
+msgid "My list"
+msgstr "Ma liste"
+
+#: gifts/templates/gifts/dashboard.html:27
+msgid "Manage your personal desires and wishes."
+msgstr "Gérez vos envies et souhaits personnels."
+
+#: gifts/templates/gifts/dashboard.html:30
 msgid "View my list"
 msgstr "Voir ma liste"
 
-#: gifts/templates/gifts/dashboard.html:32
-msgid "View other lists"
-msgstr "Voir une autre liste"
+#: gifts/templates/gifts/dashboard.html:45
+msgid "My groups"
+msgstr "Mes groupes"
+
+#: gifts/templates/gifts/dashboard.html:50
+msgid "Create"
+msgstr "Créer"
+
+#: gifts/templates/gifts/dashboard.html:54
+msgid "Join"
+msgstr "Rejoindre"
+
+#: gifts/templates/gifts/dashboard.html:74
+msgid "You are not part of any group yet."
+msgstr "Vous ne faites parti d'aucun groupe pour l'instant"
+
+#: gifts/templates/gifts/dashboard.html:93
+msgid "Create a new group"
+msgstr "Créer un nouveau groupe"
+
+#: gifts/templates/gifts/dashboard.html:100
+msgid "Group Name"
+msgstr "Nom du groupe"
+
+#: gifts/templates/gifts/dashboard.html:106
+msgid "Once created, you will get a unique code to share."
+msgstr "Une fois crée, vous obtiendrez un code unique à partager."
+
+#: gifts/templates/gifts/dashboard.html:111
+msgid "Create Group"
+msgstr "Créer un groupe"
+
+#: gifts/templates/gifts/dashboard.html:122
+msgid "Join a group"
+msgstr "Rejoindre un groupe"
+
+#: gifts/templates/gifts/dashboard.html:129
+msgid "Group Code"
+msgstr "Code du groupe"
+
+#: gifts/templates/gifts/dashboard.html:136
+msgid "Enter the unique code shared by the group creator."
+msgstr "Entre le code unique partagé par le créateur du groupe"
+
+#: gifts/templates/gifts/dashboard.html:141
+msgid "Join Group"
+msgstr "Rejoindre le groupe"
+
+#: gifts/templates/gifts/group_detail.html:33
+msgid "Leave group?"
+msgstr "Quitter ce groupe ?"
+
+#: gifts/templates/gifts/group_detail.html:39
+msgid ""
+"Are you sure you want to leave this group? You won't be able to see the "
+"shared lists anymore."
+msgstr ""
+"Êtes vous certains de vouloir quitter ce groupe ?Vous ne pourrez plus voir "
+"les listes partagés"
+
+#: gifts/templates/gifts/group_detail.html:45
+#: gifts/templates/gifts/includes/_edit_gift.html:64
+#: gifts/templates/gifts/profile.html:66
+#: gifts/templates/gifts/view_list.html:119
+msgid "Cancel"
+msgstr "Annuler"
+
+#: gifts/templates/gifts/group_detail.html:50
+msgid "Confirm"
+msgstr "Confirmer"
+
+#: gifts/templates/gifts/group_detail.html:64
+msgid "Update your wishes for this group"
+msgstr "Mettre à jour vos souhaits pour ce groupe"
+
+#: gifts/templates/gifts/group_detail.html:68
+msgid "View"
+msgstr "Voir"
+
+#: gifts/templates/gifts/group_detail.html:75
+msgid "Group members"
+msgstr "Membres du groupe"
+
+#: gifts/templates/gifts/group_detail.html:101
+msgid "You are the only member here."
+msgstr "Vous êtes le seul membre ici"
+
+#: gifts/templates/gifts/group_detail.html:146
+msgid "Copied!"
+msgstr "Copié !"
+
+#: gifts/templates/gifts/group_not_found.html:9
+msgid "Group not found"
+msgstr "Groupe introuvable"
+
+#: gifts/templates/gifts/group_not_found.html:11
+msgid "This group doesn't exist or has been deleted."
+msgstr "Ce groupe n'existe pas ou a été supprimé"
+
+#: gifts/templates/gifts/group_not_found.html:15
+#: gifts/templates/gifts/user_not_found.html:15
+msgid "Back to Dashboard"
+msgstr "Retour à l'accueil"
 
 #: gifts/templates/gifts/includes/_edit_gift.html:15
-#: gifts/templates/gifts/view_list.html:67
 msgid "Close"
 msgstr "Fermer"
 
 #: gifts/templates/gifts/includes/_edit_gift.html:26
 #: gifts/templates/gifts/includes/_edit_gift.html:27
-#: gifts/templates/gifts/view_list.html:77
-#: gifts/templates/gifts/view_list.html:78
+#: gifts/templates/gifts/view_list.html:91
 msgid "Gift name"
 msgstr "Nom du cadeau"
 
 #: gifts/templates/gifts/includes/_edit_gift.html:35
 #: gifts/templates/gifts/includes/_edit_gift.html:36
-#: gifts/templates/gifts/includes/_gift_table.html:6
+#: gifts/templates/gifts/view_list.html:95
 msgid "Description"
 msgstr "Description"
 
 #: gifts/templates/gifts/includes/_edit_gift.html:43
 #: gifts/templates/gifts/includes/_edit_gift.html:44
-#: gifts/templates/gifts/includes/_gift_table.html:7
 msgid "Link"
 msgstr "Lien"
 
-#: gifts/templates/gifts/includes/_edit_gift.html:51
-#: gifts/templates/gifts/includes/_gift_table.html:40
-#: gifts/templates/gifts/view_list.html:99
-msgid "Cancel"
-msgstr "Annuler"
+#: gifts/templates/gifts/includes/_edit_gift.html:48
+#: gifts/templates/gifts/view_list.html:103
+msgid "Visible in"
+msgstr "Visible dans"
 
-#: gifts/templates/gifts/includes/_edit_gift.html:52
-#: gifts/templates/gifts/includes/_gift_table.html:62
+#: gifts/templates/gifts/includes/_edit_gift.html:65
+#: gifts/templates/gifts/includes/_gift_table.html:135
 msgid "Modify"
 msgstr "Modifier"
 
-#: gifts/templates/gifts/includes/_gift_table.html:5
-msgid "Name"
-msgstr "Nom"
+#: gifts/templates/gifts/includes/_gift_table.html:18
+msgid "No description"
+msgstr "Aucune description"
 
-#: gifts/templates/gifts/includes/_gift_table.html:9
-msgid "Status"
-msgstr "Statut"
+#: gifts/templates/gifts/includes/_gift_table.html:30
+msgid "See link"
+msgstr "Voir le lien"
 
-#: gifts/templates/gifts/includes/_gift_table.html:11
-msgid "Creation date"
-msgstr "Date de création"
+#: gifts/templates/gifts/includes/_gift_table.html:40
+msgid "All groups"
+msgstr "Tous les groupes"
 
-#: gifts/templates/gifts/includes/_gift_table.html:13
-msgid "Created by"
-msgstr "Créé par"
+#: gifts/templates/gifts/includes/_gift_table.html:43
+msgid "Exclusive to one group"
+msgstr "Exclusif à un groupe"
 
-#: gifts/templates/gifts/includes/_gift_table.html:16
-msgid "Actions"
-msgstr "Actions"
+#: gifts/templates/gifts/includes/_gift_table.html:44
+#: gifts/templates/gifts/includes/_gift_table.html:61
+msgid "Exclusive"
+msgstr "Exclusif"
 
-#: gifts/templates/gifts/includes/_gift_table.html:27
-msgid "View"
-msgstr "Voir"
+#: gifts/templates/gifts/includes/_gift_table.html:49
+msgid "groups"
+msgstr "groupes"
 
-#: gifts/templates/gifts/includes/_gift_table.html:35
+#: gifts/templates/gifts/includes/_gift_table.html:57
+#, python-format
+msgid "Visible on all of %(name)s's groups"
+msgstr "Visible sur tous les groupes de %(name)s"
+
+#: gifts/templates/gifts/includes/_gift_table.html:58
+msgid "Public"
+msgstr "Publique"
+
+#: gifts/templates/gifts/includes/_gift_table.html:60
+msgid "Exclusive to this group"
+msgstr "Exclusif à ce groupe"
+
+#: gifts/templates/gifts/includes/_gift_table.html:64
+#, python-format
+msgid "Not visible on all of %(name)s's groups"
+msgstr "Non visible sur tous les groupes de %(name)s"
+
+#: gifts/templates/gifts/includes/_gift_table.html:65
+msgid "Private"
+msgstr "Privé"
+
+#: gifts/templates/gifts/includes/_gift_table.html:93
 msgid "Reserved by you"
 msgstr "Réservé par vous"
 
-#: gifts/templates/gifts/includes/_gift_table.html:43
+#: gifts/templates/gifts/includes/_gift_table.html:100
+msgid "Cancel reservation"
+msgstr "Annuler la réservation"
+
+#: gifts/templates/gifts/includes/_gift_table.html:109
 msgid "Reserved by"
 msgstr "Réservé par"
 
-#: gifts/templates/gifts/includes/_gift_table.html:47
-msgid "Take"
-msgstr "Prendre"
+#: gifts/templates/gifts/includes/_gift_table.html:111
+msgid "Reserved on another group"
+msgstr "Réservé sur un autre groupe"
 
-#: gifts/templates/gifts/includes/_gift_table.html:67
+#: gifts/templates/gifts/includes/_gift_table.html:118
+msgid "Reserve"
+msgstr "Réserver"
+
+#: gifts/templates/gifts/includes/_gift_table.html:146
 msgid "Delete this gift?"
 msgstr "Supprimer ce cadeau ?"
 
-#: gifts/templates/gifts/includes/_gift_table.html:68
+#: gifts/templates/gifts/includes/_gift_table.html:147
 msgid "Delete"
 msgstr "Supprimer"
 
-#: gifts/templates/gifts/view_list.html:5
-#: gifts/templates/gifts/view_list.html:15
-msgid "My list"
-msgstr "Ma liste"
+#: gifts/templates/gifts/includes/_gift_table.html:162
+msgid "No gifts here yet."
+msgstr "Aucun cadeau ici pour l'instant"
+
+#: gifts/templates/gifts/profile.html:22
+msgid ""
+"Used for login (and in the future, to reset the password, and to receive "
+"optional notifications when a list is updated)"
+msgstr ""
+"Utilisé comme identifiant pour la connexion (et dans le future, pour "
+"réinitialiser le mot de passe et pour recevoir des notifications "
+"optionnelles d'actualisation des listes)"
+
+#: gifts/templates/gifts/profile.html:35
+msgid "Save changes"
+msgstr "Valider les modifications"
+
+#: gifts/templates/gifts/profile.html:44
+msgid "Danger Zone"
+msgstr "Zone dangereuse"
+
+#: gifts/templates/gifts/profile.html:45
+msgid ""
+"Once you delete your account, there is no going back. Please be certain."
+msgstr ""
+"Une fois que votre compte sera supprimé, vous ne pourrez pas revenir en "
+"arrière. Soyez sur de vous"
+
+#: gifts/templates/gifts/profile.html:48
+msgid "Delete my account"
+msgstr "Supprimer mon compte"
+
+#: gifts/templates/gifts/profile.html:59
+msgid "Are you absolutely sure?"
+msgstr "Êtes vous certains ?"
+
+#: gifts/templates/gifts/profile.html:63
+msgid ""
+"This action will permanently delete your profile, your lists, and all your "
+"groups where you are the only member."
+msgstr ""
+"Cette action supprimera définitivement votre profil, vos listes, et tous les "
+"groupes dans lesquels vous êtes le seul membre"
+
+#: gifts/templates/gifts/profile.html:69
+msgid "Confirm Delete"
+msgstr "Confirmer la suppression"
+
+#: gifts/templates/gifts/user_not_found.html:9
+msgid "User not found"
+msgstr "Utilisateur introuvable"
+
+#: gifts/templates/gifts/user_not_found.html:11
+msgid ""
+"This user doesn't exist or you don't have permission to view their list."
+msgstr ""
+"Cet utilisateur n'existe pas ou vous n'avez pas la permission de voir cette "
+"liste."
 
 #: gifts/templates/gifts/view_list.html:7
-#: gifts/templates/gifts/view_list.html:17
+#: gifts/templates/gifts/view_list.html:18
 msgid "List of"
 msgstr "Liste de"
 
-#: gifts/templates/gifts/view_list.html:20
-msgid "Back"
-msgstr "Retour"
-
-#: gifts/templates/gifts/view_list.html:27
-#: gifts/templates/gifts/view_list.html:61
+#: gifts/templates/gifts/view_list.html:38
 msgid "Add a gift"
 msgstr "Ajouter un cadeau"
 
-#: gifts/templates/gifts/view_list.html:29
-#: gifts/templates/gifts/view_list.html:63
+#: gifts/templates/gifts/view_list.html:40
 msgid "Add a surprise"
 msgstr "Ajouter une surprise"
 
-#: gifts/templates/gifts/view_list.html:36
-msgid "has not wished for any gifts yet"
-msgstr "n'a pas exprimé de souhait de cadeau pour le moment"
+#: gifts/templates/gifts/view_list.html:49
+msgid "Wishes from"
+msgstr "Souhaits de"
 
-#: gifts/templates/gifts/view_list.html:38
-msgid "You have not wished for any gifts yet"
-msgstr "Vous n'avez pas exprimé de souhait de cadeau pour le moment"
-
-#: gifts/templates/gifts/view_list.html:42
-msgid "Gifts wished by"
-msgstr "Cadeau souhaité par"
-
-#: gifts/templates/gifts/view_list.html:45
+#: gifts/templates/gifts/view_list.html:50
+#: gifts/templates/gifts/view_list.html:130
 msgid "Modify the gift"
 msgstr "Modifier le cadeau"
 
-#: gifts/templates/gifts/view_list.html:49
-msgid "Surprises gifts by others"
-msgstr "Surprises suggérés par d'autres"
+#: gifts/templates/gifts/view_list.html:58
+msgid "You haven't wished for anything yet"
+msgstr "Vous n'avez pas exprimé de souhait de cadeau pour le moment"
 
-#: gifts/templates/gifts/view_list.html:50
-#, fuzzy
-#| msgid "Modify the gift"
-msgid "Modify the Surprise"
+#: gifts/templates/gifts/view_list.html:60
+msgid "hasn't wished for anything yet"
+msgstr "n'a pas exprimé de souhait de cadeau pour le moment"
+
+#: gifts/templates/gifts/view_list.html:70
+msgid "Surprises suggested by others"
+msgstr "Surprises suggérées par d'autres"
+
+#: gifts/templates/gifts/view_list.html:71
+#: gifts/templates/gifts/view_list.html:134
+msgid "Modify the surprise"
 msgstr "Modifier le cadeau"
 
-#: gifts/templates/gifts/view_list.html:85
-#: gifts/templates/gifts/view_list.html:86
-msgid "Description (optional)"
-msgstr "Description (optionnelle)"
+#: gifts/templates/gifts/view_list.html:82
+msgid "New wish"
+msgstr "Nouveau souhait"
 
-#: gifts/templates/gifts/view_list.html:92
-#: gifts/templates/gifts/view_list.html:93
-msgid "Link (optional)"
-msgstr "Lien (optionnel)"
+#: gifts/templates/gifts/view_list.html:82
+msgid "New surprise"
+msgstr "Nouvelle surprise"
 
-#: gifts/templates/gifts/view_list.html:100
+#: gifts/templates/gifts/view_list.html:99
+msgid "Link (URL)"
+msgstr "Lien (URL)"
+
+#: gifts/templates/gifts/view_list.html:105
+msgid "If none selected, visible to all your groups."
+msgstr "Si laissé vide, visible sur tous vos groupes"
+
+#: gifts/templates/gifts/view_list.html:120
 msgid "Add"
 msgstr "Ajouter"
 
-#: gifts/views.py:102
+#: gifts/templates/gifts/welcome.html:8
+msgid "Never offer the same gift twice again"
+msgstr "N'offrez plus jamais deux fois le même cadeau"
+
+#: gifts/templates/gifts/welcome.html:12
+msgid "Create lists, share them, and organize your surprises."
+msgstr "Créez des listes, partagez-les et organisez vos surprises."
+
+#: gifts/templates/gifts/welcome.html:16
+#: gifts/templates/registration/register.html:12
+#: gifts/templates/registration/register.html:57
+msgid "Register"
+msgstr "Créer un compte"
+
+#: gifts/templates/gifts/welcome.html:19
+msgid "Go to dashboard"
+msgstr "Retour à l'accueil"
+
+#: gifts/templates/gifts/welcome.html:31
+msgid "Sharing groups"
+msgstr "Groupes de partages"
+
+#: gifts/templates/gifts/welcome.html:33
+msgid ""
+"Create groups for your family, friends, or colleagues and gather all ideas "
+"in one place."
+msgstr ""
+"Créez des groupes pour votre famille, vos amis ou vos collègues et regroupez "
+"toutes les idées au même endroit."
+
+#: gifts/templates/gifts/welcome.html:45
+msgid "Collaborative lists"
+msgstr "Listes collaboratives"
+
+#: gifts/templates/gifts/welcome.html:48
+msgid ""
+"Everyone can add their wishes. No more lack of inspiration for birthdays or "
+"Christmas!"
+msgstr ""
+"Chacun peut ajouter ses envies. Fini le manque d'inspiration pour les "
+"anniversaires ou Noël !"
+
+#: gifts/templates/gifts/welcome.html:59
+msgid "Total secret"
+msgstr "Secret total"
+
+#: gifts/templates/gifts/welcome.html:61
+msgid ""
+"Specify which gift you’re giving. The whole group can see it to avoid "
+"duplicates, except the person receiving the gift!"
+msgstr ""
+"Indiquez quel cadeau vous offrez. Tout le groupe le voit pour éviter les "
+"doublons, sauf l'intéressé !"
+
+#: gifts/templates/gifts/welcome.html:72
+msgid "Targeted visibility"
+msgstr "Visibilité ciblée"
+
+#: gifts/templates/gifts/welcome.html:74
+msgid "Decide exactly which groups can see each of the gifts of your list"
+msgstr ""
+"Décidez exactement quels groupes peuvent voir chacun des cadeaux de votre "
+"liste"
+
+#: gifts/templates/registration/login.html:12
+msgid "Welcome back"
+msgstr "Bon retour parmi nous"
+
+#: gifts/templates/registration/login.html:13
+msgid "Log in to see your lists"
+msgstr "Inscrivez-vous pour créer votre propre liste"
+
+#: gifts/templates/registration/login.html:19
+msgid "Wrong email or password."
+msgstr "Email ou mot de passe incorrect."
+
+#: gifts/templates/registration/login.html:29
+#: gifts/templates/registration/login.html:30
+msgid "Your email"
+msgstr "Votre email"
+
+#: gifts/templates/registration/login.html:34
+msgid "Password"
+msgstr "Mot de passe"
+
+#: gifts/templates/registration/login.html:38
+#: gifts/templates/registration/login.html:39
+msgid "Your password"
+msgstr "Votre mot de passe"
+
+#: gifts/templates/registration/login.html:53
+msgid "No account yet ?"
+msgstr "Pas encore de compte ?"
+
+#: gifts/templates/registration/login.html:55
+msgid "Register here"
+msgstr "Créer un compte ici"
+
+#: gifts/templates/registration/register.html:13
+msgid "Register to create your list"
+msgstr "Inscrivez-vous pour créer votre propre liste"
+
+#: gifts/templates/registration/register.html:62
+msgid "Already registered ?"
+msgstr "Déjà inscrit ?"
+
+#: gifts/templates/registration/register.html:64
+msgid "Log in here"
+msgstr "Se connecter"
+
+#: gifts/views.py:24
+msgid "Your profile has been updated!"
+msgstr "Votre profil a été mis à jour"
+
+#: gifts/views.py:42
+msgid "Your account has been successfully deleted."
+msgstr "Votre compte a bien été supprimé"
+
+#: gifts/views.py:51
+msgid "Welcome to Nos Cadeaux!"
+msgstr "Bienvenue sur Nos cadeaux"
+
+#: gifts/views.py:53
+#, python-format
+msgid ""
+"Hello %(nickname)s,\n"
+"\n"
+"Your account has been successfully created. Ready to prepare wonderful "
+"surprises?"
+msgstr ""
+"Bonjour %(nickname)s,\n"
+"\n"
+"Votre compte a bien été crée."
+
+#: gifts/views.py:103
+#, python-format
+msgid "Group '%(name)s' created ! Share this code: %(token)s"
+msgstr "Groupe '%(name)s crée ! Partagez ce code : %(token)s"
+
+#: gifts/views.py:120
+msgid "Please enter a group code."
+msgstr "Merci d'entrer un code de groupe"
+
+#: gifts/views.py:127
+#, python-format
+msgid "You are already a member of the group '%s'."
+msgstr "Vous êtes déjà membre du groupe '%s'."
+
+#: gifts/views.py:130
+#, python-format
+msgid "You have joined the group '%s'!"
+msgstr "Vous avez rejoin le groupe '%s' !"
+
+#: gifts/views.py:133
+msgid "No group found with this code."
+msgstr "Aucun groupe trouvé avec ce code"
+
+#: gifts/views.py:146
+msgid "You are not a member of this group."
+msgstr "Vous n'êtes pas un membre de ce groupe"
+
+#: gifts/views.py:157
+#, python-format
+msgid "You have left the group '%s'."
+msgstr "Vous avez quitté le groupe '%s'."
+
+#: gifts/views.py:238
 msgid "Impossible on your own list"
 msgstr "Impossible sur votre propre liste"
 
-#: gifts/views.py:107
+#: gifts/views.py:243
 msgid "This gift is already taken"
 msgstr "Ce cadeau est déjà réservé"
 
-#: gifts/views.py:141
-msgid "Username or password incorrect"
-msgstr "Nom ou mot de passe incorrect"
+#: gifts/views.py:312
+msgid "Old password incorrect"
+msgstr "L'ancien mot de passe est incorrect"
+
+#: gifts/views.py:314
+msgid "The new passwords don't match."
+msgstr "Les passwords ne sont pas identiques"
+
+#: gifts/views.py:316
+msgid "New password is too short."
+msgstr "Le nouveau mot de passe est trop court"
+
+#: gifts/views.py:321
+msgid "Password successfully updated !"
+msgstr "Mot de passe modifié avec succès"

@@ -44,6 +44,19 @@
                                aria-label="{% trans 'Link' %}"
                                value="{{ item.gift.url }}">
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">{% trans "Visible in" %}</label>
+                        {% for group in user_groups %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="visible_in" value="{{ group.id }}"
+                                       id="groupEdit{{ item.gift.id }}{{ group.id }}"
+                                       {% if group in item.gift.visible_in.all %}checked{% endif %}>
+                                <label class="form-check-label" for="groupEdit{{ item.gift.id }}{{ group.id }}">
+                                    {{ group.name }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
 
                 <div class="modal-footer">

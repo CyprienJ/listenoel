@@ -1,2 +1,4 @@
 uv.lock
 .idea
+staticfiles
+db.sqlite3

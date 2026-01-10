@@ -1,0 +1,82 @@
+{% extends "gifts/base.html" %}
+{% load i18n %}
+
+{% block content %}
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-lg rounded-5 p-4">
+                    <div class="card-body">
+                        <h2 class="fw-bold mb-4 text-primary"><i
+                                class="bi bi-person-gear me-2"></i>{% trans "My Profile" %}</h2>
+
+                        <form method="post">
+                            {% csrf_token %}
+                            {% for field in form %}
+                                <div class="mb-3">
+                                    <label class="form-label fw-medium">{{ field.label }}</label>
+                                    {% if field.name == 'email' %}
+                                        <i class="bi bi-info-circle text-muted"
+                                           data-bs-toggle="tooltip"
+                                           data-bs-placement="top"
+                                           title="{% trans 'Used for login (and in the future, to reset the password, and to receive optional notifications when a list is updated)' %}">
+                                        </i>
+                                    {% endif %}
+                                    <input type="{{ field.field.widget.input_type }}"
+                                           name="{{ field.name }}"
+                                           value="{{ field.value|default:'' }}"
+                                           class="form-control form-control-lg rounded-4 border-1">
+                                    {{ field.errors }}
+                                </div>
+                            {% endfor %}
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg rounded-pill">
+                                    {% trans "Save changes" %}
+                                </button>
+                                <a href="{% url 'change_password' %}" class="btn btn-outline-secondary rounded-pill">
+                                    <i class="bi bi-key me-2"></i>{% trans "Change password" %}
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="mt-5 pt-4 border-top">
+                        <h4 class="text-danger h6 fw-bold">{% trans "Danger Zone" %}</h4>
+                        <p class="text-muted small">{% trans "Once you delete your account, there is no going back. Please be certain." %}</p>
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
+                                data-bs-target="#deleteAccountModal">
+                            {% trans "Delete my account" %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">{% trans "Are you absolutely sure?" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-muted">
+                {% trans "This action will permanently delete your profile, your lists, and all your groups where you are the only member." %}
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <form action="{% url 'delete_account' %}" method="POST" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger rounded-pill px-4">{% trans "Confirm Delete" %}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    </script>
+{% endblock %}
