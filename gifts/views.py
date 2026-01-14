@@ -4,6 +4,7 @@ import random
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, update_session_auth_hash, logout as auth_logout
+from django.core.mail import send_mail
 from django.db.models import QuerySet, Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponseForbidden, HttpRequest
@@ -48,19 +49,19 @@ def register(request):
         if form.is_valid():
             user = form.save()
 
-            # subject = _("Welcome to Nos Cadeaux!")
-            # message = _(
-            #     "Hello %(nickname)s,\n\nYour account has been successfully created. Ready to prepare wonderful surprises?") % {
-            #               'nickname': user.nickname}
-            # send_mail(
-            #     subject,
-            #     message,
-            #     'noreply@noscadeaux.com',
-            #     [user.email],
-            #     fail_silently=True,
-            # )
-            # messages.success(request,
-            #                  _("Welcome! A confirmation email has been sent to %(email)s.") % {'email': user.email})
+            subject = _("Welcome to Nos Cadeaux!")
+            message = _(
+                "Hello %(nickname)s,\n\nYour account has been successfully created. Ready to prepare wonderful surprises?") % {'nickname': user.nickname}
+
+            send_mail(
+                subject,
+                message,
+                None,
+                [user.email],
+                fail_silently=False,
+            )
+            messages.success(request,
+                          _("Welcome! A confirmation email has been sent to %(email)s.") % {'email': user.email})
 
             login(request, user, backend='gifts.backends.CaseInsensitiveModelBackend')
             return redirect('dashboard')
