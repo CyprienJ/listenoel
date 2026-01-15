@@ -697,7 +697,13 @@ msgstr "Un lien de confirmation a été envoyé à <strong>%(email)s</strong>."
 msgid "You must click this link to access your dashboard."
 msgstr "Vous devez cliquer sur ce lien pour accéder à votre tableau de bord."
 
-#: gifts/templates/gifts/verify_email_sent.html:29
+#: gifts/templates/gifts/verify_email_sent.html:27
+msgid "Note: Unverified accounts are automatically deleted after 30 minutes."
+msgstr ""
+"Note : Les comptes non vérifiés sont automatiquement supprimés après 30 "
+"minutes."
+
+#: gifts/templates/gifts/verify_email_sent.html:33
 msgid "Don't forget to check your spam folder if you don't see the email."
 msgstr ""
 "N'oubliez pas de vérifier votre dossier de courriers indésirables si vous ne "

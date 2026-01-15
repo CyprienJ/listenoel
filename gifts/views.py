@@ -7,6 +7,7 @@ from django.contrib.auth import login, update_session_auth_hash, logout as auth_
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
+from django.core.management import call_command
 from django.db.models import QuerySet, Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponseForbidden, HttpRequest
@@ -25,8 +26,18 @@ from .models import User, Gift, Reservation, Group
 @login_required
 def profile(request):
     if request.method == 'POST':
+        old_email = request.user.email
         form = UserProfileForm(request.POST, instance=request.user)
         if form.is_valid():
+            user = form.save(commit=False)
+
+            if user.email != old_email:
+                user.is_verified = False
+                user.save()
+                send_verification_email(request, user)
+                messages.success(request, _("Profile updated! Please verify your new email address."))
+                return redirect('verify_email_sent')
+
             form.save()
             messages.success(request, _("Your profile has been updated!"))
             return redirect('profile')
@@ -50,6 +61,12 @@ def delete_account(request):
     return redirect('welcome')
 
 def register(request):
+    if not request.user.is_authenticated:
+        return redirect('welcome')
+    if request.user.is_verified:
+        return redirect('dashboard')
+    call_command('cleanup_unverified_users')
+
     if request.method == 'POST':
         form = LocalUserCreationForm(request.POST)
         if form.is_valid():
@@ -78,9 +95,16 @@ def send_verification_email(request, user):
     send_mail(subject, message_txt, None, [user.email], html_message=message_html)
 
 def verify_email_sent(request):
+    if not request.user.is_authenticated:
+        return redirect('welcome')
+    if request.user.is_verified:
+        return redirect('dashboard')
     return render(request, 'gifts/verify_email_sent.html')
 
 def verify_email_confirm(request, uidb64, token):
+
+    call_command('cleanup_unverified_users')
+
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
@@ -98,6 +122,11 @@ def verify_email_confirm(request, uidb64, token):
 
 @login_required
 def resend_verification(request):
+    if not request.user.is_authenticated:
+        return redirect('welcome')
+    if request.user.is_verified:
+        messages.success(request, _("Your email is already verified."))
+        return redirect('dashboard')
     send_verification_email(request, request.user)
     messages.success(request, _("A new verification email has been sent."))
     return redirect('verify_email_sent')
