@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-15 18:02+0000\n"
+"POT-Creation-Date: 2026-01-15 19:23+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -269,8 +269,8 @@ msgid ""
 "Are you sure you want to leave this group? You won't be able to see the "
 "shared lists anymore."
 msgstr ""
-"Êtes-vous sûr de vouloir quitter ce groupe ? Vous ne pourrez plus voir "
-"les listes partagées"
+"Êtes-vous sûr de vouloir quitter ce groupe ? Vous ne pourrez plus voir les "
+"listes partagées"
 
 #: gifts/templates/gifts/group_detail.html:45
 #: gifts/templates/gifts/includes/_edit_gift.html:64
@@ -514,6 +514,46 @@ msgstr ""
 "Cet utilisateur n'existe pas ou vous n'avez pas la permission de voir cette "
 "liste."
 
+#: gifts/templates/gifts/verify_email_sent.html:4
+#: gifts/templates/gifts/verify_email_sent.html:15
+msgid "Verify your email"
+msgstr "Vérifiez votre email"
+
+#: gifts/templates/gifts/verify_email_sent.html:18
+#, fuzzy, python-format
+#| msgid "A confirmation link has been sent to <strong>%(email)s</strong>."
+msgid ""
+"\n"
+"                    A confirmation link has been sent to <strong>%(email)s</"
+"strong>.\n"
+"                    "
+msgstr "Un lien de confirmation a été envoyé à <strong>%(email)s</strong>."
+
+#: gifts/templates/gifts/verify_email_sent.html:24
+msgid "You must click this link to access your dashboard."
+msgstr "Vous devez cliquer sur ce lien pour accéder à votre tableau de bord."
+
+#: gifts/templates/gifts/verify_email_sent.html:27
+msgid "Note: Unverified accounts are automatically deleted after 30 minutes."
+msgstr ""
+"Note : Les comptes non vérifiés sont automatiquement supprimés après 30 "
+"minutes."
+
+#: gifts/templates/gifts/verify_email_sent.html:33
+msgid "Don't forget to check your spam folder if you don't see the email."
+msgstr ""
+"N'oubliez pas de vérifier votre dossier de courriers indésirables si vous ne "
+"voyez pas l'email."
+
+#: gifts/templates/gifts/verify_email_sent.html:39
+#: gifts/templates/gifts/verify_email_sent.html:66
+msgid "Resend verification email"
+msgstr "Renvoyer l'email de vérification"
+
+#: gifts/templates/gifts/verify_email_sent.html:62
+msgid "Wait"
+msgstr "Attendez"
+
 #: gifts/templates/gifts/view_list.html:7
 #: gifts/templates/gifts/view_list.html:18
 msgid "List of"
@@ -683,117 +723,94 @@ msgstr "Déjà inscrit ?"
 msgid "Log in here"
 msgstr "Se connecter"
 
-#: gifts/templates/gifts/verify_email_sent.html:4
-#: gifts/templates/gifts/verify_email_sent.html:15
-msgid "Verify your email"
-msgstr "Vérifiez votre email"
+#: gifts/views.py:38
+msgid "Profile updated! Please verify your new email address."
+msgstr "Profil mis à jour ! Veuillez vérifier votre nouvelle adresse email."
 
-#: gifts/templates/gifts/verify_email_sent.html:19
-#, python-format
-msgid "A confirmation link has been sent to <strong>%(email)s</strong>."
-msgstr "Un lien de confirmation a été envoyé à <strong>%(email)s</strong>."
-
-#: gifts/templates/gifts/verify_email_sent.html:24
-msgid "You must click this link to access your dashboard."
-msgstr "Vous devez cliquer sur ce lien pour accéder à votre tableau de bord."
-
-#: gifts/templates/gifts/verify_email_sent.html:27
-msgid "Note: Unverified accounts are automatically deleted after 30 minutes."
-msgstr ""
-"Note : Les comptes non vérifiés sont automatiquement supprimés après 30 "
-"minutes."
-
-#: gifts/templates/gifts/verify_email_sent.html:33
-msgid "Don't forget to check your spam folder if you don't see the email."
-msgstr ""
-"N'oubliez pas de vérifier votre dossier de courriers indésirables si vous ne "
-"voyez pas l'email."
-
-#: gifts/templates/gifts/verify_email_sent.html:35
-#: gifts/templates/gifts/verify_email_sent.html:62
-msgid "Resend verification email"
-msgstr "Renvoyer l'email de vérification"
-
-#: gifts/templates/gifts/verify_email_sent.html:58
-msgid "Wait"
-msgstr "Attendez"
-
-#: gifts/views.py:31
+#: gifts/views.py:42
 msgid "Your profile has been updated!"
 msgstr "Votre profil a été mis à jour !"
 
-#: gifts/views.py:49
+#: gifts/views.py:63
 msgid "Your account has been successfully deleted."
 msgstr "Votre compte a bien été supprimé."
 
-#: gifts/views.py:74
+#: gifts/views.py:92
 msgid "Verify your email address on Nos Cadeaux!"
 msgstr "Vérifiez votre adresse email sur Nos Cadeaux !"
 
-#: gifts/views.py:93
+#: gifts/views.py:118
 msgid "Your account is now verified !"
 msgstr "Votre compte est maintenant vérifié !"
 
-#: gifts/views.py:96
+#: gifts/views.py:121
 msgid "The verification link is invalid"
 msgstr "Le lien de vérification est invalide"
 
-#: gifts/views.py:102
+#: gifts/views.py:129
+msgid "Your email is already verified."
+msgstr "Votre email est déjà vérifié."
+
+#: gifts/views.py:132
 msgid "A new verification email has been sent."
 msgstr "Un nouvel email de vérification a été envoyé."
 
-#: gifts/views.py:138
+#: gifts/views.py:168
 #, python-format
 msgid "Group '%(name)s' created ! Share this code: %(token)s"
 msgstr "Groupe '%(name)s' créé ! Partagez ce code : %(token)s"
 
-#: gifts/views.py:155
+#: gifts/views.py:185
 msgid "Please enter a group code."
 msgstr "Merci d'entrer un code de groupe."
 
-#: gifts/views.py:162
+#: gifts/views.py:192
 #, python-format
 msgid "You are already a member of the group '%s'."
 msgstr "Vous êtes déjà membre du groupe '%s'."
 
-#: gifts/views.py:165
+#: gifts/views.py:195
 #, python-format
 msgid "You have joined the group '%s'!"
 msgstr "Vous avez rejoint le groupe '%s' !"
 
-#: gifts/views.py:168
+#: gifts/views.py:198
 msgid "No group found with this code."
 msgstr "Aucun groupe trouvé avec ce code."
 
-#: gifts/views.py:181
+#: gifts/views.py:211
 msgid "You are not a member of this group."
 msgstr "Vous n'êtes pas membre de ce groupe."
 
-#: gifts/views.py:192
+#: gifts/views.py:222
 #, python-format
 msgid "You have left the group '%s'."
 msgstr "Vous avez quitté le groupe '%s'."
 
-#: gifts/views.py:273
+#: gifts/views.py:303
 msgid "Impossible on your own list"
 msgstr "Impossible sur votre propre liste"
 
-#: gifts/views.py:278
+#: gifts/views.py:307 gifts/views.py:334
+msgid "You don't have access to this list"
+msgstr "Vous n'avez pas accès à cette liste"
+
+#: gifts/views.py:312
 msgid "This gift is already taken"
 msgstr "Ce cadeau est déjà réservé"
 
-#: gifts/views.py:347
+#: gifts/views.py:395
 msgid "Old password incorrect"
 msgstr "L'ancien mot de passe est incorrect"
 
-#: gifts/views.py:349
+#: gifts/views.py:397
 msgid "The new passwords don't match."
 msgstr "Les nouveaux mots de passe ne correspondent pas"
 
-#: gifts/views.py:351
+#: gifts/views.py:399
 msgid "New password is too short."
 msgstr "Le nouveau mot de passe est trop court"
 
-#: gifts/views.py:356
+#: gifts/views.py:404
 msgid "Password successfully updated !"
 msgstr "Mot de passe modifié avec succès !"
