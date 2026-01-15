@@ -48,7 +48,10 @@ def profile(request):
 
 def welcome(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        if request.user.is_verified:
+            return redirect('dashboard')
+        else:
+            return redirect('verify_email_sent')
     return render(request, 'gifts/welcome.html')
 
 @login_required
@@ -61,9 +64,7 @@ def delete_account(request):
     return redirect('welcome')
 
 def register(request):
-    if not request.user.is_authenticated:
-        return redirect('welcome')
-    if request.user.is_verified:
+    if request.user.is_authenticated:
         return redirect('dashboard')
     call_command('cleanup_unverified_users')
 
@@ -301,6 +302,10 @@ def reserve_gift(request: HttpRequest, gift_id: int):
     if gift.owner == request.user:
         return HttpResponseForbidden(_("Impossible on your own list"))
 
+    # Check common group
+    if not Group.objects.filter(members=request.user).filter(members=gift.owner).exists():
+        return HttpResponseForbidden(_("You don't have access to this list"))
+
     try:
         Reservation.objects.create(gift=gift, reserver=request.user)
     except IntegrityError:
@@ -322,6 +327,12 @@ def unreserve_gift(request, gift_id):
 @require_POST
 def add_gift(request, owner_id):
     owner = get_object_or_404(User, id=owner_id)
+
+    # Security check: can only add to own list or list of someone in common group
+    if owner != request.user:
+        if not Group.objects.filter(members=request.user).filter(members=owner).exists():
+            return HttpResponseForbidden(_("You don't have access to this list"))
+
     title = request.POST.get("title", "").strip()
     if title:
         gift = Gift.objects.create(
@@ -333,7 +344,9 @@ def add_gift(request, owner_id):
         )
         group_ids = request.POST.getlist("visible_in")
         if group_ids:
-            gift.visible_in.set(group_ids)
+            # Security check: can only set visibility for groups user is member of
+            valid_groups = Group.objects.filter(id__in=group_ids, members=request.user)
+            gift.visible_in.set(valid_groups)
     return redirect("view_list", user_id=owner.id)
 
 @login_required
@@ -348,7 +361,8 @@ def delete_gift(request, gift_id):
 @login_required
 @require_POST
 def edit_gift(request: HttpRequest, gift_id: int):
-    gift = get_object_or_404(Gift, id=gift_id)
+    # Only the creator can edit the gift
+    gift = get_object_or_404(Gift, id=gift_id, created_by=request.user)
 
     title = request.POST.get("title", "").strip()
 
@@ -359,7 +373,12 @@ def edit_gift(request: HttpRequest, gift_id: int):
         gift.save()
 
         group_ids = request.POST.getlist("visible_in")
-        gift.visible_in.set(group_ids)
+        if group_ids:
+            # Security check: can only set visibility for groups user is member of
+            valid_groups = Group.objects.filter(id__in=group_ids, members=request.user)
+            gift.visible_in.set(valid_groups)
+        else:
+            gift.visible_in.clear()
 
     return redirect("view_list", user_id=gift.owner.id)
 

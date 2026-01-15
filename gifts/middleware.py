@@ -15,9 +15,11 @@ class EmailVerificationMiddleware:
                 reverse('verify_email_confirm', kwargs={'uidb64': 'dummy', 'token': 'dummy'}).split('dummy')[0],
                 reverse('resend_verification'),
                 reverse('logout'),
+                reverse('login'),
+                reverse('welcome'),
             ]
 
-            if not any(request.path.startswith(url) for url in allowed_urls):
+            if not any(request.path == url or (url != reverse('welcome') and request.path.startswith(url)) for url in allowed_urls):
                 return redirect('verify_email_sent')
 
         return self.get_response(request)
