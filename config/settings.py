@@ -48,6 +48,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'gifts.middleware.EmailVerificationMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -152,7 +153,7 @@ AUTHENTICATION_BACKENDS = [
 EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
 
 ANYMAIL = {
-    "RESEND_API_KEY": "",
+    "RESEND_API_KEY": "re_GkoESvEP_HZcuqtzmU1kRYeYq28d2PraU",
 }
 
-DEFAULT_FROM_EMAIL = "Nos Cadeaux <noreply@votre-domaine.com>"
+DEFAULT_FROM_EMAIL = "Nos Cadeaux <noreply@noscadeaux.fr>"

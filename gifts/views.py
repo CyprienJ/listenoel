@@ -4,11 +4,17 @@ import random
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, update_session_auth_hash, logout as auth_logout
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.db.models import QuerySet, Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponseForbidden, HttpRequest
 from django.db import transaction, IntegrityError
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.decorators.http import require_POST
 from django.utils.translation import gettext as _
 
@@ -49,25 +55,53 @@ def register(request):
         if form.is_valid():
             user = form.save()
 
-            subject = _("Welcome to Nos Cadeaux!")
-            message = _(
-                "Hello %(nickname)s,\n\nYour account has been successfully created. Ready to prepare wonderful surprises?") % {'nickname': user.nickname}
-
-            send_mail(
-                subject,
-                message,
-                None,
-                [user.email],
-                fail_silently=False,
-            )
-            messages.success(request,
-                          _("Welcome! A confirmation email has been sent to %(email)s.") % {'email': user.email})
+            send_verification_email(request, user)
 
             login(request, user, backend='gifts.backends.CaseInsensitiveModelBackend')
             return redirect('dashboard')
     else:
         form = LocalUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
+
+def send_verification_email(request, user):
+    token = default_token_generator.make_token(user)
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    domain = get_current_site(request).domain
+
+    link = f"http://{domain}{reverse('verify_email_confirm', kwargs={'uidb64': uid, 'token': token})}"
+
+    context = {'nickname': user.nickname, 'verification_link': link}
+    subject = _("Verify your email address on Nos Cadeaux!")
+    message_txt = render_to_string('emails/verify_email.txt', context)
+    message_html = render_to_string('emails/verify_email.html', context)
+
+    send_mail(subject, message_txt, None, [user.email], html_message=message_html)
+
+def verify_email_sent(request):
+    return render(request, 'gifts/verify_email_sent.html')
+
+def verify_email_confirm(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_verified = True
+        user.save()
+        messages.success(request, _("Your account is now verified !"))
+        return redirect('dashboard')
+    else:
+        messages.error(request, _("The verification link is invalid"))
+        return redirect('welcome')
+
+@login_required
+def resend_verification(request):
+    send_verification_email(request, request.user)
+    messages.success(request, _("A new verification email has been sent."))
+    return redirect('verify_email_sent')
+
 
 
 @login_required

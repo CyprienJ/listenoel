@@ -1,0 +1,13 @@
+{% load i18n %}
+{% translate "Hi" %} {{ nickname }},
+
+{% translate "Thanks for signing up for Nos Cadeaux!" %}
+
+{% translate "To finish setting up your account and start creating your lists, please click the verification link below:" %}
+
+{{ verification_link }}
+
+{% translate "If you didn't create an account, you can safely ignore this email." %}
+
+{% translate "See you soon," %}
+{% translate "The Nos Cadeaux team" %}
