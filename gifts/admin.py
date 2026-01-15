@@ -5,7 +5,7 @@ from django.utils.translation import gettext as _
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ("username", "nickname", "email", "is_staff", "is_active")
+    list_display = ("username", "nickname", "email", "is_staff", "is_active", "is_verified")
     search_fields = ("username", "nickname", "email")
     ordering = ("username",)
 

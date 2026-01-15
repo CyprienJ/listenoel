@@ -33,7 +33,7 @@ class User(AbstractUser):
     )
 
     nickname = models.CharField(max_length=150, blank=False)
-
+    is_verified = models.BooleanField(default=False)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 

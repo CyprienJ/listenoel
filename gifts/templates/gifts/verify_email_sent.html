@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Verify your email" %} - Nos cadeaux{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm border-0 rounded-4 p-4 text-center">
+            <div class="card-body">
+                <div class="mb-4">
+                    <i class="bi bi-envelope-check text-primary" style="font-size: 4rem;"></i>
+                </div>
+                
+                <h2 class="fw-bold mb-3">{% trans "Verify your email" %}</h2>
+                
+                <p class="text-muted mb-4">
+                    {% blocktrans with email=user.email %}
+                    A confirmation link has been sent to <strong>{{ email }}</strong>.
+                    {% endblocktrans %}
+                </p>
+                
+                <p class="mb-4">
+                    {% trans "You must click this link to access your dashboard." %}
+                </p>
+                
+                <div class="alert alert-info rounded-4 border-0 mb-4">
+                    <i class="bi bi-info-circle me-2"></i>
+                    {% trans "Don't forget to check your spam folder if you don't see the email." %}
+                </div>
+
+                <form action="{% url 'resend_verification' %}" method="post" id="resend-form">
+                    {% csrf_token %}
+                    <button type="submit" id="resend-btn" class="btn btn-primary rounded-pill px-4">
+                        <i class="bi bi-send me-2"></i>{% trans "Resend verification email" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const resendBtn = document.getElementById('resend-btn');
+        const resendForm = document.getElementById('resend-form');
+        const STORAGE_KEY = 'last_resend_time';
+        const COOLDOWN = 60000; // 60 seconds
+
+        function updateButton() {
+            const lastResend = localStorage.getItem(STORAGE_KEY);
+            if (lastResend) {
+                const now = Date.now();
+                const timeLeft = Math.ceil((COOLDOWN - (now - lastResend)) / 1000);
+                
+                if (timeLeft > 0) {
+                    resendBtn.disabled = true;
+                    resendBtn.innerHTML = `<i class="bi bi-hourglass-split me-2"></i>{% trans "Wait" %} (${timeLeft}s)`;
+                    setTimeout(updateButton, 1000);
+                } else {
+                    resendBtn.disabled = false;
+                    resendBtn.innerHTML = `<i class="bi bi-send me-2"></i>{% trans "Resend verification email" %}`;
+                    localStorage.removeItem(STORAGE_KEY);
+                }
+            }
+        }
+
+        resendForm.addEventListener('submit', function() {
+            localStorage.setItem(STORAGE_KEY, Date.now());
+            // Small delay to allow the form to submit before the button is disabled and text changes
+            setTimeout(updateButton, 10);
+        });
+
+        updateButton();
+    });
+</script>
+{% endblock %}
