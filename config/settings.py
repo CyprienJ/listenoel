@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 from pathlib import Path
+
+import dj_database_url
 from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -22,10 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'DEFAULT_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEV', False)
 
 ALLOWED_HOSTS = ["noscadeaux.fr", "www.noscadeaux.fr", "127.0.0.1"]
 
@@ -78,10 +80,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 }
 
 
@@ -154,7 +157,7 @@ AUTHENTICATION_BACKENDS = [
 EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
 
 ANYMAIL = {
-    "RESEND_API_KEY": "re_GkoESvEP_HZcuqtzmU1kRYeYq28d2PraU",
+    "RESEND_API_KEY": os.environ.get("ANYMAIL_RESEND_API_KEY"),
 }
 
 DEFAULT_FROM_EMAIL = "Nos Cadeaux <noreply@noscadeaux.fr>"
