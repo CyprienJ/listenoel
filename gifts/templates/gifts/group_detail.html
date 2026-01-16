@@ -11,15 +11,61 @@
                 <i class="bi bi-chevron-left"></i>
             </a>
             <div class="text-center">
-                <h1 class="h3 fw-bold mb-0 text-primary">{{ group.name }}</h1>
-                <div class="d-inline-flex align-items-center mt-2 cursor-pointer"
-                     onclick="copyInviteCode('{{ group.invite_token }}')" style="cursor: pointer;">
-                <span class="badge rounded-pill bg-primary-container text-primary px-3 py-2 border border-primary-subtle">
-                    <i class="bi bi-share-fill me-2"></i>
-                    <span id="inviteCodeText">{{ group.invite_token }}</span>
-                </span>
+                <div class="d-flex align-items-center justify-content-center">
+                    <h1 class="h3 fw-bold mb-0 text-primary">{{ group.name }}</h1>
+                    <button type="button" class="btn btn-sm text-primary ms-2" data-bs-toggle="modal"
+                            data-bs-target="#editGroupModal">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                </div>
+                <div class="d-inline-flex align-items-center mt-2">
+                    <div class="cursor-pointer me-1" onclick="copyInviteCode('{{ group.invite_token }}')"
+                         style="cursor: pointer;">
+                        <span class="badge rounded-pill bg-primary-container text-primary px-3 py-2 border border-primary-subtle">
+                            <i class="bi bi-share-fill me-2"></i>
+                            <span id="inviteCodeText">{{ group.invite_token }}</span>
+                        </span>
+                    </div>
+                    <form method="post" action="{% url 'regenerate_group_token' group.id %}" class="m-0"
+                          onsubmit="return confirm('{% trans "Are you sure you want to generate a new code? The old one will no longer work." %}')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm text-muted" title="{% trans "Regenerate code" %}">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
+
+            <!-- Modal Edit Group Name -->
+            <div class="modal fade" id="editGroupModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 rounded-5 shadow-lg auth-card">
+                        <div class="modal-header border-0 p-4 pb-0">
+                            <h5 class="modal-title fw-bold">{% trans "Edit group name" %}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                        </div>
+                        <form method="post" action="{% url 'edit_group' group.id %}">
+                            {% csrf_token %}
+                            <div class="modal-body p-4">
+                                <div class="mb-3">
+                                    <label for="groupName"
+                                           class="form-label small text-muted">{% trans "Group Name" %}</label>
+                                    <input type="text" class="form-control rounded-pill border-0 bg-light p-3"
+                                           id="groupName" name="name" value="{{ group.name }}" required>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0 p-4 pt-0">
+                                <button type="button" class="btn btn-outline-secondary rounded-pill px-4"
+                                        data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                                <button type="submit"
+                                        class="btn btn-primary rounded-pill px-4">{% trans "Save" %}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <button type="button" class="btn rounded-circle shadow-sm text-danger" data-bs-toggle="modal"
                     data-bs-target="#leaveGroupModal">
                 <i class="bi bi-box-arrow-right"></i>

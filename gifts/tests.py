@@ -229,3 +229,43 @@ class GiftAccessControlTest(TestCase):
         response = self.client.post(reverse('add_gift', args=[self.user1.id]), {'title': 'Bad Surprise'})
         self.assertIn(response.status_code, [403, 404])
         self.assertFalse(Gift.objects.filter(title='Bad Surprise').exists())
+
+class GroupManagementTest(TestCase):
+    def setUp(self):
+        self.creator = User.objects.create_user(username='creator@test.com', email='creator@test.com', password='password', is_verified=True, nickname='Creator')
+        self.member = User.objects.create_user(username='member@test.com', email='member@test.com', password='password', is_verified=True, nickname='Member')
+        self.outsider = User.objects.create_user(username='outsider@test.com', email='outsider@test.com', password='password', is_verified=True, nickname='Outsider')
+
+        self.group = Group.objects.create(name="Original Name", created_by=self.creator)
+        self.group.members.add(self.creator, self.member)
+        self.original_token = self.group.invite_token
+
+    def test_edit_group_name_as_creator(self):
+        self.client.force_login(self.creator)
+        response = self.client.post(reverse('edit_group', args=[self.group.id]), {'name': 'New Name'})
+        self.assertEqual(response.status_code, 302)
+        self.group.refresh_from_db()
+        self.assertEqual(self.group.name, 'New Name')
+
+    def test_edit_group_name_as_member(self):
+        self.client.force_login(self.member)
+        response = self.client.post(reverse('edit_group', args=[self.group.id]), {'name': 'New Name'})
+        self.assertEqual(response.status_code, 302)
+        self.group.refresh_from_db()
+        self.assertEqual(self.group.name, 'New Name')
+
+    def test_regenerate_token_as_creator(self):
+        self.client.force_login(self.creator)
+        response = self.client.post(reverse('regenerate_group_token', args=[self.group.id]))
+        self.assertEqual(response.status_code, 302)
+        self.group.refresh_from_db()
+        self.assertNotEqual(self.group.invite_token, self.original_token)
+        self.assertTrue(len(self.group.invite_token) > 0)
+
+    def test_regenerate_token_as_member(self):
+        self.client.force_login(self.member)
+        response = self.client.post(reverse('regenerate_group_token', args=[self.group.id]))
+        self.assertEqual(response.status_code, 302)
+        self.group.refresh_from_db()
+        self.assertNotEqual(self.group.invite_token, self.original_token)
+        self.assertTrue(len(self.group.invite_token) > 0)

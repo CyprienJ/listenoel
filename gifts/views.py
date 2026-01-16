@@ -73,9 +73,9 @@ def register(request):
         if form.is_valid():
             user = form.save()
 
+            login(request, user, backend='gifts.backends.CaseInsensitiveModelBackend')
             send_verification_email(request, user)
 
-            login(request, user, backend='gifts.backends.CaseInsensitiveModelBackend')
             return redirect('dashboard')
     else:
         form = LocalUserCreationForm()
@@ -223,6 +223,28 @@ def leave_group(request, group_id):
     if group.members.count() == 0:
         group.delete()
     return redirect('dashboard')
+
+
+@login_required
+@require_POST
+def edit_group(request, group_id):
+    group = get_object_or_404(Group, id=group_id,)
+    new_name = request.POST.get('name', '').strip()
+    if new_name:
+        group.name = new_name
+        group.save()
+        messages.success(request, _("Group name updated !"))
+    return redirect('group_detail', group_id=group.id)
+
+
+@login_required
+@require_POST
+def regenerate_group_token(request, group_id):
+    group = get_object_or_404(Group, id=group_id,)
+    group.invite_token = ""  # Will be regenerated in save()
+    group.save()
+    messages.success(request, _("New invitation code generated !"))
+    return redirect('group_detail', group_id=group.id)
 
 
 @login_required

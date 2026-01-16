@@ -39,11 +39,9 @@ class User(AbstractUser):
 
 
     def save(self, *args, **kwargs):
-        if not self.username:
+            self.email = self.email.lower()
             self.username = self.email
-        self.email = self.email.lower()
-        self.username = self.username.lower()
-        super().save(*args, **kwargs)
+            super().save(*args, **kwargs)
 
 class Gift(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="gifts")
