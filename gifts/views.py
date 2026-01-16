@@ -1,6 +1,9 @@
 import datetime
+import os
 import random
 
+import markdown
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, update_session_auth_hash, logout as auth_logout
@@ -14,6 +17,7 @@ from django.http import JsonResponse, HttpResponseForbidden, HttpRequest
 from django.db import transaction, IntegrityError
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils import translation
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.decorators.http import require_POST
@@ -427,3 +431,22 @@ def change_password(request):
             return redirect('dashboard')
 
     return render(request, 'gifts/change_password.html')
+
+def changelog(request):
+    current_lang = translation.get_language()
+
+    filename = f'CHANGELOG.{current_lang}.md'
+
+    changelog_path = os.path.join(settings.BASE_DIR, filename)
+
+    if not os.path.exists(changelog_path):
+        changelog_path = os.path.join(settings.BASE_DIR, 'CHANGELOG.md')
+
+    try:
+        with open(changelog_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            html_content = markdown.markdown(content, extensions=['extra', 'nl2br'])
+    except FileNotFoundError:
+        html_content = _("Changelog not found.")
+
+    return render(request, 'gifts/changelog.html', {'changelog_html': html_content})

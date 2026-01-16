@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-15 19:34+0000\n"
+"POT-Creation-Date: 2026-01-16 09:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -185,6 +185,10 @@ msgstr "Confirmer le nouveau mot de passe"
 msgid "Update Password"
 msgstr "Mettre à jour le mot de passe"
 
+#: gifts/templates/gifts/changelog.html:15
+msgid "Back"
+msgstr "Retour"
+
 #: gifts/templates/gifts/dashboard.html:12
 msgid "Click me!"
 msgstr "Appuyez !"
@@ -198,7 +202,7 @@ msgid "Ready to prepare wonderful surprises?"
 msgstr "Prêt à préparer de belles surprises ?"
 
 #: gifts/templates/gifts/dashboard.html:26
-#: gifts/templates/gifts/group_detail.html:111
+#: gifts/templates/gifts/group_detail.html:109
 #: gifts/templates/gifts/view_list.html:5
 #: gifts/templates/gifts/view_list.html:16
 msgid "My list"
@@ -233,7 +237,7 @@ msgid "Create a new group"
 msgstr "Créer un nouveau groupe"
 
 #: gifts/templates/gifts/dashboard.html:100
-#: gifts/templates/gifts/group_detail.html:55
+#: gifts/templates/gifts/group_detail.html:53
 msgid "Group Name"
 msgstr "Nom du groupe"
 
@@ -261,7 +265,7 @@ msgstr "Entrez le code unique partagé par le créateur du groupe"
 msgid "Join Group"
 msgstr "Rejoindre le groupe"
 
-#: gifts/templates/gifts/group_detail.html:32
+#: gifts/templates/gifts/group_detail.html:30
 msgid ""
 "Are you sure you want to generate a new code? The old one will no longer "
 "work."
@@ -269,16 +273,16 @@ msgstr ""
 "Êtes-vous sûr de vouloir générer un nouveau code ? L'ancien ne fonctionnera "
 "plus."
 
-#: gifts/templates/gifts/group_detail.html:34
+#: gifts/templates/gifts/group_detail.html:32
 msgid "Regenerate code"
 msgstr "Régénérer le code"
 
-#: gifts/templates/gifts/group_detail.html:48
+#: gifts/templates/gifts/group_detail.html:44
 msgid "Edit group name"
 msgstr "Modifier le nom du groupe"
 
-#: gifts/templates/gifts/group_detail.html:62
-#: gifts/templates/gifts/group_detail.html:93
+#: gifts/templates/gifts/group_detail.html:60
+#: gifts/templates/gifts/group_detail.html:91
 #: gifts/templates/gifts/includes/_edit_gift.html:64
 #: gifts/templates/gifts/includes/_view_gift.html:51
 #: gifts/templates/gifts/profile.html:66
@@ -286,15 +290,15 @@ msgstr "Modifier le nom du groupe"
 msgid "Cancel"
 msgstr "Annuler"
 
-#: gifts/templates/gifts/group_detail.html:63
+#: gifts/templates/gifts/group_detail.html:62
 msgid "Save"
 msgstr "Enregistrer"
 
-#: gifts/templates/gifts/group_detail.html:81
+#: gifts/templates/gifts/group_detail.html:79
 msgid "Leave group?"
 msgstr "Quitter ce groupe ?"
 
-#: gifts/templates/gifts/group_detail.html:87
+#: gifts/templates/gifts/group_detail.html:85
 msgid ""
 "Are you sure you want to leave this group? You won't be able to see the "
 "shared lists anymore."
@@ -302,27 +306,27 @@ msgstr ""
 "Êtes-vous sûr de vouloir quitter ce groupe ? Vous ne pourrez plus voir les "
 "listes partagées"
 
-#: gifts/templates/gifts/group_detail.html:98
+#: gifts/templates/gifts/group_detail.html:96
 msgid "Confirm"
 msgstr "Confirmer"
 
-#: gifts/templates/gifts/group_detail.html:112
+#: gifts/templates/gifts/group_detail.html:110
 msgid "Update your wishes for this group"
 msgstr "Mettre à jour vos souhaits pour ce groupe"
 
-#: gifts/templates/gifts/group_detail.html:116
+#: gifts/templates/gifts/group_detail.html:114
 msgid "View"
 msgstr "Voir"
 
-#: gifts/templates/gifts/group_detail.html:123
+#: gifts/templates/gifts/group_detail.html:121
 msgid "Group members"
 msgstr "Membres du groupe"
 
-#: gifts/templates/gifts/group_detail.html:149
+#: gifts/templates/gifts/group_detail.html:147
 msgid "You are the only member here."
 msgstr "Vous êtes le seul membre ici"
 
-#: gifts/templates/gifts/group_detail.html:194
+#: gifts/templates/gifts/group_detail.html:192
 msgid "Copied!"
 msgstr "Copié !"
 
@@ -745,102 +749,106 @@ msgstr "Déjà inscrit ?"
 msgid "Log in here"
 msgstr "Se connecter"
 
-#: gifts/views.py:38
+#: gifts/views.py:42
 msgid "Profile updated! Please verify your new email address."
 msgstr "Profil mis à jour ! Veuillez vérifier votre nouvelle adresse email."
 
-#: gifts/views.py:42
+#: gifts/views.py:46
 msgid "Your profile has been updated!"
 msgstr "Votre profil a été mis à jour !"
 
-#: gifts/views.py:63
+#: gifts/views.py:67
 msgid "Your account has been successfully deleted."
 msgstr "Votre compte a bien été supprimé."
 
-#: gifts/views.py:92
+#: gifts/views.py:96
 msgid "Verify your email address on Nos Cadeaux!"
 msgstr "Vérifiez votre adresse email sur Nos Cadeaux !"
 
-#: gifts/views.py:118
+#: gifts/views.py:122
 msgid "Your account is now verified !"
 msgstr "Votre compte est maintenant vérifié !"
 
-#: gifts/views.py:121
+#: gifts/views.py:125
 msgid "The verification link is invalid"
 msgstr "Le lien de vérification est invalide"
 
-#: gifts/views.py:129
+#: gifts/views.py:133
 msgid "Your email is already verified."
 msgstr "Votre email est déjà vérifié."
 
-#: gifts/views.py:132
+#: gifts/views.py:136
 msgid "A new verification email has been sent."
 msgstr "Un nouvel email de vérification a été envoyé."
 
-#: gifts/views.py:168
+#: gifts/views.py:172
 #, python-format
 msgid "Group '%(name)s' created ! Share this code: %(token)s"
 msgstr "Groupe '%(name)s' créé ! Partagez ce code : %(token)s"
 
-#: gifts/views.py:185
+#: gifts/views.py:189
 msgid "Please enter a group code."
 msgstr "Merci d'entrer un code de groupe."
 
-#: gifts/views.py:192
+#: gifts/views.py:196
 #, python-format
 msgid "You are already a member of the group '%s'."
 msgstr "Vous êtes déjà membre du groupe '%s'."
 
-#: gifts/views.py:195
+#: gifts/views.py:199
 #, python-format
 msgid "You have joined the group '%s'!"
 msgstr "Vous avez rejoint le groupe '%s' !"
 
-#: gifts/views.py:198
+#: gifts/views.py:202
 msgid "No group found with this code."
 msgstr "Aucun groupe trouvé avec ce code."
 
-#: gifts/views.py:211
+#: gifts/views.py:215
 msgid "You are not a member of this group."
 msgstr "Vous n'êtes pas membre de ce groupe."
 
-#: gifts/views.py:222
+#: gifts/views.py:226
 #, python-format
 msgid "You have left the group '%s'."
 msgstr "Vous avez quitté le groupe '%s'."
 
-#: gifts/views.py:236
+#: gifts/views.py:240
 msgid "Group name updated !"
 msgstr "Nom du groupe mis à jour !"
 
-#: gifts/views.py:246
+#: gifts/views.py:250
 msgid "New invitation code generated !"
 msgstr "Nouveau code d'invitation généré !"
 
-#: gifts/views.py:325
+#: gifts/views.py:329
 msgid "Impossible on your own list"
 msgstr "Impossible sur votre propre liste"
 
-#: gifts/views.py:329 gifts/views.py:356
+#: gifts/views.py:333 gifts/views.py:360
 msgid "You don't have access to this list"
 msgstr "Vous n'avez pas accès à cette liste"
 
-#: gifts/views.py:334
+#: gifts/views.py:338
 msgid "This gift is already taken"
 msgstr "Ce cadeau est déjà réservé"
 
-#: gifts/views.py:417
+#: gifts/views.py:421
 msgid "Old password incorrect"
 msgstr "L'ancien mot de passe est incorrect"
 
-#: gifts/views.py:419
+#: gifts/views.py:423
 msgid "The new passwords don't match."
 msgstr "Les nouveaux mots de passe ne correspondent pas"
 
-#: gifts/views.py:421
+#: gifts/views.py:425
 msgid "New password is too short."
 msgstr "Le nouveau mot de passe est trop court"
 
-#: gifts/views.py:426
+#: gifts/views.py:430
 msgid "Password successfully updated !"
 msgstr "Mot de passe modifié avec succès !"
+
+#: gifts/views.py:450
+msgid "Changelog not found."
+msgstr "Changelog introuvable"

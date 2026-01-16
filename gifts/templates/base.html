@@ -25,11 +25,12 @@
         })();
     </script>
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 
 <nav class="navbar navbar-expand-lg border-bottom shadow-sm mb-4 bg-navbar">
     <div class="container">
-        <a class="navbar-brand fw-bold text-primary" href="{% url 'welcome' %}">
+        <a class="navbar-brand fw-bold text-primary"
+           href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'welcome' %}{% endif %}">
             <i class="bi bi-gift-fill me-2"></i>Nos cadeaux
         </a>
 
@@ -139,6 +140,21 @@
 
     {% block content %}{% endblock %}
 </main>
+
+<footer class="container mt-auto py-4">
+    <div class="border-top pt-3 d-flex justify-content-between align-items-center opacity-75">
+        <a class="navbar-brand fw-bold text-primary"
+           href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'welcome' %}{% endif %}">
+            <span class="small text-muted">Nos Cadeaux</span>
+        </a>    
+        <div class="d-flex gap-3">
+            <a href="{% url 'changelog' %}"
+               class="link-secondary link-underline-opacity-0 link-underline-opacity-100-hover small">
+                <i class="bi bi-journal-text me-1"></i>{% trans "Changelog" %}
+            </a>
+        </div>
+    </div>
+</footer>
 
 <script>
     (function () {
