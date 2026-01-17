@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 
 import dj_database_url
@@ -161,3 +162,9 @@ ANYMAIL = {
 }
 
 DEFAULT_FROM_EMAIL = "Nos Cadeaux <noreply@noscadeaux.fr>"
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+CSRF_TRUSTED_ORIGINS = ["https://noscadeaux.fr", "https://www.noscadeaux.fr"]
+
+SECURE_SSL_REDIRECT = not DEBUG and 'test' not in sys.argv
