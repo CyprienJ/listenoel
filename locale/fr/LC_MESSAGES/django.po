@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-16 09:00+0000\n"
+"POT-Creation-Date: 2026-01-17 13:16+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,15 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: config/settings.py:119
+#: config/settings.py:123
 msgid "French"
 msgstr "Français"
 
-#: config/settings.py:120
+#: config/settings.py:124
 msgid "English"
 msgstr "English"
 
-#: gifts/admin.py:13
+#: gifts/admin.py:14
 msgid "More information"
 msgstr "Plus d'informations"
 
@@ -35,6 +35,7 @@ msgid "Nickname"
 msgstr "Pseudo"
 
 #: gifts/forms.py:30 gifts/templates/registration/login.html:26
+#: gifts/templates/registration/password_reset_form.html:19
 msgid "Email"
 msgstr "Email"
 
@@ -42,51 +43,104 @@ msgstr "Email"
 msgid "A user with that email already exists."
 msgstr "Un utilisateur avec cet email existe déjà"
 
-#: gifts/templates/base.html:44 gifts/templates/gifts/dashboard.html:4
+#: gifts/templates/base.html:45 gifts/templates/gifts/dashboard.html:4
 msgid "Dashboard"
 msgstr "Tableau de bord"
 
-#: gifts/templates/base.html:74
+#: gifts/templates/base.html:75
 msgid "Settings"
 msgstr "Paramètres"
 
-#: gifts/templates/base.html:79
+#: gifts/templates/base.html:80
 msgid "Appearance"
 msgstr "Apparence"
 
-#: gifts/templates/base.html:81
+#: gifts/templates/base.html:82
 msgid "Auto"
 msgstr "Auto"
 
-#: gifts/templates/base.html:82
+#: gifts/templates/base.html:83
 msgid "Bright"
 msgstr "Clair"
 
-#: gifts/templates/base.html:83
+#: gifts/templates/base.html:84
 msgid "Dark"
 msgstr "Sombre"
 
-#: gifts/templates/base.html:94
+#: gifts/templates/base.html:95
 msgid "Administration"
 msgstr "Administration"
 
-#: gifts/templates/base.html:103 gifts/templates/gifts/profile.html:11
+#: gifts/templates/base.html:104 gifts/templates/gifts/profile.html:11
 msgid "My Profile"
 msgstr "Mon profil"
 
-#: gifts/templates/base.html:110
+#: gifts/templates/base.html:111
 msgid "Log out"
 msgstr "Se déconnecter"
 
-#: gifts/templates/base.html:120 gifts/templates/gifts/welcome.html:17
-#: gifts/templates/registration/login.html:48
+#: gifts/templates/base.html:121 gifts/templates/gifts/welcome.html:17
+#: gifts/templates/registration/login.html:53
+#: gifts/templates/registration/password_reset_complete.html:16
 msgid "Log in"
 msgstr "Se connecter"
 
-#: gifts/templates/emails/verify_email.html:24
-#: gifts/templates/emails/verify_email.txt:2
-msgid "Hi"
-msgstr "Bonjour"
+#: gifts/templates/base.html:153
+#, fuzzy
+#| msgid "Changelog not found."
+msgid "Changelog"
+msgstr "Changelog introuvable"
+
+#: gifts/templates/emails/password_reset_email.html:24
+#: gifts/templates/emails/password_reset_email.txt:2
+msgid "Hi,"
+msgstr "Bonjour,"
+
+#: gifts/templates/emails/password_reset_email.html:29
+#: gifts/templates/emails/password_reset_email.txt:4
+msgid ""
+"You're receiving this email because you requested a password reset for your "
+"user account at Nos Cadeaux."
+msgstr ""
+"Vous recevez cet e-mail car vous avez demandé la réinitialisation du mot de "
+"passe de votre compte sur Nos Cadeaux."
+
+#: gifts/templates/emails/password_reset_email.html:38
+msgid "Reset my password"
+msgstr "Réinitialiser mon mot de passe"
+
+#: gifts/templates/emails/password_reset_email.html:47
+#: gifts/templates/emails/verify_email.html:47
+msgid ""
+"If the button doesn't work, you can copy and paste this link into your "
+"browser:"
+msgstr ""
+"Si le bouton ne fonctionne pas, vous pouvez copier et coller ce lien dans "
+"votre navigateur :"
+
+#: gifts/templates/emails/password_reset_email.html:57
+#: gifts/templates/emails/password_reset_email.txt:10
+msgid ""
+"If you didn't request a password reset, you can safely ignore this email."
+msgstr ""
+"Si vous n'avez pas demandé de réinitialisation de mot de passe, vous pouvez "
+"ignorer cet e-mail en toute sécurité."
+
+#: gifts/templates/emails/password_reset_email.txt:6
+msgid "To reset your password, please click the link below:"
+msgstr ""
+"Pour réinitialiser votre mot de passe, veuillez cliquer sur le lien ci-"
+"dessous :"
+
+#: gifts/templates/emails/password_reset_email.txt:12
+#: gifts/templates/emails/verify_email.txt:12
+msgid "See you soon,"
+msgstr "À bientôt,"
+
+#: gifts/templates/emails/password_reset_email.txt:13
+#: gifts/templates/emails/verify_email.txt:13
+msgid "The Nos Cadeaux team"
+msgstr ""
 
 #: gifts/templates/emails/verify_email.html:29
 msgid ""
@@ -100,14 +154,6 @@ msgstr ""
 #: gifts/templates/emails/verify_email.html:38
 msgid "Verify my account"
 msgstr "Vérifier mon compte"
-
-#: gifts/templates/emails/verify_email.html:47
-msgid ""
-"If the button doesn't work, you can copy and paste this link into your "
-"browser:"
-msgstr ""
-"Si le bouton ne fonctionne pas, vous pouvez copier et coller ce lien dans "
-"votre navigateur :"
 
 #: gifts/templates/emails/verify_email.html:57
 #: gifts/templates/emails/verify_email.txt:10
@@ -128,14 +174,6 @@ msgstr ""
 "Pour terminer la configuration de votre compte et commencer à créer vos "
 "listes, veuillez cliquer sur le lien de vérification ci-dessous :"
 
-#: gifts/templates/emails/verify_email.txt:12
-msgid "See you soon,"
-msgstr "À bientôt,"
-
-#: gifts/templates/emails/verify_email.txt:13
-msgid "The Nos Cadeaux team"
-msgstr "L'équipe Nos Cadeaux"
-
 #: gifts/templates/gifts/change_password.html:4
 msgid "Security"
 msgstr "Sécurité"
@@ -154,8 +192,8 @@ msgid "Old password"
 msgstr "Ancien mot de passe"
 
 #: gifts/templates/gifts/change_password.html:43
-msgid "New password"
-msgstr "Nouveau mot de passe"
+msgid "Define new password"
+msgstr "Définir le nouveau mot de passe"
 
 #: gifts/templates/gifts/change_password.html:53
 msgid "Requirements:"
@@ -286,7 +324,7 @@ msgstr "Modifier le nom du groupe"
 #: gifts/templates/gifts/includes/_edit_gift.html:64
 #: gifts/templates/gifts/includes/_view_gift.html:51
 #: gifts/templates/gifts/profile.html:66
-#: gifts/templates/gifts/view_list.html:120
+#: gifts/templates/gifts/view_list.html:132
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -350,14 +388,14 @@ msgstr "Fermer"
 
 #: gifts/templates/gifts/includes/_edit_gift.html:26
 #: gifts/templates/gifts/includes/_edit_gift.html:27
-#: gifts/templates/gifts/view_list.html:91
+#: gifts/templates/gifts/view_list.html:103
 msgid "Gift name"
 msgstr "Nom du cadeau"
 
 #: gifts/templates/gifts/includes/_edit_gift.html:35
 #: gifts/templates/gifts/includes/_edit_gift.html:36
 #: gifts/templates/gifts/includes/_view_gift.html:25
-#: gifts/templates/gifts/view_list.html:95
+#: gifts/templates/gifts/view_list.html:107
 msgid "Description"
 msgstr "Description"
 
@@ -368,7 +406,7 @@ msgid "Link"
 msgstr "Lien"
 
 #: gifts/templates/gifts/includes/_edit_gift.html:48
-#: gifts/templates/gifts/view_list.html:103
+#: gifts/templates/gifts/view_list.html:115
 msgid "Visible in"
 msgstr "Visible dans"
 
@@ -585,57 +623,57 @@ msgstr "Attendez"
 msgid "List of"
 msgstr "Liste de"
 
-#: gifts/templates/gifts/view_list.html:38
+#: gifts/templates/gifts/view_list.html:50
 msgid "Add a gift"
 msgstr "Ajouter un cadeau"
 
-#: gifts/templates/gifts/view_list.html:40
+#: gifts/templates/gifts/view_list.html:52
 msgid "Add a surprise"
 msgstr "Ajouter une surprise"
 
-#: gifts/templates/gifts/view_list.html:49
+#: gifts/templates/gifts/view_list.html:61
 msgid "Wishes from"
 msgstr "Souhaits de"
 
-#: gifts/templates/gifts/view_list.html:50
-#: gifts/templates/gifts/view_list.html:132
+#: gifts/templates/gifts/view_list.html:62
+#: gifts/templates/gifts/view_list.html:144
 msgid "Modify the gift"
 msgstr "Modifier le cadeau"
 
-#: gifts/templates/gifts/view_list.html:58
+#: gifts/templates/gifts/view_list.html:70
 msgid "You haven't wished for anything yet"
 msgstr "Vous n'avez pas encore exprimé de souhait de cadeau"
 
-#: gifts/templates/gifts/view_list.html:60
+#: gifts/templates/gifts/view_list.html:72
 msgid "hasn't wished for anything yet"
 msgstr "n'a pas encore exprimé de souhait de cadeau"
 
-#: gifts/templates/gifts/view_list.html:70
+#: gifts/templates/gifts/view_list.html:82
 msgid "Surprises suggested by others"
 msgstr "Surprises suggérées par d'autres"
 
-#: gifts/templates/gifts/view_list.html:71
-#: gifts/templates/gifts/view_list.html:137
+#: gifts/templates/gifts/view_list.html:83
+#: gifts/templates/gifts/view_list.html:149
 msgid "Modify the surprise"
 msgstr "Modifier la surprise"
 
-#: gifts/templates/gifts/view_list.html:82
+#: gifts/templates/gifts/view_list.html:94
 msgid "New wish"
 msgstr "Nouveau souhait"
 
-#: gifts/templates/gifts/view_list.html:82
+#: gifts/templates/gifts/view_list.html:94
 msgid "New surprise"
 msgstr "Nouvelle surprise"
 
-#: gifts/templates/gifts/view_list.html:99
+#: gifts/templates/gifts/view_list.html:111
 msgid "Link (URL)"
 msgstr "Lien (URL)"
 
-#: gifts/templates/gifts/view_list.html:105
+#: gifts/templates/gifts/view_list.html:117
 msgid "If none selected, visible to all your groups."
 msgstr "Si aucun n'est sélectionné, visible par tous vos groupes."
 
-#: gifts/templates/gifts/view_list.html:121
+#: gifts/templates/gifts/view_list.html:133
 msgid "Add"
 msgstr "Ajouter"
 
@@ -729,13 +767,90 @@ msgstr "Mot de passe"
 msgid "Your password"
 msgstr "Votre mot de passe"
 
-#: gifts/templates/registration/login.html:53
+#: gifts/templates/registration/login.html:47
+msgid "Forgot password ?"
+msgstr "Mot de passe oublié ?"
+
+#: gifts/templates/registration/login.html:58
 msgid "No account yet ?"
 msgstr "Pas encore de compte ?"
 
-#: gifts/templates/registration/login.html:55
+#: gifts/templates/registration/login.html:60
 msgid "Register here"
 msgstr "Créer un compte ici"
+
+#: gifts/templates/registration/password_reset_complete.html:11
+msgid "Password changed"
+msgstr "Mot de passe modifié"
+
+#: gifts/templates/registration/password_reset_complete.html:13
+msgid "Your password has been set. You may go ahead and log in now."
+msgstr ""
+"Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter."
+
+#: gifts/templates/registration/password_reset_confirm.html:12
+msgid "New password"
+msgstr "Nouveau mot de passe"
+
+#: gifts/templates/registration/password_reset_confirm.html:13
+msgid "Please enter your new password twice."
+msgstr "Veuillez entrer votre nouveau mot de passe deux fois."
+
+#: gifts/templates/registration/password_reset_confirm.html:35
+msgid "Change my password"
+msgstr "Changer mon mot de passe"
+
+#: gifts/templates/registration/password_reset_confirm.html:41
+msgid ""
+"The password reset link was invalid, possibly because it has already been "
+"used. Please request a new password reset."
+msgstr ""
+"Le lien de réinitialisation de mot de passe est invalide, probablement parce "
+"qu'il a déjà été utilisé. Veuillez faire une nouvelle demande."
+
+#: gifts/templates/registration/password_reset_confirm.html:44
+msgid "New request"
+msgstr "Nouvelle demande"
+
+#: gifts/templates/registration/password_reset_done.html:11
+msgid "Email sent"
+msgstr "E-mail envoyé"
+
+#: gifts/templates/registration/password_reset_done.html:13
+msgid ""
+"We've emailed you instructions for setting your password. You should receive "
+"them shortly."
+msgstr ""
+"Nous vous avons envoyé par e-mail les instructions pour configurer votre mot "
+"de passe. Vous devriez les recevoir prochainement."
+
+#: gifts/templates/registration/password_reset_done.html:16
+msgid ""
+"If you don't receive an email, please make sure you've entered the address "
+"you registered with, and check your spam folder."
+msgstr ""
+"Si vous ne recevez pas d'e-mail, veuillez vous assurer d'avoir saisi "
+"l'adresse avec laquelle vous vous êtes inscrit et vérifiez vos courriers "
+"indésirables."
+
+#: gifts/templates/registration/password_reset_done.html:19
+#: gifts/templates/registration/password_reset_form.html:27
+#, fuzzy
+#| msgid "Back to Dashboard"
+msgid "Back to login"
+msgstr "Retour à l'accueil"
+
+#: gifts/templates/registration/password_reset_form.html:12
+msgid "Password forgotten"
+msgstr "Mot de passe oublié"
+
+#: gifts/templates/registration/password_reset_form.html:13
+msgid "Enter your email to reset it"
+msgstr "Entrez votre e-mail pour le réinitialiser"
+
+#: gifts/templates/registration/password_reset_form.html:23
+msgid "Send link"
+msgstr "Envoyer le lien"
 
 #: gifts/templates/registration/register.html:13
 msgid "Register to create your list"
@@ -822,33 +937,56 @@ msgid "New invitation code generated !"
 msgstr "Nouveau code d'invitation généré !"
 
 #: gifts/views.py:329
-msgid "Impossible on your own list"
-msgstr "Impossible sur votre propre liste"
+msgid "You cannot subscribe to yourself"
+msgstr "Vous ne pouvez pas vous abonner à vous-même"
 
-#: gifts/views.py:333 gifts/views.py:360
+#: gifts/views.py:333 gifts/views.py:377 gifts/views.py:404
 msgid "You don't have access to this list"
 msgstr "Vous n'avez pas accès à cette liste"
 
-#: gifts/views.py:338
+#: gifts/views.py:337 gifts/views.py:359
+#, python-format
+msgid "You are no longer subscribed to %(name)s's list"
+msgstr "Vous n'êtes plus abonné à la liste de %(name)s"
+
+#: gifts/views.py:340
+#, python-format
+msgid "You are now subscribed to %(name)s's list"
+msgstr "Vous êtes maintenant abonné à la liste de %(name)s"
+
+#: gifts/views.py:354 gifts/views.py:363
+msgid "The unsubscription link is invalid"
+msgstr "Le lien de désabonnement est invalide"
+
+#: gifts/views.py:373
+msgid "Impossible on your own list"
+msgstr "Impossible sur votre propre liste"
+
+#: gifts/views.py:382
 msgid "This gift is already taken"
 msgstr "Ce cadeau est déjà réservé"
 
-#: gifts/views.py:421
+#: gifts/views.py:453
+#, python-format
+msgid "New gift on %(name)s's list!"
+msgstr "Nouveau cadeau sur la liste de %(name)s !"
+
+#: gifts/views.py:509
 msgid "Old password incorrect"
 msgstr "L'ancien mot de passe est incorrect"
 
-#: gifts/views.py:423
+#: gifts/views.py:511
 msgid "The new passwords don't match."
 msgstr "Les nouveaux mots de passe ne correspondent pas"
 
-#: gifts/views.py:425
+#: gifts/views.py:513
 msgid "New password is too short."
 msgstr "Le nouveau mot de passe est trop court"
 
-#: gifts/views.py:430
+#: gifts/views.py:518
 msgid "Password successfully updated !"
 msgstr "Mot de passe modifié avec succès !"
 
-#: gifts/views.py:450
+#: gifts/views.py:538
 msgid "Changelog not found."
 msgstr "Changelog introuvable"

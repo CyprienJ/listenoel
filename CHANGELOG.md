@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.1] - 2026-01-15
+### Added
+- Possibility to reset its password.
+
 ## [1.1.0] - 2026-01-15
 ### Added
 - Email verification system.
