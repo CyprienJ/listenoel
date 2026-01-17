@@ -3,6 +3,9 @@ from django.utils import timezone
 from datetime import timedelta
 from django.core.management import call_command
 from django.urls import reverse
+from django.core import mail
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
 from .models import User, Group, Gift, Reservation
 
 class UserCleanupTest(TestCase):
@@ -269,6 +272,116 @@ class GiftAccessControlTest(TestCase):
         response = self.client.post(reverse('unreserve_gift', args=[self.gift_user1.id]))
         self.assertEqual(response.status_code, 404)
         self.assertTrue(Reservation.objects.filter(gift=self.gift_user1).exists())
+
+class SubscriptionTest(TestCase):
+    def setUp(self):
+        self.user1 = User.objects.create_user(username='user1@test.com', email='user1@test.com', password='password', is_verified=True, nickname='User1')
+        self.user2 = User.objects.create_user(username='user2@test.com', email='user2@test.com', password='password', is_verified=True, nickname='User2')
+        self.user3 = User.objects.create_user(username='user3@test.com', email='user3@test.com', password='password', is_verified=True, nickname='User3')
+        
+        self.group = Group.objects.create(name="Group 1-2")
+        self.group.members.add(self.user1, self.user2)
+
+    def test_toggle_subscription(self):
+        self.client.force_login(self.user2)
+        # S'abonner
+        response = self.client.post(reverse('toggle_subscription', args=[self.user1.id]))
+        self.assertRedirects(response, reverse('view_list', args=[self.user1.id]))
+        self.assertTrue(self.user2.subscriptions.filter(id=self.user1.id).exists())
+        
+        # Se désabonner
+        response = self.client.post(reverse('toggle_subscription', args=[self.user1.id]))
+        self.assertRedirects(response, reverse('view_list', args=[self.user1.id]))
+        self.assertFalse(self.user2.subscriptions.filter(id=self.user1.id).exists())
+
+    def test_subscribe_self(self):
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse('toggle_subscription', args=[self.user1.id]))
+        self.assertEqual(response.status_code, 403)
+
+    def test_subscribe_no_common_group(self):
+        self.client.force_login(self.user3)
+        response = self.client.post(reverse('toggle_subscription', args=[self.user1.id]))
+        self.assertEqual(response.status_code, 403)
+
+    def test_notification_sent_on_add_gift(self):
+        # User2 s'abonne à User1
+        self.user2.subscriptions.add(self.user1)
+        
+        self.client.force_login(self.user1)
+        # User1 ajoute un cadeau à sa propre liste
+        response = self.client.post(reverse('add_gift', args=[self.user1.id]), {
+            'title': 'New Gift',
+            'description': 'A cool gift',
+            'url': 'http://example.com'
+        })
+        self.assertRedirects(response, reverse('view_list', args=[self.user1.id]))
+        
+        # Vérifier l'envoi de mail
+        self.assertEqual(len(mail.outbox), 1)
+        notification_mail = mail.outbox[0]
+        self.assertIn(self.user2.email, notification_mail.to)
+        # Le sujet est traduit en français par défaut dans les tests car LANGUAGE_CODE='fr'
+        self.assertIn('User1', notification_mail.subject)
+        self.assertIn('New Gift', notification_mail.body)
+        self.assertIn('A cool gift', notification_mail.body)
+        self.assertIn('http://example.com', notification_mail.body)
+        
+        # Vérifier le lien de désabonnement
+        self.assertIn('/unsubscribe/', notification_mail.body)
+
+    def test_unsubscribe_token(self):
+        self.user2.subscriptions.add(self.user1)
+        
+        uid = urlsafe_base64_encode(force_bytes(self.user1.pk))
+        token = "dummy-token"
+        url = reverse('unsubscribe_token', args=[uid, token])
+        
+        self.client.force_login(self.user2)
+        # Test avec GET car on a changé le bouton en lien
+        response = self.client.get(url)
+        self.assertRedirects(response, reverse('view_list', args=[self.user1.id]))
+        self.assertFalse(self.user2.subscriptions.filter(id=self.user1.id).exists())
+
+    def test_no_notification_if_not_owner_adding(self):
+        # User2 s'abonne à User1
+        self.user2.subscriptions.add(self.user1)
+        
+        self.client.force_login(self.user2)
+        # User2 ajoute une surprise à la liste de User1
+        self.client.post(reverse('add_gift', args=[self.user1.id]), {'title': 'Surprise'})
+        
+        # Pas de mail envoyé car c'est une surprise (pas ajouté par le propriétaire)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_notification_visibility_restriction(self):
+        # User2 s'abonne à User1 (groupe en commun)
+        self.user2.subscriptions.add(self.user1)
+        
+        # User1 crée un autre groupe avec User3
+        group2 = Group.objects.create(name="Group 1-3")
+        group2.members.add(self.user1, self.user3)
+        
+        self.client.force_login(self.user1)
+        
+        # User1 ajoute un cadeau visible UNIQUEMENT dans le groupe 1-3
+        self.client.post(reverse('add_gift', args=[self.user1.id]), {
+            'title': 'Secret Gift',
+            'visible_in': [group2.id]
+        })
+        
+        # User2 ne doit pas recevoir de mail car il n'est pas dans group2
+        self.assertEqual(len(mail.outbox), 0)
+        
+        # User3 s'abonne à User1
+        self.user3.subscriptions.add(self.user1)
+        mail.outbox = [] # Vider
+        
+        # User1 ajoute un cadeau visible par TOUT LE MONDE
+        self.client.post(reverse('add_gift', args=[self.user1.id]), {'title': 'Public Gift'})
+        
+        # User2 et User3 reçoivent un mail
+        self.assertEqual(len(mail.outbox), 2)
 
     def test_add_gift_access(self):
         """Ajouter un cadeau/surprise seulement si groupe en commun"""

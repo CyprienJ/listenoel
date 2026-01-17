@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-17 13:16+0000\n"
+"POT-Creation-Date: 2026-01-17 20:52+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -86,10 +86,45 @@ msgid "Log in"
 msgstr "Se connecter"
 
 #: gifts/templates/base.html:153
-#, fuzzy
-#| msgid "Changelog not found."
 msgid "Changelog"
-msgstr "Changelog introuvable"
+msgstr "Changelog"
+
+#: gifts/templates/emails/gift_added_notification.html:24
+#: gifts/templates/emails/gift_added_notification.txt:2
+#: gifts/templates/emails/verify_email.html:24
+#: gifts/templates/emails/verify_email.txt:2
+msgid "Hi"
+msgstr "Bonjour,"
+
+#: gifts/templates/emails/gift_added_notification.html:29
+#: gifts/templates/emails/gift_added_notification.txt:4
+#, python-format
+msgid "Something new on %(nickname)s's list!"
+msgstr "Du nouveau sur la liste de %(nickname)s !"
+
+#: gifts/templates/emails/gift_added_notification.html:39
+msgid "Link to product"
+msgstr "Lien vers le cadeau"
+
+#: gifts/templates/emails/gift_added_notification.html:49
+msgid "View the list"
+msgstr "Voir la liste"
+
+#: gifts/templates/emails/gift_added_notification.html:62
+msgid "You're receiving this because you subscribed to this list."
+msgstr "Vous recevez cet e-mail car vous êtes abonné à cette liste."
+
+#: gifts/templates/emails/gift_added_notification.html:64
+msgid "Unsubscribe from this list"
+msgstr "Se désabonner de cette liste"
+
+#: gifts/templates/emails/gift_added_notification.txt:10
+msgid "View the list:"
+msgstr "Voir la liste :"
+
+#: gifts/templates/emails/gift_added_notification.txt:13
+msgid "Unsubscribe from this list:"
+msgstr "Se désabonner de cette liste :"
 
 #: gifts/templates/emails/password_reset_email.html:24
 #: gifts/templates/emails/password_reset_email.txt:2
@@ -584,14 +619,8 @@ msgid "Verify your email"
 msgstr "Vérifiez votre email"
 
 #: gifts/templates/gifts/verify_email_sent.html:18
-#, fuzzy, python-format
-#| msgid "A confirmation link has been sent to <strong>%(email)s</strong>."
-msgid ""
-"\n"
-"                    A confirmation link has been sent to <strong>%(email)s</"
-"strong>.\n"
-"                    "
-msgstr "Un lien de confirmation a été envoyé à <strong>%(email)s</strong>."
+msgid "A confirmation link has been sent to"
+msgstr "Un lien de confirmation a été envoyé à"
 
 #: gifts/templates/gifts/verify_email_sent.html:24
 msgid "You must click this link to access your dashboard."
@@ -622,6 +651,14 @@ msgstr "Attendez"
 #: gifts/templates/gifts/view_list.html:18
 msgid "List of"
 msgstr "Liste de"
+
+#: gifts/templates/gifts/view_list.html:40
+msgid "Unsubscribe"
+msgstr "Se désabonner"
+
+#: gifts/templates/gifts/view_list.html:42
+msgid "Subscribe"
+msgstr "S'abonner"
 
 #: gifts/templates/gifts/view_list.html:50
 msgid "Add a gift"
@@ -835,10 +872,8 @@ msgstr ""
 
 #: gifts/templates/registration/password_reset_done.html:19
 #: gifts/templates/registration/password_reset_form.html:27
-#, fuzzy
-#| msgid "Back to Dashboard"
 msgid "Back to login"
-msgstr "Retour à l'accueil"
+msgstr "Retour à la connexion"
 
 #: gifts/templates/registration/password_reset_form.html:12
 msgid "Password forgotten"
@@ -940,53 +975,53 @@ msgstr "Nouveau code d'invitation généré !"
 msgid "You cannot subscribe to yourself"
 msgstr "Vous ne pouvez pas vous abonner à vous-même"
 
-#: gifts/views.py:333 gifts/views.py:377 gifts/views.py:404
+#: gifts/views.py:332 gifts/views.py:376 gifts/views.py:403
 msgid "You don't have access to this list"
 msgstr "Vous n'avez pas accès à cette liste"
 
-#: gifts/views.py:337 gifts/views.py:359
+#: gifts/views.py:336 gifts/views.py:358
 #, python-format
 msgid "You are no longer subscribed to %(name)s's list"
 msgstr "Vous n'êtes plus abonné à la liste de %(name)s"
 
-#: gifts/views.py:340
+#: gifts/views.py:339
 #, python-format
 msgid "You are now subscribed to %(name)s's list"
 msgstr "Vous êtes maintenant abonné à la liste de %(name)s"
 
-#: gifts/views.py:354 gifts/views.py:363
+#: gifts/views.py:362
 msgid "The unsubscription link is invalid"
 msgstr "Le lien de désabonnement est invalide"
 
-#: gifts/views.py:373
+#: gifts/views.py:372
 msgid "Impossible on your own list"
 msgstr "Impossible sur votre propre liste"
 
-#: gifts/views.py:382
+#: gifts/views.py:381
 msgid "This gift is already taken"
 msgstr "Ce cadeau est déjà réservé"
 
-#: gifts/views.py:453
+#: gifts/views.py:452
 #, python-format
 msgid "New gift on %(name)s's list!"
 msgstr "Nouveau cadeau sur la liste de %(name)s !"
 
-#: gifts/views.py:509
+#: gifts/views.py:508
 msgid "Old password incorrect"
 msgstr "L'ancien mot de passe est incorrect"
 
-#: gifts/views.py:511
+#: gifts/views.py:510
 msgid "The new passwords don't match."
 msgstr "Les nouveaux mots de passe ne correspondent pas"
 
-#: gifts/views.py:513
+#: gifts/views.py:512
 msgid "New password is too short."
 msgstr "Le nouveau mot de passe est trop court"
 
-#: gifts/views.py:518
+#: gifts/views.py:517
 msgid "Password successfully updated !"
 msgstr "Mot de passe modifié avec succès !"
 
-#: gifts/views.py:538
+#: gifts/views.py:537
 msgid "Changelog not found."
 msgstr "Changelog introuvable"

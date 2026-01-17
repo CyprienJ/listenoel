@@ -1,0 +1,84 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% translate "New gift added" %}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Inter', Helvetica, Arial, sans-serif; background-color: #f9f9f9; -webkit-text-size-adjust: 100%;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse; border: 0; margin: 0 auto;">
+        <tr>
+            <td style="padding: 20px 10px 40px 10px; text-align: center;">
+                <table role="presentation" style="width: 100%; max-width: 600px; border-collapse: collapse; border: 1px solid #eeeeee; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin: 0 auto; text-align: left;">
+
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="padding: 40px 20px; background-color: #D32F2F;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">🎁 Nos Cadeaux</h1>
+                        </td>
+                    </tr>
+
+                    <!-- Body -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; border: 0;">
+                                <tr>
+                                    <td style="color: #1A1C1E; font-size: 18px; font-weight: 700; padding-bottom: 16px;">
+                                        {% translate "Hi" %} {{ subscriber.nickname }},
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #44474E; font-size: 16px; line-height: 24px; padding-bottom: 24px;">
+                                        {% blocktranslate with nickname=owner.nickname %}Something new on {{ nickname }}'s list!{% endblocktranslate %}
+                                    </td>
+                                </tr>
+
+                                <!-- Gift detail -->
+                                <tr>
+                                    <td style="background-color: #FFF8F8; border-radius: 12px; padding: 24px; border-left: 4px solid #D32F2F;">
+                                        <h2 style="margin: 0 0 8px 0; font-size: 18px; color: #1A1C1E; font-weight: 700;">{{ gift.title }}</h2>
+                                        {% if gift.description %}
+                                            <p style="margin: 0 0 12px 0; font-size: 14px; color: #44474E; line-height: 1.5;">{{ gift.description }}</p>
+                                        {% endif %}
+                                        {% if gift.url %}
+                                            <a href="{{ gift.url }}" style="font-size: 14px; color: #D32F2F; text-decoration: none; font-weight: 600;">
+                                                <i style="font-style: normal;">🔗</i> {% translate "Link to product" %}
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+
+                                <!-- Action button -->
+                                <tr>
+                                    <td align="center" style="padding-top: 32px;">
+                                        <table role="presentation" style="border-collapse: separate; border: 0;">
+                                            <tr>
+                                                <td align="center" style="border-radius: 100px; background-color: #D32F2F;">
+                                                    <a href="{{ list_url }}" style="font-size: 16px; font-weight: 700; color: #ffffff; text-decoration: none; padding: 16px 32px; display: inline-block;">
+                                                        {% translate "View the list" %}
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 32px; background-color: #F5F5F5; color: #74777F; font-size: 12px; text-align: center; line-height: 18px;">
+                            <p style="margin: 0 0 8px 0;">{% translate "You're receiving this because you subscribed to this list." %}</p>
+                            <a href="{{ unsubscribe_url }}" style="color: #D32F2F; text-decoration: underline; font-weight: 600;">
+                                {% translate "Unsubscribe from this list" %}
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

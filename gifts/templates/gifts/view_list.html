@@ -31,7 +31,19 @@
         </div>
     </div>
 
-    <div class="mb-4 text-end">
+    <div class="mb-4 text-end d-flex justify-content-end gap-2">
+        {% if not is_owner %}
+            <form method="post" action="{% url 'toggle_subscription' user.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn {% if is_subscribed %}btn-outline-danger{% else %}btn-outline-primary{% endif %} btn-lg rounded-pill shadow-sm">
+                    {% if is_subscribed %}
+                        <i class="bi bi-bell-slash"></i> {% trans "Unsubscribe" %}
+                    {% else %}
+                        <i class="bi bi-bell"></i> {% trans "Subscribe" %}
+                    {% endif %}
+                </button>
+            </form>
+        {% endif %}
         <button class="btn btn-primary btn-lg rounded-pill shadow-sm" data-bs-toggle="modal"
                 data-bs-target="#addGiftModal">
             {% if is_owner %}

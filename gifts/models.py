@@ -34,6 +34,12 @@ class User(AbstractUser):
 
     nickname = models.CharField(max_length=150, blank=False)
     is_verified = models.BooleanField(default=False)
+    subscriptions = models.ManyToManyField(
+        'self',
+        symmetrical=False,
+        related_name='subscribers',
+        blank=True
+    )
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 

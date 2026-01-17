@@ -317,7 +317,44 @@ def view_list(request: HttpRequest, user_id: int):
         "is_owner": is_owner,
         "from_group_id": from_group_id,
         "user_groups": user_groups,
+        "is_subscribed": request.user.subscriptions.filter(id=target_user.id).exists() if not is_owner else False,
     })
+
+
+@login_required
+@require_POST
+def toggle_subscription(request, user_id):
+    target_user = get_object_or_404(User, id=user_id)
+    if target_user == request.user:
+        return HttpResponseForbidden(_("You cannot subscribe to yourself"))
+
+    if not Group.objects.filter(members=request.user).filter(members=target_user).exists():
+        return HttpResponseForbidden(_("You don't have access to this list"))
+
+    if request.user.subscriptions.filter(id=target_user.id).exists():
+        request.user.subscriptions.remove(target_user)
+        messages.success(request, _("You are no longer subscribed to %(name)s's list") % {'name': target_user.nickname})
+    else:
+        request.user.subscriptions.add(target_user)
+        messages.success(request, _("You are now subscribed to %(name)s's list") % {'name': target_user.nickname})
+
+    return redirect('view_list', user_id=user_id)
+
+
+@login_required
+def unsubscribe_token(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        target_user = get_object_or_404(User, id=uid)
+
+        if request.user.subscriptions.filter(id=target_user.id).exists():
+            request.user.subscriptions.remove(target_user)
+            messages.success(request, _("You are no longer subscribed to %(name)s's list") % {'name': target_user.nickname})
+        
+        return redirect('view_list', user_id=target_user.id)
+    except (TypeError, ValueError, OverflowError):
+        messages.error(request, _("The unsubscription link is invalid"))
+        return redirect('dashboard')
 
 
 @login_required
@@ -373,6 +410,46 @@ def add_gift(request, owner_id):
             # Security check: can only set visibility for groups user is member of
             valid_groups = Group.objects.filter(id__in=group_ids, members=request.user)
             gift.visible_in.set(valid_groups)
+        
+        # Send notification to all subscribers of the owner
+        if owner == request.user:
+            subscribers = owner.subscribers.all()
+            if subscribers.exists():
+                protocol = 'https' if request.is_secure() else 'http'
+                domain = get_current_site(request).domain
+                list_url = f"{protocol}://{domain}{reverse('view_list', args=[owner.id])}"
+                
+                for subscriber in subscribers:
+                    if Group.objects.filter(members=owner).filter(members=subscriber).exists():
+
+                        gift_groups = gift.visible_in.all()
+                        if gift_groups.exists():
+                            if not gift_groups.filter(members=subscriber).exists():
+                                continue
+
+                        uid = urlsafe_base64_encode(force_bytes(owner.pk))
+                        token = default_token_generator.make_token(subscriber)
+                        unsubscribe_url = f"{protocol}://{domain}{reverse('unsubscribe_token', args=[uid, token])}"
+                        
+                        context = {
+                            'subscriber': subscriber,
+                            'owner': owner,
+                            'gift': gift,
+                            'list_url': list_url,
+                            'unsubscribe_url': unsubscribe_url,
+                        }
+                        
+                        subject = _("New gift on %(name)s's list!") % {'name': owner.nickname}
+                        html_message = render_to_string('emails/gift_added_notification.html', context)
+                        plain_message = render_to_string('emails/gift_added_notification.txt', context)
+                        
+                        send_mail(
+                            subject,
+                            plain_message,
+                            settings.DEFAULT_FROM_EMAIL,
+                            [subscriber.email],
+                            html_message=html_message
+                        )
     return redirect("view_list", user_id=owner.id)
 
 @login_required
