@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.1] - 2026-01-15
+### Ajouté
+- Possibilité de réinitialiser son mot de passe.
+- Notification à une liste.
+
 ## [1.1.0] - 2026-01-15
 ### Ajouté
 - Système de vérification des emails.
