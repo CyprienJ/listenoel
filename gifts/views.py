@@ -108,7 +108,7 @@ def verify_email_sent(request):
 
 def verify_email_confirm(request, uidb64, token):
 
-    call_command('cleanup_unverified_users')
+    # call_command('cleanup_unverified_users')
 
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
