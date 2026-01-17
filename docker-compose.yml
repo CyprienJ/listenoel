@@ -14,7 +14,7 @@ services:
       retries: 5
 
   web:
-    build: .
+    image: ghcr.io/cyprienj/noscadeaux:latest
     command: >
       sh -c "python manage.py migrate &&
              python manage.py collectstatic --no-input &&
