@@ -35,6 +35,7 @@ ALLOWED_HOSTS = ["noscadeaux.fr", "www.noscadeaux.fr", "127.0.0.1"]
 # Application definition
 
 INSTALLED_APPS = [
+    'gifts',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -42,7 +43,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'anymail',
-    'gifts',
 ]
 
 MIDDLEWARE = [

@@ -149,6 +149,54 @@ class AccessControlTest(TestCase):
         # Pour les vues @require_POST, on teste juste qu'on n'est pas redirigé par le middleware (donc 405 au lieu de 302 vers verify_email_sent)
         self.assertEqual(self.client.get(reverse('create_group')).status_code, 405)
 
+class PasswordResetTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='testuser@example.com',
+            email='testuser@example.com',
+            password='oldpassword123',
+            is_verified=True,
+            nickname='TestUser'
+        )
+
+    def test_password_reset_flow(self):
+        # 1. Demande de réinitialisation
+        response = self.client.post(reverse('password_reset'), {'email': 'testuser@example.com'})
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('password_reset_done'))
+        
+        # Vérifier qu'un mail a été envoyé
+        self.assertEqual(len(mail.outbox), 1)
+        reset_mail = mail.outbox[0]
+        self.assertIn('testuser@example.com', reset_mail.to)
+        
+        # Vérifier que le mail contient du HTML (puisqu'on a configuré html_email_template_name)
+        self.assertTrue(any(alt[1] == 'text/html' for alt in reset_mail.alternatives))
+        
+        # 2. Vérifier l'accès à password_reset_done
+        response = self.client.get(reverse('password_reset_done'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_password_reset_unverified_user(self):
+        self.user.is_verified = False
+        self.user.save()
+        
+        self.client.force_login(self.user)
+        # Ne doit pas être redirigé vers verify_email_sent par le middleware
+        response = self.client.get(reverse('password_reset'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_password_reset_confirm_unverified_user(self):
+        self.user.is_verified = False
+        self.user.save()
+        
+        url = reverse('password_reset_confirm', kwargs={'uidb64': 'MQ', 'token': 'abc-123'})
+        
+        self.client.force_login(self.user)
+        # Ne doit pas être redirigé vers verify_email_sent par le middleware
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
 class GiftAccessControlTest(TestCase):
     def setUp(self):
         self.user1 = User.objects.create_user(username='user1@test.com', email='user1@test.com', password='password', is_verified=True, nickname='User1')

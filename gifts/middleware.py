@@ -17,6 +17,11 @@ class EmailVerificationMiddleware:
                 reverse('logout'),
                 reverse('login'),
                 reverse('welcome'),
+                reverse('password_reset'),
+                reverse('password_reset_done'),
+                reverse('password_reset_confirm', kwargs={'uidb64': 'dummy', 'token': 'dummy'}).split('dummy')[0],
+                reverse('password_reset_complete'),
+                reverse('unsubscribe_token', kwargs={'uidb64': 'dummy', 'token': 'dummy'}).split('dummy')[0],
             ]
 
             if not any(request.path == url or (url != reverse('welcome') and request.path.startswith(url)) for url in allowed_urls):
