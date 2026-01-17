@@ -9,8 +9,9 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ("username", "nickname", "email")
     ordering = ("username",)
 
+    list_editable = ("is_verified",)
     fieldsets = BaseUserAdmin.fieldsets + (
-        (_("More information"), {"fields": ("nickname",)}),
+        (_("More information"), {"fields": ("nickname", "is_verified")}),
     )
 
 @admin.register(Group)
