@@ -1,0 +1,14 @@
+{% load i18n %}
+{% translate "Hi" %} {{ subscriber.nickname }},
+
+{% blocktranslate with nickname=owner.nickname %}Something new on {{ nickname }}'s list!{% endblocktranslate %}
+
+{{ gift.title }}
+{% if gift.description %}{{ gift.description }}{% endif %}
+{% if gift.url %}{{ gift.url }}{% endif %}
+
+{% translate "View the list:" %}
+{{ list_url }}
+
+{% translate "Unsubscribe from this list:" %}
+{{ unsubscribe_url }}

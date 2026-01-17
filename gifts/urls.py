@@ -29,6 +29,8 @@ urlpatterns = [
     path('verify-email/confirm/<uidb64>/<token>/', views.verify_email_confirm, name='verify_email_confirm'),
     path('verify-email/resend/', views.resend_verification, name='resend_verification'),
     path('changelog/', views.changelog, name='changelog'),
+    path('subscribe/<int:user_id>/', views.toggle_subscription, name='toggle_subscription'),
+    path('unsubscribe/<uidb64>/<token>/', views.unsubscribe_token, name='unsubscribe_token'),
     path('password-reset/',
          auth_views.PasswordResetView.as_view(
              template_name='registration/password_reset_form.html',
