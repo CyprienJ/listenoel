@@ -16,8 +16,7 @@ urlpatterns = [
     path('group/<int:group_id>/', views.group_detail, name='group_detail'),
     path('group/<int:group_id>/edit/', views.edit_group, name='edit_group'),
     path('group/<int:group_id>/regenerate-token/', views.regenerate_group_token, name='regenerate_group_token'),
-    path('reserve/<int:gift_id>/', views.reserve_gift, name='reserve_gift'),
-    path('unreserve/<int:gift_id>/', views.unreserve_gift, name='unreserve_gift'),
+    # path('unreserve/<int:gift_id>/', views.unreserve_gift, name='unreserve_gift'),
     path('add-gift/<int:owner_id>/', views.add_gift, name='add_gift'),
     path('edit-gift/<int:gift_id>/', views.edit_gift, name='edit_gift'),
     path('delete-gift/<int:gift_id>/', views.delete_gift, name='delete_gift'),
@@ -47,5 +46,10 @@ urlpatterns = [
     path('password-reset-complete/',
          auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'),
          name='password_reset_complete'),
+    path('gift/<int:gift_id>/reserve/', views.reserve_gift, name='reserve_gift'),
+    path('gift/<int:gift_id>/unreserve/', views.unreserve_gift, name='unreserve_gift'),
+    path('gift/<int:gift_id>/edit-price/', views.edit_gift_price, name='edit_gift_price'),
+    path('reservation/<int:reservation_id>/update/', views.update_reservation_percentage, name='update_reservation_percentage'),
+
 
 ]
