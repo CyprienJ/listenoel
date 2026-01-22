@@ -523,7 +523,7 @@ def edit_gift_price(request, gift_id):
 def update_reservation_percentage(request, reservation_id):
     reservation = get_object_or_404(Reservation, id=reservation_id, reserver=request.user)
 
-    # Calculer le total des participations des AUTRES
+    # Calculate the total participation of OTHERS
     other_participations_total = Reservation.objects.filter(
         gift=reservation.gift
     ).exclude(id=reservation.id).aggregate(total=models.Sum('percentage_participation'))['total'] or 0
@@ -549,7 +549,7 @@ def update_reservation_percentage(request, reservation_id):
 @login_required
 @require_POST
 def unreserve_gift(request, gift_id):
-    # On cherche la réservation spécifique de cet utilisateur pour ce cadeau
+    # We look for the specific reservation of this user for this gift
     reservation = get_object_or_404(Reservation, gift_id=gift_id, reserver=request.user)
     owner_id = reservation.gift.owner.id
     reservation.delete()
@@ -565,13 +565,14 @@ def reserve_gift(request: HttpRequest, gift_id: int):
     if gift.owner == request.user:
         return HttpResponseForbidden(_("Impossible on your own list"))
 
-    # Vérification du groupe commun
+    # Common group verification
     if not Group.objects.filter(members=request.user).filter(members=gift.owner).exists():
         return HttpResponseForbidden(_("You don't have access to this list"))
 
     if Reservation.objects.filter(gift=gift, reserver=request.user).exists():
         return JsonResponse({"success": False, "error": _("You have already joined this gift")}, status=409)
 
+    # Calculate remaining percentage
     current_total = Reservation.objects.filter(gift=gift).aggregate(
         total=models.Sum('percentage_participation'))['total'] or 0
 
@@ -581,7 +582,7 @@ def reserve_gift(request: HttpRequest, gift_id: int):
     remaining = 100 - current_total
 
     try:
-        # On crée la réservation avec le reste disponible
+        # We create the reservation with the remaining available amount
         Reservation.objects.create(gift=gift, reserver=request.user, percentage_participation=remaining)
     except IntegrityError:
         return JsonResponse({"success": False, "error": _("You have already joined this gift")}, status=409)
