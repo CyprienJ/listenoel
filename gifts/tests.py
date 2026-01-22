@@ -80,17 +80,17 @@ class AccessControlTest(TestCase):
 
     def test_anonymous_access(self):
         """
-        Test des accès pour un utilisateur non connecté.
+        Test access for an unauthenticated user.
         - login/register : OK (200)
         - welcome : OK (200)
-        - dashboard/profile/etc : Redirection vers login (302)
+        - dashboard/profile/etc : Redirect to login (302)
         """
         # OK
         self.assertEqual(self.client.get(reverse('login')).status_code, 200)
         self.assertEqual(self.client.get(reverse('register')).status_code, 200)
         self.assertEqual(self.client.get(reverse('welcome')).status_code, 200)
 
-        # Redirection vers login par @login_required
+        # Redirect to login by @login_required
         protected_urls = [
             reverse('dashboard'),
             reverse('profile'),
@@ -102,54 +102,54 @@ class AccessControlTest(TestCase):
 
     def test_unverified_user_access(self):
         """
-        Test des accès pour un utilisateur connecté mais non vérifié.
+        Test access for a logged-in but unverified user.
         - login : OK (200)
-        - register : Redirection vers verify_email_sent (302)
-        - welcome : Redirection vers verify_email_sent (302)
-        - verify_email_sent/resend/profile/logout : OK (200 ou 302 selon action)
-        - dashboard/groupes/etc : Redirection vers verify_email_sent (302) par middleware
+        - register : Redirect to verify_email_sent (302)
+        - welcome : Redirect to verify_email_sent (302)
+        - verify_email_sent/resend/profile/logout : OK (200 or 302 depending on action)
+        - dashboard/groups/etc : Redirect to verify_email_sent (302) via middleware
         """
         self.client.force_login(self.unverified_user)
 
-        # La LoginView de Django ne redirige pas automatiquement si on y accède en GET en étant déjà connecté
+        # Django's LoginView does not automatically redirect if accessed via GET while already logged in
         self.assertEqual(self.client.get(reverse('login')).status_code, 200)
         
-        # register est redirigé par le middleware (car non dans allowed_urls)
+        # register is redirected by middleware (as it is not in allowed_urls)
         self.assertRedirects(self.client.get(reverse('register')), reverse('verify_email_sent'))
         
-        # welcome redirige directement vers verify_email_sent pour les non-vérifiés
+        # welcome redirects directly to verify_email_sent for unverified users
         self.assertRedirects(self.client.get(reverse('welcome')), reverse('verify_email_sent'))
 
-        # Accès autorisés pour non vérifiés
+        # Authorized access for unverified users
         self.assertEqual(self.client.get(reverse('verify_email_sent')).status_code, 200)
         self.assertEqual(self.client.get(reverse('profile')).status_code, 200)
 
-        # URLs bloquées par le middleware et redirigées vers verify_email_sent
+        # URLs blocked by middleware and redirected to verify_email_sent
         self.assertRedirects(self.client.get(reverse('dashboard')), reverse('verify_email_sent'))
 
     def test_verified_user_access(self):
         """
-        Test des accès pour un utilisateur connecté et vérifié.
-        - login/register/welcome : Redirection vers dashboard (302)
-        - verify_email_sent/resend : Redirection vers dashboard (302) (car déjà vérifié)
-        - dashboard/profile/groupes/etc : OK (200)
+        Test access for a logged-in and verified user.
+        - login/register/welcome : Redirect to dashboard (302)
+        - verify_email_sent/resend : Redirect to dashboard (302) (since already verified)
+        - dashboard/profile/groups/etc : OK (200)
         """
         self.client.force_login(self.verified_user)
 
-        # Redirection vers dashboard
+        # Redirect to dashboard
         self.assertEqual(self.client.get(reverse('login')).status_code, 200)
         self.assertRedirects(self.client.get(reverse('register')), reverse('dashboard'))
         self.assertRedirects(self.client.get(reverse('welcome')), reverse('dashboard'))
 
-        # Redirection vers dashboard car déjà vérifié
+        # Redirect to dashboard as already verified
         self.assertRedirects(self.client.get(reverse('verify_email_sent')), reverse('dashboard'))
         self.assertRedirects(self.client.get(reverse('resend_verification')), reverse('dashboard'))
 
-        # Accès autorisés
+        # Authorized access
         self.assertEqual(self.client.get(reverse('dashboard')).status_code, 200)
         self.assertEqual(self.client.get(reverse('profile')).status_code, 200)
         
-        # Pour les vues @require_POST, on teste juste qu'on n'est pas redirigé par le middleware (donc 405 au lieu de 302 vers verify_email_sent)
+        # For @require_POST views, we just test that we are not redirected by the middleware (thus 405 instead of 302 to verify_email_sent)
         self.assertEqual(self.client.get(reverse('create_group')).status_code, 405)
 
 class PasswordResetTest(TestCase):
@@ -163,20 +163,20 @@ class PasswordResetTest(TestCase):
         )
 
     def test_password_reset_flow(self):
-        # 1. Demande de réinitialisation
+        # 1. Reset request
         response = self.client.post(reverse('password_reset'), {'email': 'testuser@example.com'})
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('password_reset_done'))
         
-        # Vérifier qu'un mail a été envoyé
+        # Verify that an email was sent
         self.assertEqual(len(mail.outbox), 1)
         reset_mail = mail.outbox[0]
         self.assertIn('testuser@example.com', reset_mail.to)
         
-        # Vérifier que le mail contient du HTML (puisqu'on a configuré html_email_template_name)
+        # Verify that the email contains HTML (since we configured html_email_template_name)
         self.assertTrue(any(alt[1] == 'text/html' for alt in reset_mail.alternatives))
         
-        # 2. Vérifier l'accès à password_reset_done
+        # 2. Verify access to password_reset_done
         response = self.client.get(reverse('password_reset_done'))
         self.assertEqual(response.status_code, 200)
 
@@ -185,7 +185,7 @@ class PasswordResetTest(TestCase):
         self.user.save()
         
         self.client.force_login(self.user)
-        # Ne doit pas être redirigé vers verify_email_sent par le middleware
+        # Should not be redirected to verify_email_sent by the middleware
         response = self.client.get(reverse('password_reset'))
         self.assertEqual(response.status_code, 200)
 
@@ -196,7 +196,7 @@ class PasswordResetTest(TestCase):
         url = reverse('password_reset_confirm', kwargs={'uidb64': 'MQ', 'token': 'abc-123'})
         
         self.client.force_login(self.user)
-        # Ne doit pas être redirigé vers verify_email_sent par le middleware
+        # Should not be redirected to verify_email_sent by the middleware
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
@@ -206,68 +206,68 @@ class GiftAccessControlTest(TestCase):
         self.user2 = User.objects.create_user(username='user2@test.com', email='user2@test.com', password='password', is_verified=True, nickname='User2')
         self.user3 = User.objects.create_user(username='user3@test.com', email='user3@test.com', password='password', is_verified=True, nickname='User3')
 
-        # Groupe entre User1 et User2
+        # Group between User1 and User2
         self.group = Group.objects.create(name="Group 1-2")
         self.group.members.add(self.user1, self.user2)
 
-        # Cadeau de User1 (qu'il a créé lui-même)
+        # Gift from User1 (created by himself)
         self.gift_user1 = Gift.objects.create(owner=self.user1, created_by=self.user1, title="Gift User1")
         
-        # Surprise pour User1 créée par User2
+        # Surprise for User1 created by User2
         self.surprise_user1 = Gift.objects.create(owner=self.user1, created_by=self.user2, title="Surprise User1")
 
     def test_view_list_access(self):
-        """Un utilisateur ne peut accéder aux listes que de lui ou des gens avec qui il a au moins un groupe en commun"""
+        """A user can only access lists of himself or people with whom he shares at least one group"""
         self.client.force_login(self.user2)
-        # User2 partage un groupe avec User1
+        # User2 shares a group with User1
         self.assertEqual(self.client.get(reverse('view_list', args=[self.user1.id])).status_code, 200)
         
         self.client.force_login(self.user3)
-        # User3 ne partage pas de groupe avec User1
+        # User3 does not share a group with User1
         self.assertEqual(self.client.get(reverse('view_list', args=[self.user1.id])).status_code, 403)
 
     def test_edit_gift_access(self):
-        """Un utilisateur ne puisse modifier que ses cadeaux ou les surprises des groupes dans lesquels il est"""
-        # User1 modifie son propre cadeau
+        """A user can only edit his gifts or surprises from groups he is in"""
+        # User1 edits his own gift
         self.client.force_login(self.user1)
         response = self.client.post(reverse('edit_gift', args=[self.gift_user1.id]), {'title': 'Updated Title'})
         self.assertEqual(response.status_code, 302)
         self.gift_user1.refresh_from_db()
         self.assertEqual(self.gift_user1.title, 'Updated Title')
 
-        # User2 modifie la surprise qu'il a créée pour User1
+        # User2 edits the surprise he created for User1
         self.client.force_login(self.user2)
         response = self.client.post(reverse('edit_gift', args=[self.surprise_user1.id]), {'title': 'Updated Surprise'})
         self.assertEqual(response.status_code, 302)
         self.surprise_user1.refresh_from_db()
         self.assertEqual(self.surprise_user1.title, 'Updated Surprise')
 
-        # User3 tente de modifier le cadeau de User1 (doit échouer)
+        # User3 attempts to edit User1's gift (should fail)
         self.client.force_login(self.user3)
         response = self.client.post(reverse('edit_gift', args=[self.gift_user1.id]), {'title': 'Hacked Title'})
-        # Actuellement ça passe probablement (200 ou 302), on s'attend à 403 ou 404
+        # Currently this probably passes (200 or 302), we expect 403 or 404
         self.assertIn(response.status_code, [403, 404])
 
     def test_delete_gift_access(self):
-        """Un utilisateur ne puisse supprimer que ses cadeaux ou les surprises des groupes dans lesquels il est"""
-        # User3 tente de supprimer le cadeau de User1
+        """A user can only delete his gifts or surprises from groups he is in"""
+        # User3 attempts to delete User1's gift
         self.client.force_login(self.user3)
         response = self.client.post(reverse('delete_gift', args=[self.gift_user1.id]))
         self.assertIn(response.status_code, [403, 404])
         self.assertTrue(Gift.objects.filter(id=self.gift_user1.id).exists())
 
     def test_reserve_gift_access(self):
-        """Ne puisse s'attribuer un cadeau d'un groupe sur lequel il n'est pas"""
+        """Cannot assign a gift from a group he is not in"""
         self.client.force_login(self.user3)
         response = self.client.post(reverse('reserve_gift', args=[self.gift_user1.id]))
         self.assertIn(response.status_code, [403, 404])
 
     def test_unreserve_gift_access(self):
-        """Ne puisse unreserve que un cadeau qu'il a reservé lui même"""
-        # User2 réserve le cadeau de User1
+        """Can only unreserve a gift he reserved himself"""
+        # User2 reserves User1's gift
         Reservation.objects.create(gift=self.gift_user1, reserver=self.user2)
         
-        # User3 tente de déréserver
+        # User3 attempts to unreserve
         self.client.force_login(self.user3)
         response = self.client.post(reverse('unreserve_gift', args=[self.gift_user1.id]))
         self.assertEqual(response.status_code, 404)
@@ -284,12 +284,12 @@ class SubscriptionTest(TestCase):
 
     def test_toggle_subscription(self):
         self.client.force_login(self.user2)
-        # S'abonner
+        # Subscribe
         response = self.client.post(reverse('toggle_subscription', args=[self.user1.id]))
         self.assertRedirects(response, reverse('view_list', args=[self.user1.id]))
         self.assertTrue(self.user2.subscriptions.filter(id=self.user1.id).exists())
         
-        # Se désabonner
+        # Unsubscribe
         response = self.client.post(reverse('toggle_subscription', args=[self.user1.id]))
         self.assertRedirects(response, reverse('view_list', args=[self.user1.id]))
         self.assertFalse(self.user2.subscriptions.filter(id=self.user1.id).exists())
@@ -305,11 +305,11 @@ class SubscriptionTest(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_notification_sent_on_add_gift(self):
-        # User2 s'abonne à User1
+        # User2 subscribes to User1
         self.user2.subscriptions.add(self.user1)
         
         self.client.force_login(self.user1)
-        # User1 ajoute un cadeau à sa propre liste
+        # User1 adds a gift to his own list
         response = self.client.post(reverse('add_gift', args=[self.user1.id]), {
             'title': 'New Gift',
             'description': 'A cool gift',
@@ -317,17 +317,17 @@ class SubscriptionTest(TestCase):
         })
         self.assertRedirects(response, reverse('view_list', args=[self.user1.id]))
         
-        # Vérifier l'envoi de mail
+        # Verify email delivery
         self.assertEqual(len(mail.outbox), 1)
         notification_mail = mail.outbox[0]
         self.assertIn(self.user2.email, notification_mail.to)
-        # Le sujet est traduit en français par défaut dans les tests car LANGUAGE_CODE='fr'
+        # The subject is translated to French by default in tests because LANGUAGE_CODE='fr'
         self.assertIn('User1', notification_mail.subject)
         self.assertIn('New Gift', notification_mail.body)
         self.assertIn('A cool gift', notification_mail.body)
         self.assertIn('http://example.com', notification_mail.body)
         
-        # Vérifier le lien de désabonnement
+        # Verify unsubscribe link
         self.assertIn('/unsubscribe/', notification_mail.body)
 
     def test_unsubscribe_token(self):
@@ -338,55 +338,55 @@ class SubscriptionTest(TestCase):
         url = reverse('unsubscribe_token', args=[uid, token])
         
         self.client.force_login(self.user2)
-        # Test avec GET car on a changé le bouton en lien
+        # Test with GET because button changed to link
         response = self.client.get(url)
         self.assertRedirects(response, reverse('view_list', args=[self.user1.id]))
         self.assertFalse(self.user2.subscriptions.filter(id=self.user1.id).exists())
 
     def test_no_notification_if_not_owner_adding(self):
-        # User2 s'abonne à User1
+        # User2 subscribes to User1
         self.user2.subscriptions.add(self.user1)
         
         self.client.force_login(self.user2)
-        # User2 ajoute une surprise à la liste de User1
+        # User2 add a surprise to User1's list
         self.client.post(reverse('add_gift', args=[self.user1.id]), {'title': 'Surprise'})
         
-        # Pas de mail envoyé car c'est une surprise (pas ajouté par le propriétaire)
+        # No mail sent because it is a surprise
         self.assertEqual(len(mail.outbox), 0)
 
     def test_notification_visibility_restriction(self):
-        # User2 s'abonne à User1 (groupe en commun)
+        # User2 subscribes to User1
         self.user2.subscriptions.add(self.user1)
         
-        # User1 crée un autre groupe avec User3
+        # User1 create another group with User3
         group2 = Group.objects.create(name="Group 1-3")
         group2.members.add(self.user1, self.user3)
         
         self.client.force_login(self.user1)
         
-        # User1 ajoute un cadeau visible UNIQUEMENT dans le groupe 1-3
+        # User1 add a gift visible only to 1-3 group
         self.client.post(reverse('add_gift', args=[self.user1.id]), {
             'title': 'Secret Gift',
             'visible_in': [group2.id]
         })
         
-        # User2 ne doit pas recevoir de mail car il n'est pas dans group2
+        # User2 shouldn't receive a notification
         self.assertEqual(len(mail.outbox), 0)
         
-        # User3 s'abonne à User1
+        # User3 subscribes to User1
         self.user3.subscriptions.add(self.user1)
-        mail.outbox = [] # Vider
+        mail.outbox = []
         
-        # User1 ajoute un cadeau visible par TOUT LE MONDE
+        # User1 add a gift visible to everybody
         self.client.post(reverse('add_gift', args=[self.user1.id]), {'title': 'Public Gift'})
         
-        # User2 et User3 reçoivent un mail
+        # User2 and User3 receive a mail
         self.assertEqual(len(mail.outbox), 2)
 
     def test_add_gift_access(self):
-        """Ajouter un cadeau/surprise seulement si groupe en commun"""
+        """Add a gift/surprise only if there is a common group"""
         self.client.force_login(self.user3)
-        # User3 tente d'ajouter un cadeau à User1
+        # User3 attempts to add a gift to User1
         response = self.client.post(reverse('add_gift', args=[self.user1.id]), {'title': 'Bad Surprise'})
         self.assertIn(response.status_code, [403, 404])
         self.assertFalse(Gift.objects.filter(title='Bad Surprise').exists())
@@ -419,10 +419,10 @@ class ReservationSharingTest(TestCase):
         self.assertEqual(reservation.percentage_participation, 40)
 
     def test_multiple_contributors(self):
-        # User 2 prend 40%
+        # User 2 take 40%
         Reservation.objects.create(gift=self.gift, reserver=self.user2, percentage_participation=40)
         
-        # User 3 réserve, il doit récupérer les 60% restants
+        # User should 3 take the 60% remaining
         self.client.force_login(self.user3)
         response = self.client.post(reverse('reserve_gift', args=[self.gift.id]))
         self.assertEqual(response.status_code, 200)
@@ -431,18 +431,17 @@ class ReservationSharingTest(TestCase):
         self.assertEqual(res3.percentage_participation, 60)
 
     def test_cannot_exceed_100_percent(self):
-        # User 2 prend 70%
+        # User 2 take 70%
         res2 = Reservation.objects.create(gift=self.gift, reserver=self.user2, percentage_participation=70)
-        # User 3 prend 20%
+        # User 3 take 20%
         Reservation.objects.create(gift=self.gift, reserver=self.user3, percentage_participation=20)
         
-        # Total actuel = 90%. User 2 essaie de passer à 85% (Total deviendrait 105%)
+        # current total = 90%. User 2 tries to go to 85% (Total would become 105%)
         self.client.force_login(self.user2)
         response = self.client.post(reverse('update_reservation_percentage', args=[res2.id]), {'percentage': 85})
         
         res2.refresh_from_db()
-        self.assertEqual(res2.percentage_participation, 70) # Pas changé
-
+        self.assertEqual(res2.percentage_participation, 70) # Unchanged
 
     def test_cannot_reserve_already_full(self):
         Reservation.objects.create(gift=self.gift, reserver=self.user2, percentage_participation=100)
@@ -456,7 +455,8 @@ class ReservationSharingTest(TestCase):
         Reservation.objects.create(gift=self.gift, reserver=self.user2, percentage_participation=50)
         
         self.client.force_login(self.user2)
-        # Tenter de réserver à nouveau le même cadeau
+
+        # Attempt to reserve the same gift again
         response = self.client.post(reverse('reserve_gift', args=[self.gift.id]))
         self.assertEqual(response.status_code, 409)
         self.assertEqual(Reservation.objects.filter(gift=self.gift, reserver=self.user2).count(), 1)

@@ -21,7 +21,7 @@ class GroupAdmin(admin.ModelAdmin):
 
     def member_count(self, obj):
         return obj.members.count()
-    member_count.short_description = "Nombre de membres"
+    member_count.short_description = "Member count"
 
 @admin.register(Gift)
 class GiftAdmin(admin.ModelAdmin):
