@@ -31,5 +31,4 @@ class GiftAdmin(admin.ModelAdmin):
 
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):
-    list_display = ("gift", "reserver", "created_at")
-    list_filter = ("reserver",)
+    list_display = ("gift", "created_at", "reserver", "percentage_participation", "brut_participation")

@@ -35,7 +35,8 @@
         {% if not is_owner %}
             <form method="post" action="{% url 'toggle_subscription' user.id %}">
                 {% csrf_token %}
-                <button type="submit" class="btn {% if is_subscribed %}btn-outline-danger{% else %}btn-outline-primary{% endif %} btn-lg rounded-pill shadow-sm">
+                <button type="submit"
+                        class="btn {% if is_subscribed %}btn-outline-danger{% else %}btn-outline-primary{% endif %} btn-lg rounded-pill shadow-sm">
                     {% if is_subscribed %}
                         <i class="bi bi-bell-slash"></i> {% trans "Unsubscribe" %}
                     {% else %}
@@ -142,19 +143,30 @@
     {% for item in gifts %}
         {% include "gifts/includes/_view_gift.html" with item=item show_creator=False %}
         {% include "gifts/includes/_edit_gift.html" with item=item prefix="editGiftModal" modal_title=_("Modify the gift") %}
+        {% include "gifts/includes/_reserve_modal.html" with item=item %}
+        {% include "gifts/includes/_edit_price_modal.html" with item=item %}
+
+
     {% endfor %}
 
     {% for item in surprises %}
         {% include "gifts/includes/_view_gift.html" with item=item show_creator=True %}
         {% include "gifts/includes/_edit_gift.html" with item=item prefix="editSurpriseModal" modal_title=_("Modify the surprise") %}
+        {% include "gifts/includes/_reserve_modal.html" with item=item %}
+        {% include "gifts/includes/_edit_price_modal.html" with item=item %}
+
     {% endfor %}
 {% endblock %}
 
 {% block extra_js %}
     <script>
         async function reserve(giftId, button) {
+            button.disabled = true;
+            const originalHtml = button.innerHTML;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
             try {
-                const response = await fetch(`/reserve/${giftId}/`, {
+                const response = await fetch(`/gift/${giftId}/reserve/`, {
                     method: "POST",
                     headers: {
                         "X-CSRFToken": "{{ csrf_token }}",
@@ -164,18 +176,26 @@
 
                 if (response.ok) {
                     location.reload();
+                } else {
+                    const data = await response.json();
+                    alert(data.error || "{% trans 'An error occurred' %}");
+                    button.disabled = false;
+                    button.innerHTML = originalHtml;
                 }
             } catch (error) {
                 console.error("Erreur lors de la réservation:", error);
+                button.disabled = false;
+                button.innerHTML = originalHtml;
             }
         }
 
         document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.btn-reserve').forEach(button => {
-                button.addEventListener('click', function () {
-                    const giftId = this.getAttribute('data-gift-id');
-                    reserve(giftId, this);
-                });
+            document.body.addEventListener('click', function (e) {
+                const button = e.target.closest('.btn-reserve');
+                if (button) {
+                    const giftId = button.getAttribute('data-gift-id');
+                    reserve(giftId, button);
+                }
             });
 
             document.querySelectorAll('.btn-delete').forEach(button => {

@@ -1,6 +1,7 @@
 import datetime
 import os
 import random
+from decimal import Decimal, InvalidOperation
 
 import markdown
 from django.conf import settings
@@ -14,7 +15,7 @@ from django.core.management import call_command
 from django.db.models import QuerySet, Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponseForbidden, HttpRequest
-from django.db import transaction, IntegrityError
+from django.db import transaction, IntegrityError, models
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import translation
@@ -286,26 +287,24 @@ def view_list(request: HttpRequest, user_id: int):
             if g.created_by == g.owner:
                 gifts.append({"gift": g, "is_reserved": None})
     else:
-        reservations = {r.gift.id: r for r in Reservation.objects.filter(gift__in=all_gifts)}
-        user_groups_ids = set(request.user.gift_groups.values_list('id', flat=True))
+        all_reservations = Reservation.objects.filter(gift__in=all_gifts).select_related('reserver')
 
-        for g in all_gifts:
-            r = reservations.get(g.id)
+        for gift in all_gifts:
+            gift_reservations = [r for r in all_reservations if r.gift_id == gift.id]
 
-            show_reserver_name = False
+            user_res = next((r for r in gift_reservations if r.reserver_id == request.user.id), None)
 
-            if r:
-                reserver_groups_ids = set(r.reserver.gift_groups.values_list('id', flat=True))
-                if user_groups_ids & reserver_groups_ids:
-                    show_reserver_name = True
+            other_total = sum(r.percentage_participation for r in gift_reservations if r.reserver_id != request.user.id)
+            max_allowed = 100 - other_total
 
             item = {
-                "gift": g,
-                "is_reserved": bool(r),
-                "reserved_by": r.reserver if r else None,
-                "show_reserver_name": show_reserver_name
+                "gift": gift,
+                "reservations": gift_reservations,
+                "num_reservations": len(gift_reservations),
+                "user_reservation": user_res,
+                "max_allowed_for_user": max_allowed,
             }
-            if g.created_by == g.owner:
+            if gift.created_by == gift.owner:
                 gifts.append(item)
             else:
                 surprises.append(item)
@@ -355,36 +354,6 @@ def unsubscribe_token(request, uidb64, token):
     except (TypeError, ValueError, OverflowError):
         messages.error(request, _("The unsubscription link is invalid"))
         return redirect('dashboard')
-
-
-@login_required
-@transaction.atomic
-def reserve_gift(request: HttpRequest, gift_id: int):
-    gift = get_object_or_404(Gift, id=gift_id)
-
-    if gift.owner == request.user:
-        return HttpResponseForbidden(_("Impossible on your own list"))
-
-    # Check common group
-    if not Group.objects.filter(members=request.user).filter(members=gift.owner).exists():
-        return HttpResponseForbidden(_("You don't have access to this list"))
-
-    try:
-        Reservation.objects.create(gift=gift, reserver=request.user)
-    except IntegrityError:
-        return JsonResponse({"success": False, "error": _("This gift is already taken")}, status=409)
-
-    return JsonResponse({"success": True})
-
-
-@login_required
-@require_POST
-def unreserve_gift(request, gift_id):
-    reservation = get_object_or_404(Reservation, gift_id=gift_id, reserver=request.user)
-    owner_id = reservation.gift.owner.id
-    reservation.delete()
-    return redirect("view_list", user_id=owner_id)
-
 
 @login_required
 @require_POST
@@ -527,3 +496,94 @@ def changelog(request):
         html_content = _("Changelog not found.")
 
     return render(request, 'gifts/changelog.html', {'changelog_html': html_content})
+
+
+@login_required
+@require_POST
+def edit_gift_price(request, gift_id):
+    gift = get_object_or_404(Gift, id=gift_id)
+
+    price_raw = request.POST.get("price", "").strip().replace(",", ".")
+
+    try:
+        if price_raw:
+            gift.price = Decimal(price_raw)
+        else:
+            gift.price = None
+        gift.save()
+        messages.success(request, _("Estimated price updated!"))
+    except (InvalidOperation, ValueError):
+        messages.error(request, _("Invalid price format."))
+
+    return redirect("view_list", user_id=gift.owner.id)
+
+
+@login_required
+@require_POST
+def update_reservation_percentage(request, reservation_id):
+    reservation = get_object_or_404(Reservation, id=reservation_id, reserver=request.user)
+
+    # Calculer le total des participations des AUTRES
+    other_participations_total = Reservation.objects.filter(
+        gift=reservation.gift
+    ).exclude(id=reservation.id).aggregate(total=models.Sum('percentage_participation'))['total'] or 0
+
+    max_allowed = 100 - other_participations_total
+
+    try:
+        percentage = int(request.POST.get("percentage", 100))
+        if 0 < percentage <= max_allowed:
+            reservation.percentage_participation = percentage
+            reservation.save()
+            messages.success(request, _("Participation updated!"))
+        elif percentage <= 0:
+            messages.error(request, _("Percentage must be greater than 0."))
+        else:
+            messages.error(request,
+                           _("Invalid percentage. The total cannot exceed 100%% (Max allowed: %s%%).") % max_allowed)
+    except (ValueError, TypeError):
+        messages.error(request, _("Invalid number."))
+
+    return redirect("view_list", user_id=reservation.gift.owner.id)
+
+@login_required
+@require_POST
+def unreserve_gift(request, gift_id):
+    # On cherche la réservation spécifique de cet utilisateur pour ce cadeau
+    reservation = get_object_or_404(Reservation, gift_id=gift_id, reserver=request.user)
+    owner_id = reservation.gift.owner.id
+    reservation.delete()
+    messages.success(request, _("Your participation has been removed."))
+    return redirect("view_list", user_id=owner_id)
+
+
+@login_required
+@transaction.atomic
+def reserve_gift(request: HttpRequest, gift_id: int):
+    gift = get_object_or_404(Gift, id=gift_id)
+
+    if gift.owner == request.user:
+        return HttpResponseForbidden(_("Impossible on your own list"))
+
+    # Vérification du groupe commun
+    if not Group.objects.filter(members=request.user).filter(members=gift.owner).exists():
+        return HttpResponseForbidden(_("You don't have access to this list"))
+
+    if Reservation.objects.filter(gift=gift, reserver=request.user).exists():
+        return JsonResponse({"success": False, "error": _("You have already joined this gift")}, status=409)
+
+    current_total = Reservation.objects.filter(gift=gift).aggregate(
+        total=models.Sum('percentage_participation'))['total'] or 0
+
+    if current_total >= 100:
+        return JsonResponse({"success": False, "error": _("This gift is already fully reserved")}, status=409)
+
+    remaining = 100 - current_total
+
+    try:
+        # On crée la réservation avec le reste disponible
+        Reservation.objects.create(gift=gift, reserver=request.user, percentage_participation=remaining)
+    except IntegrityError:
+        return JsonResponse({"success": False, "error": _("You have already joined this gift")}, status=409)
+
+    return JsonResponse({"success": True})
