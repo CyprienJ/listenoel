@@ -1,283 +1,73 @@
 {% load i18n %}
 <div class="modal fade" id="reserveModal{{ item.gift.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-5 shadow-lg auth-card">
-            <div class="modal-header border-0 p-4 pb-0">
-                <h5 class="modal-title fw-bold">{% trans "Participation" %}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-
-            <div class="modal-body p-4">
-                <!-- PRICE section (Anyone can edit) -->
-                <div class="d-flex align-items-center justify-content-between mb-4 p-3 rounded-4">
-                    <div>
-                        <small class="text-uppercase fw-bold text-muted d-block"
-                               style="font-size: 0.65rem;">{% trans "Estimated Price" %}</small>
-                        {% if item.gift.price %}
-                            <span class="h4 fw-bold mb-0 text-primary">{{ item.gift.price }}€</span>
-                        {% else %}
-                            <span class="text-muted italic">{% trans "Not estimated yet" %}</span>
-                        {% endif %}
-                    </div>
-                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3"
-                            data-bs-toggle="modal" data-bs-target="#editPriceModal{{ item.gift.id }}">
-                        <i class="bi bi-pencil-square me-1"></i> {% trans "Edit Price" %}
-                    </button>
-                </div>
-
-                <!-- PARTICIPANTS SECTION -->
-                {% if item.num_reservations == 0 %}
-                    <div class="text-center py-4">
-                        <div class="bg-light rounded-circle d-inline-block p-3 mb-3">
-                            <i class="bi bi-person-plus fs-2 text-muted"></i>
-                        </div>
-                        <p class="text-muted">{% trans "No one has joined yet." %}</p>
-                        <button class="btn btn-primary rounded-pill px-4 btn-reserve" data-gift-id="{{ item.gift.id }}">
-                            <i class="bi bi-bag-plus me-2"></i>{% trans "Reserve this gift" %}
-                        </button>
-                    </div>
-                {% else %}
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <label class="small text-uppercase fw-bold text-muted mb-0">{% trans "Contributors" %}</label>
-
-                        {# If the user is not on the list and there is still room #}
-                        {% if not item.user_reservation and item.max_allowed_for_user > 0 %}
-                            <button class="btn btn-sm btn-outline-primary rounded-pill btn-reserve"
-                                    data-gift-id="{{ item.gift.id }}">
-                                <i class="bi bi-plus-lg"></i> {% trans "Join" %}
-                            </button>
-                        {% endif %}
-                    </div>
-
-                    {% for reservation in item.reservations %}
-                        {% if reservation.reserver == request.user %}
-                            <!-- MY PARTICIPATION -->
-                            <div class="card border-primary border-dashed rounded-4 mb-4 bg-primary-container bg-opacity-10">
-                                <div class="card-body p-3">
-                                    <form method="post"
-                                          action="{% url 'update_reservation_percentage' reservation.id %}">
-                                        {% csrf_token %}
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="fw-bold text-primary"><i
-                                                    class="bi bi-person-check-fill me-2"></i>{% trans "My part" %}
-                                            <i class="bi bi-person-check-fill me-2"></i>{% trans "My part" %}
-                                                <button type="button"
-                                                        class="btn btn-link btn-sm p-0 ms-2 align-baseline text-muted"
-                                                        data-bs-toggle="tooltip"
-                                                        data-bs-placement="top"
-                                                        title="{% trans "If the gift price changes, your contribution will be the current percentage applied to the new price." %}"
-                                                        aria-label="{% trans "Information" %}">
-                                                    <i class="bi bi-info-circle"></i>
-                                                </button>
-                                            </span>
-                                            <span class="badge bg-primary rounded-pill current-pct">{{ reservation.percentage_participation }}%</span>
-                                        </div>
-
-                                        <input type="range" class="form-range custom-range" name="percentage"
-                                               id="range{{ reservation.id }}"
-                                               min="1"
-                                               max="{{ item.max_allowed_for_user }}"
-                                               value="{{ reservation.percentage_participation }}"
-                                               data-price="{{ item.gift.price|default:0|stringformat:'.2f' }}"
-                                               data-pct-input-id="pct{{ reservation.id }}"
-                                               data-denom-input-id="denom{{ reservation.id }}"
-                                               data-amount-input-id="amount{{ reservation.id }}"
-                                               data-amount-preview-id="val{{ reservation.id }}"
-                                               oninput="updateFromRange(this)">
-
-                                        <div class="row g-2 mt-2">
-                                            <div class="col-4">
-                                                <label class="form-label small text-muted mb-1">{% trans "Percent" %}</label>
-                                                <input type="number"
-                                                       class="form-control form-control-sm rounded-4"
-                                                       id="pct{{ reservation.id }}"
-                                                       min="1"
-                                                       max="{{ item.max_allowed_for_user }}"
-                                                       value="{{ reservation.percentage_participation }}"
-                                                       oninput="updateFromPct(this)">
-                                            </div>
-
-                                            <div class="col-4">
-                                                <label class="form-label small text-muted mb-1">{% trans "1 / x" %}</label>
-                                                <input type="number"
-                                                       class="form-control form-control-sm rounded-4"
-                                                       id="denom{{ reservation.id }}"
-                                                       min="1"
-                                                       step="1"
-                                                       placeholder="ex: 4"
-                                                       oninput="updateFromDenom(this)">
-                                            </div>
-
-                                            <div class="col-4">
-                                                <label class="form-label small text-muted mb-1">{% trans "Amount (€)" %}</label>
-                                                <input type="number"
-                                                       class="form-control form-control-sm rounded-4"
-                                                       id="amount{{ reservation.id }}"
-                                                       step="0.01"
-                                                       min="0"
-                                                       {% if not item.gift.price %}disabled{% endif %}
-                                                       placeholder="{% if item.gift.price %}ex: 10.00{% else %}{% trans 'Need price' %}{% endif %}"
-                                                       oninput="updateFromAmount(this)">
-                                            </div>
-                                        </div>
-
-                                        <div class="d-flex justify-content-between align-items-center mt-3">
-                                            {% if item.gift.price %}
-                                                <small class="text-muted">
-                                                    {% trans "Value" %}: <strong><span
-                                                        id="val{{ reservation.id }}">{{ reservation.calculated_amount|floatformat:2 }}</span>€</strong>
-                                                </small>
-                                            {% else %}
-                                                <span></span>
-                                            {% endif %}
-                                            <div class="d-flex gap-2">
-                                                <button type="submit"
-                                                        class="btn btn-sm btn-primary rounded-pill px-3">{% trans "Update" %}</button>
-                                            </div>
-                                        </div>
-                                    </form>
-
-                                    <!-- REMOVE BUTTON -->
-                                    <hr class="my-3 opacity-10">
-                                    <form method="post" action="{% url 'unreserve_gift' item.gift.id %}"
-                                          onsubmit="return confirm('{% trans "Remove your participation?" %}');">
-                                        {% csrf_token %}
-                                        <button type="submit"
-                                                class="btn btn-link btn-sm text-danger text-decoration-none p-0 w-100 text-center">
-                                            <i class="bi bi-trash3 me-1"></i> {% trans "Leave this gift" %}
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        {% else %}
-                            <!-- OTHERS -->
-                            <div class="d-flex align-items-center justify-content-between mb-3 px-2">
-                                <div class="d-flex align-items-center">
-                                    <div class="avatar-circle me-2"
-                                         style="width: 28px; height: 28px; font-size: 0.75rem;">
-                                        {{ reservation.reserver.nickname|first|upper }}
-                                    </div>
-                                    <span class="small fw-bold">{{ reservation.reserver.nickname|capfirst }}</span>
-                                </div>
-                                <div class="text-end">
-                                    <span class="small fw-bold">{{ reservation.percentage_participation }}%</span>
-                                    {% if item.gift.price %}
-                                        <div class="text-muted"
-                                             style="font-size: 0.7rem;">{{ reservation.calculated_amount|floatformat:2 }}€
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
-            </div>
-
-            <div class="modal-footer border-0 p-4 pt-0">
-                <button type="button" class="btn btn-info rounded-pill px-4 w-100"
-                        data-bs-dismiss="modal">{% trans "Close" %}</button>
-            </div>
+        <div class="modal-content border-0 rounded-5 shadow-lg auth-card" id="modalContent{{ item.gift.id }}">
+            {% include 'gifts/includes/_reserve_modal_content.html' %}
         </div>
     </div>
 </div>
 
 <script>
-    function clampInt(value, min, max) {
-        const n = parseInt(value, 10);
-        if (isNaN(n)) return null;
-        return Math.max(min, Math.min(max, n));
-    }
-
-    function getPriceFromRange(rangeInput) {
-        const raw = (rangeInput.getAttribute('data-price') || '0').replace(',', '.');
-        const p = parseFloat(raw);
-        return isNaN(p) ? 0 : p;
-    }
-
-    function setRangePct(rangeInput, pct) {
-        const min = parseInt(rangeInput.min || '1', 10);
-        const max = parseInt(rangeInput.max || '100', 10);
-        const clamped = Math.max(min, Math.min(max, pct));
-        rangeInput.value = clamped;
-        updateFromRange(rangeInput);
-    }
-
-    function updateFromRange(rangeInput) {
-        const pct = parseInt(rangeInput.value, 10);
-        const price = getPriceFromRange(rangeInput);
-
-        const badge = rangeInput.closest('form').querySelector('.current-pct');
-        if (badge) badge.innerText = pct + '%';
-
-
-        const pctInputId = rangeInput.getAttribute('data-pct-input-id');
-        const denomInputId = rangeInput.getAttribute('data-denom-input-id');
-        const amountInputId = rangeInput.getAttribute('data-amount-input-id');
-        const amountPreviewId = rangeInput.getAttribute('data-amount-preview-id');
-
-        const pctInput = pctInputId ? document.getElementById(pctInputId) : null;
-        const denomInput = denomInputId ? document.getElementById(denomInputId) : null;
-        const amountInput = amountInputId ? document.getElementById(amountInputId) : null;
-
-        if (pctInput) pctInput.value = pct;
-
-        if (price > 0) {
-            const calculated = (price * pct / 100);
-            const preview = amountPreviewId ? document.getElementById(amountPreviewId) : null;
-            if (preview) preview.innerText = calculated.toFixed(2);
-
-            if (amountInput && document.activeElement !== amountInput) {
-                amountInput.value = calculated.toFixed(2);
+    async function updateModal(response, giftId) {
+        if (response.ok) {
+            const newHtml = await response.text();
+            const container = document.getElementById(`modalContent${giftId}`);
+            if (container) {
+                container.innerHTML = newHtml;
             }
-        }
-
-        if (denomInput && document.activeElement !== denomInput) {
-            if (pct > 0) {
-                const approx = Math.round(100 / pct);
-                denomInput.value = approx > 0 ? approx : '';
-            } else {
-                denomInput.value = '';
-            }
+        } else {
+            alert("Error updating modal");
+            console.log(response);
         }
     }
 
-    function updateFromPct(pctInput) {
-        const form = pctInput.closest('form');
-        const rangeInput = form.querySelector('input[type="range"][name="percentage"]');
-        if (!rangeInput) return;
+    async function reserveGift(url, isExclusive, giftId, userId, groupId) {
+        console.log(groupId)
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                exclusivity: isExclusive,
+                user_id: userId,
+                group_id: groupId,
+            })
+        });
 
-        const min = parseInt(rangeInput.min || '1', 10);
-        const max = parseInt(rangeInput.max || '100', 10);
-        const pct = clampInt(pctInput.value, min, max);
-        if (pct === null) return;
-
-        setRangePct(rangeInput, pct);
+        await updateModal(response, giftId);
     }
 
-    function updateFromDenom(denomInput) {
-        const form = denomInput.closest('form');
-        const rangeInput = form.querySelector('input[type="range"][name="percentage"]');
-        if (!rangeInput) return;
-
-        const x = clampInt(denomInput.value, 1, 1000000);
-        if (x === null || x <= 0) return;
-
-        const pct = Math.round(100 / x);
-        setRangePct(rangeInput, pct);
+    async function modifyReservation(url, reservation_user_id_to_modify, giftId, groupId) {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                reservation_user_id_to_modify: reservation_user_id_to_modify,
+                group_id: groupId
+            })
+        });
+        await updateModal(response, giftId);
     }
 
-    function updateFromAmount(amountInput) {
-        const form = amountInput.closest('form');
-        const rangeInput = form.querySelector('input[type="range"][name="percentage"]');
-        if (!rangeInput) return;
+    async function deleteReservation(url, reservation_user_id_to_delete, giftId, groupId) {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                reservation_user_id_to_delete: reservation_user_id_to_delete,
+                group_id: groupId
+            })
+        });
 
-        const price = getPriceFromRange(rangeInput);
-        if (!(price > 0)) return;
-
-        const amount = parseFloat((amountInput.value || '0').replace(',', '.'));
-        if (isNaN(amount)) return;
-
-        const pct = Math.round((amount / price) * 100);
-        setRangePct(rangeInput, pct);
+        await updateModal(response, giftId);
     }
+
 </script>

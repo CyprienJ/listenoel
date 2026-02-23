@@ -57,8 +57,9 @@ class Gift(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_gifts")
     visible_in = models.ManyToManyField(Group, related_name="visible_gifts", blank=True)
-    price = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
-    percentage_mode = models.BooleanField(default=True)
+    price = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
+    offered = models.BooleanField(default=False)
+    group_reserved_on = models.ForeignKey(Group, blank=True, null=True, on_delete=models.SET_NULL, related_name="reservations_group")
 
     def __str__(self):
         return f"{self.title} ({self.owner.nickname})"
@@ -71,16 +72,8 @@ class Gift(models.Model):
             self.created_by = self.owner
         super().save(*args, **kwargs)
 
-
 class Reservation(models.Model):
     gift = models.ForeignKey(Gift, on_delete=models.CASCADE, related_name="reservation")
     reserver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reservations")
     created_at = models.DateTimeField(default=timezone.now)
-    percentage_participation = models.IntegerField(default=100)
-    brut_participation = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
-
-    @property
-    def calculated_amount(self):
-        if self.gift.price:
-            return (self.gift.price * self.percentage_participation) / 100
-        return 0
+    exclusivity = models.BooleanField(default=False )

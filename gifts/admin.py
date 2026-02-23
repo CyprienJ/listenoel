@@ -25,10 +25,10 @@ class GroupAdmin(admin.ModelAdmin):
 
 @admin.register(Gift)
 class GiftAdmin(admin.ModelAdmin):
-    list_display = ("title", "owner", "created_by", "created_at")
+    list_display = ("title", "owner", "created_by", "created_at", "price")
     list_filter = ("owner", "created_by")
     search_fields = ("title", "description")
 
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):
-    list_display = ("gift", "created_at", "reserver", "percentage_participation", "brut_participation")
+    list_display = ("gift", "created_at", "reserver")

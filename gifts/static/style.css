@@ -187,3 +187,7 @@ body {
     border-color: #adb5bd;
     color: #adb5bd;
 }
+
+[aria-expanded="true"].btn-hide-on-show {
+    display: none;
+}

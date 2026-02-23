@@ -256,23 +256,6 @@ class GiftAccessControlTest(TestCase):
         self.assertIn(response.status_code, [403, 404])
         self.assertTrue(Gift.objects.filter(id=self.gift_user1.id).exists())
 
-    def test_reserve_gift_access(self):
-        """Cannot assign a gift from a group he is not in"""
-        self.client.force_login(self.user3)
-        response = self.client.post(reverse('reserve_gift', args=[self.gift_user1.id]))
-        self.assertIn(response.status_code, [403, 404])
-
-    def test_unreserve_gift_access(self):
-        """Can only unreserve a gift he reserved himself"""
-        # User2 reserves User1's gift
-        Reservation.objects.create(gift=self.gift_user1, reserver=self.user2)
-        
-        # User3 attempts to unreserve
-        self.client.force_login(self.user3)
-        response = self.client.post(reverse('unreserve_gift', args=[self.gift_user1.id]))
-        self.assertEqual(response.status_code, 404)
-        self.assertTrue(Reservation.objects.filter(gift=self.gift_user1).exists())
-
 class SubscriptionTest(TestCase):
     def setUp(self):
         self.user1 = User.objects.create_user(username='user1@test.com', email='user1@test.com', password='password', is_verified=True, nickname='User1')
@@ -401,73 +384,6 @@ class ReservationSharingTest(TestCase):
         self.group.members.add(self.user1, self.user2, self.user3)
 
         self.gift = Gift.objects.create(owner=self.user1, title="Shared Gift", price=100)
-
-    def test_initial_reservation_is_100_percent(self):
-        self.client.force_login(self.user2)
-        response = self.client.post(reverse('reserve_gift', args=[self.gift.id]))
-        self.assertEqual(response.status_code, 200)
-        reservation = Reservation.objects.get(gift=self.gift, reserver=self.user2)
-        self.assertEqual(reservation.percentage_participation, 100)
-
-    def test_update_percentage(self):
-        reservation = Reservation.objects.create(gift=self.gift, reserver=self.user2, percentage_participation=100)
-        self.client.force_login(self.user2)
-        
-        response = self.client.post(reverse('update_reservation_percentage', args=[reservation.id]), {'percentage': 40})
-        self.assertEqual(response.status_code, 302)
-        reservation.refresh_from_db()
-        self.assertEqual(reservation.percentage_participation, 40)
-
-    def test_multiple_contributors(self):
-        # User 2 take 40%
-        Reservation.objects.create(gift=self.gift, reserver=self.user2, percentage_participation=40)
-        
-        # User should 3 take the 60% remaining
-        self.client.force_login(self.user3)
-        response = self.client.post(reverse('reserve_gift', args=[self.gift.id]))
-        self.assertEqual(response.status_code, 200)
-        
-        res3 = Reservation.objects.get(gift=self.gift, reserver=self.user3)
-        self.assertEqual(res3.percentage_participation, 60)
-
-    def test_cannot_exceed_100_percent(self):
-        # User 2 take 70%
-        res2 = Reservation.objects.create(gift=self.gift, reserver=self.user2, percentage_participation=70)
-        # User 3 take 20%
-        Reservation.objects.create(gift=self.gift, reserver=self.user3, percentage_participation=20)
-        
-        # current total = 90%. User 2 tries to go to 85% (Total would become 105%)
-        self.client.force_login(self.user2)
-        response = self.client.post(reverse('update_reservation_percentage', args=[res2.id]), {'percentage': 85})
-        
-        res2.refresh_from_db()
-        self.assertEqual(res2.percentage_participation, 70) # Unchanged
-
-    def test_cannot_reserve_already_full(self):
-        Reservation.objects.create(gift=self.gift, reserver=self.user2, percentage_participation=100)
-        
-        self.client.force_login(self.user3)
-        response = self.client.post(reverse('reserve_gift', args=[self.gift.id]))
-        self.assertEqual(response.status_code, 409)
-        self.assertFalse(Reservation.objects.filter(gift=self.gift, reserver=self.user3).exists())
-
-    def test_unique_reservation_constraint(self):
-        Reservation.objects.create(gift=self.gift, reserver=self.user2, percentage_participation=50)
-        
-        self.client.force_login(self.user2)
-
-        # Attempt to reserve the same gift again
-        response = self.client.post(reverse('reserve_gift', args=[self.gift.id]))
-        self.assertEqual(response.status_code, 409)
-        self.assertEqual(Reservation.objects.filter(gift=self.gift, reserver=self.user2).count(), 1)
-
-    def test_unreserve_partial_reservation(self):
-        Reservation.objects.create(gift=self.gift, reserver=self.user2, percentage_participation=50)
-        self.client.force_login(self.user2)
-        
-        response = self.client.post(reverse('unreserve_gift', args=[self.gift.id]))
-        self.assertEqual(response.status_code, 302)
-        self.assertFalse(Reservation.objects.filter(gift=self.gift, reserver=self.user2).exists())
 
 class GroupManagementTest(TestCase):
     def setUp(self):
