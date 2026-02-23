@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import random
 from decimal import Decimal, InvalidOperation
@@ -23,6 +24,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.decorators.http import require_POST
 from django.utils.translation import gettext as _
+from pydantic_core.core_schema import none_schema
 
 from .forms import LocalUserCreationForm, GroupForm, UserProfileForm
 from .models import User, Gift, Reservation, Group
@@ -51,6 +53,7 @@ def profile(request):
 
     return render(request, 'gifts/profile.html', {'form': form})
 
+
 def welcome(request):
     if request.user.is_authenticated:
         if request.user.is_verified:
@@ -58,6 +61,7 @@ def welcome(request):
         else:
             return redirect('verify_email_sent')
     return render(request, 'gifts/welcome.html')
+
 
 @login_required
 @require_POST
@@ -67,6 +71,7 @@ def delete_account(request):
     user.delete()
     messages.success(request, _("Your account has been successfully deleted."))
     return redirect('welcome')
+
 
 def register(request):
     if request.user.is_authenticated:
@@ -86,6 +91,7 @@ def register(request):
         form = LocalUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
 
+
 def send_verification_email(request, user):
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
@@ -100,6 +106,7 @@ def send_verification_email(request, user):
 
     send_mail(subject, message_txt, None, [user.email], html_message=message_html)
 
+
 def verify_email_sent(request):
     if not request.user.is_authenticated:
         return redirect('welcome')
@@ -107,8 +114,8 @@ def verify_email_sent(request):
         return redirect('dashboard')
     return render(request, 'gifts/verify_email_sent.html')
 
-def verify_email_confirm(request, uidb64, token):
 
+def verify_email_confirm(request, uidb64, token):
     # call_command('cleanup_unverified_users')
 
     try:
@@ -126,6 +133,7 @@ def verify_email_confirm(request, uidb64, token):
         messages.error(request, _("The verification link is invalid"))
         return redirect('welcome')
 
+
 @login_required
 def resend_verification(request):
     if not request.user.is_authenticated:
@@ -136,7 +144,6 @@ def resend_verification(request):
     send_verification_email(request, request.user)
     messages.success(request, _("A new verification email has been sent."))
     return redirect('verify_email_sent')
-
 
 
 @login_required
@@ -233,7 +240,7 @@ def leave_group(request, group_id):
 @login_required
 @require_POST
 def edit_group(request, group_id):
-    group = get_object_or_404(Group, id=group_id,)
+    group = get_object_or_404(Group, id=group_id, )
     new_name = request.POST.get('name', '').strip()
     if new_name:
         group.name = new_name
@@ -245,7 +252,7 @@ def edit_group(request, group_id):
 @login_required
 @require_POST
 def regenerate_group_token(request, group_id):
-    group = get_object_or_404(Group, id=group_id,)
+    group = get_object_or_404(Group, id=group_id, )
     group.invite_token = ""  # Will be regenerated in save()
     group.save()
     messages.success(request, _("New invitation code generated !"))
@@ -289,20 +296,30 @@ def view_list(request: HttpRequest, user_id: int):
     else:
         all_reservations = Reservation.objects.filter(gift__in=all_gifts).select_related('reserver')
 
+        other_members = []
+        if from_group_id:
+
+            group = get_object_or_404(Group, id=from_group_id)
+
+            other_members = group.members.exclude(id__in=[request.user.id, target_user.id])
+
         for gift in all_gifts:
             gift_reservations = [r for r in all_reservations if r.gift_id == gift.id]
 
             user_res = next((r for r in gift_reservations if r.reserver_id == request.user.id), None)
 
-            other_total = sum(r.percentage_participation for r in gift_reservations if r.reserver_id != request.user.id)
-            max_allowed = 100 - other_total
+            participant_ids = {r.reserver_id for r in gift_reservations}
+
+            other_non_participants = [m for m in other_members if m.id not in participant_ids]
 
             item = {
+                "current_user": request.user,
                 "gift": gift,
                 "reservations": gift_reservations,
                 "num_reservations": len(gift_reservations),
                 "user_reservation": user_res,
-                "max_allowed_for_user": max_allowed,
+                "other_non_participant": other_non_participants,
+                "group_id": from_group_id,
             }
             if gift.created_by == gift.owner:
                 gifts.append(item)
@@ -348,12 +365,14 @@ def unsubscribe_token(request, uidb64, token):
 
         if request.user.subscriptions.filter(id=target_user.id).exists():
             request.user.subscriptions.remove(target_user)
-            messages.success(request, _("You are no longer subscribed to %(name)s's list") % {'name': target_user.nickname})
-        
+            messages.success(request,
+                             _("You are no longer subscribed to %(name)s's list") % {'name': target_user.nickname})
+
         return redirect('view_list', user_id=target_user.id)
     except (TypeError, ValueError, OverflowError):
         messages.error(request, _("The unsubscription link is invalid"))
         return redirect('dashboard')
+
 
 @login_required
 @require_POST
@@ -379,7 +398,7 @@ def add_gift(request, owner_id):
             # Security check: can only set visibility for groups user is member of
             valid_groups = Group.objects.filter(id__in=group_ids, members=request.user)
             gift.visible_in.set(valid_groups)
-        
+
         # Send notification to all subscribers of the owner
         if owner == request.user:
             subscribers = owner.subscribers.all()
@@ -387,7 +406,7 @@ def add_gift(request, owner_id):
                 protocol = 'https' if request.is_secure() else 'http'
                 domain = get_current_site(request).domain
                 list_url = f"{protocol}://{domain}{reverse('view_list', args=[owner.id])}"
-                
+
                 for subscriber in subscribers:
                     if Group.objects.filter(members=owner).filter(members=subscriber).exists():
 
@@ -399,7 +418,7 @@ def add_gift(request, owner_id):
                         uid = urlsafe_base64_encode(force_bytes(owner.pk))
                         token = default_token_generator.make_token(subscriber)
                         unsubscribe_url = f"{protocol}://{domain}{reverse('unsubscribe_token', args=[uid, token])}"
-                        
+
                         context = {
                             'subscriber': subscriber,
                             'owner': owner,
@@ -407,11 +426,11 @@ def add_gift(request, owner_id):
                             'list_url': list_url,
                             'unsubscribe_url': unsubscribe_url,
                         }
-                        
+
                         subject = _("New gift on %(name)s's list!") % {'name': owner.nickname}
                         html_message = render_to_string('emails/gift_added_notification.html', context)
                         plain_message = render_to_string('emails/gift_added_notification.txt', context)
-                        
+
                         send_mail(
                             subject,
                             plain_message,
@@ -420,6 +439,7 @@ def add_gift(request, owner_id):
                             html_message=html_message
                         )
     return redirect("view_list", user_id=owner.id)
+
 
 @login_required
 @require_POST
@@ -478,6 +498,7 @@ def change_password(request):
 
     return render(request, 'gifts/change_password.html')
 
+
 def changelog(request):
     current_lang = translation.get_language()
 
@@ -519,72 +540,172 @@ def edit_gift_price(request, gift_id):
 
 
 @login_required
-@require_POST
-def update_reservation_percentage(request, reservation_id):
-    reservation = get_object_or_404(Reservation, id=reservation_id, reserver=request.user)
-
-    # Calculate the total participation of OTHERS
-    other_participations_total = Reservation.objects.filter(
-        gift=reservation.gift
-    ).exclude(id=reservation.id).aggregate(total=models.Sum('percentage_participation'))['total'] or 0
-
-    max_allowed = 100 - other_participations_total
+def reserve_gift(request: HttpRequest, gift_id: int):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method " + request.method + " not authorized"}, status=405)
 
     try:
-        percentage = int(request.POST.get("percentage", 100))
-        if 0 < percentage <= max_allowed:
-            reservation.percentage_participation = percentage
-            reservation.save()
-            messages.success(request, _("Participation updated!"))
-        elif percentage <= 0:
-            messages.error(request, _("Percentage must be greater than 0."))
-        else:
-            messages.error(request,
-                           _("Invalid percentage. The total cannot exceed 100%% (Max allowed: %s%%).") % max_allowed)
+        data = json.loads(request.body)
+    except ValueError:
+        return JsonResponse({"success": False, "error": "ValueError: Please provide valid data"}, status=400)
+    except TypeError:
+        return JsonResponse({"success": False, "error": "TypeError: Please provide valid data"}, status=400)
+
+    try:
+        exclusivity = data.get('exclusivity')
+        user_id = data.get('user_id')
     except (ValueError, TypeError):
-        messages.error(request, _("Invalid number."))
+        return JsonResponse({"success": False, "error": "Unable to find exclusivity"}, status=400)
 
-    return redirect("view_list", user_id=reservation.gift.owner.id)
-
-@login_required
-@require_POST
-def unreserve_gift(request, gift_id):
-    # We look for the specific reservation of this user for this gift
-    reservation = get_object_or_404(Reservation, gift_id=gift_id, reserver=request.user)
-    owner_id = reservation.gift.owner.id
-    reservation.delete()
-    messages.success(request, _("Your participation has been removed."))
-    return redirect("view_list", user_id=owner_id)
-
-
-@login_required
-@transaction.atomic
-def reserve_gift(request: HttpRequest, gift_id: int):
     gift = get_object_or_404(Gift, id=gift_id)
+    user = get_object_or_404(User, id=user_id)
 
     if gift.owner == request.user:
-        return HttpResponseForbidden(_("Impossible on your own list"))
+        return HttpResponseForbidden("Impossible on your own list")
 
     # Common group verification
     if not Group.objects.filter(members=request.user).filter(members=gift.owner).exists():
         return HttpResponseForbidden(_("You don't have access to this list"))
 
-    if Reservation.objects.filter(gift=gift, reserver=request.user).exists():
-        return JsonResponse({"success": False, "error": _("You have already joined this gift")}, status=409)
+    if Reservation.objects.filter(gift=gift, reserver=user).exists():
+        return JsonResponse({"success": False, "error": "This person already joined this gift"}, status=409)
 
-    # Calculate remaining percentage
-    current_total = Reservation.objects.filter(gift=gift).aggregate(
-        total=models.Sum('percentage_participation'))['total'] or 0
+    if Reservation.objects.filter(gift=gift, exclusivity=True).exists():
+        return JsonResponse({"success": False, "error": "Someone else reserved exclusively this gift"}, status=409)
 
-    if current_total >= 100:
-        return JsonResponse({"success": False, "error": _("This gift is already fully reserved")}, status=409)
+    Reservation.objects.create(gift=gift, reserver=user, exclusivity=exclusivity)
 
-    remaining = 100 - current_total
+    group_id = data.get('group_id')
+    group = Group.objects.get(id=group_id)
+
+    if not group.members.filter(id=gift.owner.id):
+        return HttpResponseForbidden(_("You don't have access to this list"))
+
+    gift.group_reserved_on = group
+    gift.save()
+
+    reservations = Reservation.objects.filter(gift=gift).order_by('id')
+
+    user_res = next((r for r in reservations if r.reserver_id == request.user.id), None)
+
+    user_already_participating = (r.reserver.id for r in reservations)
+
+    group = get_object_or_404(Group, id=group_id)
+    other_members = group.members.exclude(id__in=[request.user.id, gift.owner.id]).exclude(id__in=user_already_participating)
+
+    context = {
+        'item': {
+            "current_user": request.user,
+            'gift': gift,
+            'reservations': reservations,
+            'user_reservation': user_res,
+            "other_non_participant": other_members,
+            "group_id": group_id
+        }
+    }
+
+    return render(request, 'gifts/includes/_reserve_modal_content.html', context)
+
+
+@login_required
+def modify_reservation(request: HttpRequest, gift_id: int):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method " + request.method + " not authorized"}, status=405)
 
     try:
-        # We create the reservation with the remaining available amount
-        Reservation.objects.create(gift=gift, reserver=request.user, percentage_participation=remaining)
-    except IntegrityError:
-        return JsonResponse({"success": False, "error": _("You have already joined this gift")}, status=409)
+        data = json.loads(request.body)
+    except ValueError:
+        return JsonResponse({"success": False, "error": "ValueError: Please provide valid data"}, status=400)
+    except TypeError:
+        return JsonResponse({"success": False, "error": "TypeError: Please provide valid data"}, status=400)
 
-    return JsonResponse({"success": True})
+    gift = get_object_or_404(Gift, id=gift_id)
+
+    try:
+        reservation_user_id_to_modify: User = data.get("reservation_user_id_to_modify")
+        reservation_user_to_modify = User.objects.get(id=reservation_user_id_to_modify)
+        reservation = get_object_or_404(Reservation, gift=gift, reserver=reservation_user_to_modify)
+    except (ValueError, TypeError):
+        return JsonResponse({"success": False, "error": "Unable to find user or reservation"}, status=400)
+
+    if reservation.exclusivity:
+        # switch it to non-exclusive
+        reservation.exclusivity = False
+        reservation.save()
+
+    else:
+        # Remove all other reservations and switch it to exclusivity
+        Reservation.objects.filter(gift=gift).exclude(reserver=reservation_user_to_modify).delete()
+
+        reservation.exclusivity = True
+        reservation.save()
+
+    reservations = Reservation.objects.filter(gift=gift).order_by('id')
+
+    user_res = next((r for r in reservations if r.reserver_id == request.user.id), None)
+
+    group_id = data.get('group_id')
+    group = get_object_or_404(Group, id=group_id)
+    other_members = group.members.exclude(id__in=[request.user.id, gift.owner.id])
+
+    context = {
+        "item": {
+            "current_user": request.user,
+            "gift": gift,
+            "reservations": reservations,
+            "user_reservation": user_res,
+            "other_non_participant": other_members,
+            "group_id": group_id
+        }
+    }
+
+    return render(request, 'gifts/includes/_reserve_modal_content.html', context)
+
+
+@login_required
+@require_POST
+def delete_reservation(request, gift_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method " + request.method + " not authorized"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+    except ValueError:
+        return JsonResponse({"success": False, "error": "ValueError: Please provide valid data"}, status=400)
+    except TypeError:
+        return JsonResponse({"success": False, "error": "TypeError: Please provide valid data"}, status=400)
+
+    gift = get_object_or_404(Gift, id=gift_id)
+    gift.group_reserved_on = None
+    gift.save()
+
+    try:
+        reservation_user_id_to_delete: User = data.get("reservation_user_id_to_delete")
+        reservation_user_to_delete = User.objects.get(id=reservation_user_id_to_delete)
+    except (ValueError, TypeError):
+        return JsonResponse({"success": False, "error": "Unable to find user or reservation"}, status=400)
+
+    reservation_to_delete = Reservation.objects.filter(gift=gift, reserver=reservation_user_to_delete)
+
+    reservation_to_delete.delete()
+
+    reservations = Reservation.objects.filter(gift=gift).order_by('id')
+
+    user_res = next((r for r in reservations if r.reserver_id == request.user.id), None)
+
+    group_id = data.get('group_id')
+    group = get_object_or_404(Group, id=group_id)
+    other_members = group.members.exclude(id__in=[request.user.id, gift.owner.id])
+
+    context = {
+        'item': {
+            'current_user': request.user,
+            'gift': gift,
+            'reservations': reservations,
+            'user_reservation': user_res,
+            "other_non_participant": other_members,
+            "group_id": group_id
+        }
+    }
+
+    return render(request, 'gifts/includes/_reserve_modal_content.html', context)

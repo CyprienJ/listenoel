@@ -30,47 +30,34 @@
                 {% if item.gift.url %}
                     <div class="mb-4">
                         <label class="small text-uppercase fw-bold text-muted mb-2 d-block">{% trans "Link" %}</label>
-                        <a href="{{ item.gift.url }}" target="_blank" class="btn btn-outline-primary rounded-pill w-100">
+                        <a href="{{ item.gift.url }}" target="_blank"
+                           class="btn btn-outline-primary rounded-pill w-100">
                             <i class="bi bi-box-arrow-up-right me-2"></i> {% trans "See on website" %}
                         </a>
                     </div>
                 {% endif %}
 
                 {% if not is_owner %}
-                    <div class="mb-4">
-                        {% if item.is_reserved %}
-                            <div class="alert {% if item.reserved_by.id == request.user.id %}alert-success{% else %}alert-light border{% endif %} rounded-4 d-flex align-items-center mb-0">
-                                <i class="bi {% if item.reserved_by.id == request.user.id %}bi-check2-circle{% else %}bi-lock-fill{% endif %} fs-4 me-3"></i>
-                                <div class="flex-grow-1">
-                                    {% if item.reserved_by.id == request.user.id %}
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="fw-bold">{% trans "You have reserved this gift" %}</span>
-                                            <form method="post" action="{% url 'unreserve_gift' item.gift.id %}" class="m-0">
-                                                {% csrf_token %}
-                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
-                                                    {% trans "Cancel" %}
-                                                </button>
-                                            </form>
-                                        </div>
-                                    {% else %}
-                                        <span>
-                                            {% if item.show_reserver_name %}
-                                                {% trans "Reserved by" %} <strong>{{ item.reserved_by.nickname|capfirst }}</strong>
-                                            {% else %}
-                                                {% trans "This gift is already reserved" %}
-                                            {% endif %}
-                                        </span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        {% else %}
-                            <button class="btn btn-primary btn-lg rounded-pill w-100 btn-reserve"
-                                    data-gift-id="{{ item.gift.id }}">
-                                <i class="bi bi-cart-plus me-2"></i> {% trans "Reserve this gift" %}
-                            </button>
-                        {% endif %}
-                    </div>
+                    {% if not item.user_reservation or item.gift.group_reserved_on.id|stringformat:"s" == from_group_id %}
+                        <button class="btn {% if item.user_reservation %}btn-outline-primary{% else %}btn-primary{% endif %} rounded-pill w-100 btn-lg btn-sm px-4"
+                                data-bs-toggle="modal"
+                                data-bs-target="#reserveModal{{ item.gift.id }}">
+                            {% if item.user_reservation %}
+                                <i class="bi bi-person-check-fill me-1"></i> {% trans "My participation" %}
+                            {% else %}
+                                <i class="bi bi-bag-plus me-1"></i> {% trans "Reserve" %}
+                            {% endif %}
+                        </button>
+                    {% else %}
+                        <button class="btn btn-secondary rounded-pill btn-sm px-4" disabled>
+                            <i class="bi bi-lock-fill me-1"></i> {% trans "Reserved on another group" %}
+                        </button>
+                    {% endif %}
+
+
                 {% endif %}
+
+
 
                 {% if show_creator and item.gift.created_by %}
                     <div class="pt-3 border-top">
@@ -82,7 +69,8 @@
                 {% endif %}
             </div>
             <div class="modal-footer border-0 p-4 pt-0">
-                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">{% trans "Close" %}</button>
+                <button type="button" class="btn btn-light rounded-pill px-4"
+                        data-bs-dismiss="modal">{% trans "Close" %}</button>
             </div>
         </div>
     </div>

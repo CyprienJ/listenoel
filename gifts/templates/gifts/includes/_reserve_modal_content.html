@@ -1,0 +1,140 @@
+{% load i18n %}
+<div class="modal-header border-0 p-4 pb-0">
+    <h5 class="modal-title fw-bold">{% trans "Participation" %}</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<div class="modal-body p-4">
+
+
+    {% if not item.reservations %}
+        <P><i class="bi bi-person-dash"></i> {% trans "No one reserved this gift yet" %}</P>
+        <p>{% trans "You can reserve this gift and have exclusivity, or allow other user to reserve it with you (for instance to share the expense)" %}</p>
+
+    {% else %}
+        {% if item.reservations.0.exclusivity %}
+            {% if item.reservations.0.reserver == item.current_user %}
+                <P><i class="bi bi-person"></i> {% trans "You have the exclusivity over that gift" %}</P>
+            {% else %}
+                <P>
+                    <i class="bi bi-person"></i> {{ item.reservations.0.reserver.nickname }} {% trans "has the exclusivity over that gift" %}
+                </P>
+            {% endif %}
+        {% endif %}
+
+    {% endif %}
+
+    <div class="d-flex flex-wrap justify-content-center gap-2 mt-2">
+        {% if not item.reservations %}
+            <button type="button"
+                    onclick="reserveGift('{% url 'reserve_gift' gift_id=item.gift.id %}', true, {{ item.gift.id }}, {{ item.current_user.id }}, {{ item.group_id }})"
+                    class="btn btn-sm btn-outline-info rounded-pill px-3">
+                <i class="bi bi-person-check"></i> {% trans "exclusivity" %}
+            </button>
+        {% endif %}
+
+        {% if not item.reservations or not item.reservations.0.exclusivity and not item.user_reservation %}
+            <button type="button"
+                    onclick="reserveGift('{% url 'reserve_gift' gift_id=item.gift.id %}', false, {{ item.gift.id }}, {{ item.current_user.id }}, {{ item.group_id }})"
+                    class="btn btn-sm btn-outline-info rounded-pill px-3">
+                <i class="bi bi-people"></i> {% trans "participate" %}
+            </button>
+        {% endif %}
+
+        {% if item.other_non_participant and    not item.reservations.0.exclusivity%}
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 dropdown-toggle"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-plus"></i> {% trans "Add someone" %}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2">
+                    <li class="dropdown-header small text-uppercase">{% trans "Choose a member" %}</li>
+                    {% for member in item.other_non_participant %}
+                        <li>
+                            <div class="d-flex align-items-center justify-content-between px-3 py-2">
+                                <span class="fw-bold small">{{ member.nickname }}</span>
+                                <div class="btn-group ms-3">
+                                    <button class="btn btn-sm border"
+                                            title="{% trans 'Participate' %}"
+                                            onclick="reserveGift('{% url 'reserve_gift' gift_id=item.gift.id %}', false, {{ item.gift.id }}, {{ member.id }}, {{ item.group_id }})">
+                                        <i class="bi bi-people"></i>
+                                    </button>
+                                    {% if not item.reservations %}
+                                        <button class="btn btn-sm border text-info"
+                                                title="{% trans 'Exclusivity' %}"
+                                                onclick="reserveGift('{% url 'reserve_gift' gift_id=item.gift.id %}', true, {{ item.gift.id }}, {{ member.id }}, {{ item.group_id }})">
+                                            <i class="bi bi-star-fill"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+    </div>
+
+    <div class="card card-body border-0 rounded-4">
+
+        {% if item.reservations.0.exclusivity %}
+
+            <p class="small text-muted mb-2">{% trans "This gift has an exclusif reserver" %}</p>
+
+            <div class="d-grid gap-2">
+                <div class="input-group w-100 mb-2 rounded-pill overflow-hidden border border-secondary">
+                    <span class="input-group-text flex-grow-1 border-0 bg-transparent border-end border-secondary px-4 fw-bold text-danger d-flex align-items-center">
+                        {{ item.reservations.0.reserver.nickname }}
+                    </span>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-danger text-secondary border-0 border-end border-secondary px-3 d-flex align-items-center gap-2"
+                            onclick="modifyReservation('{% url 'modify_reservation' gift_id=item.gift.id %}', {{ item.reservations.0.reserver.id }}, {{ item.gift.id }}, {{ item.group_id }})">
+                        <i class="bi bi-people"></i>
+                        <small class="fw-bold">{% trans "remove exclusivity" %}</small>
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-sm btn-outline-danger border-0 px-3"
+                            onclick="deleteReservation('{% url 'delete_reservation' gift_id=item.gift.id %}', {{ item.reservations.0.reserver.id }}, {{ item.gift.id }}, {{ item.group_id }})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+
+        {% else %}
+
+            <p class="small text-muted mb-2">{% trans "Current participants" %}</p>
+
+            <div class="d-grid gap-2">
+
+                {% for reservation in item.reservations %}
+                    <div class="input-group w-100 mb-2 rounded-pill overflow-hidden border border-secondary">
+                                        <span class="input-group-text flex-grow-1 border-0 bg-transparent border-end border-secondary px-4 fw-bold text-danger d-flex align-items-center">
+                                            {{ reservation.reserver.nickname }}
+                                        </span>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger text-secondary border-0 border-end border-secondary px-3 d-flex align-items-center gap-2"
+                                onclick="modifyReservation('{% url 'modify_reservation' gift_id=item.gift.id %}', {{ reservation.reserver.id }}, {{ item.gift.id }}, {{ item.group_id }})">
+                            <i class="bi bi-person-check"></i>
+                            <small class="fw-bold">{% trans "make exclusive" %}</small>
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger border-0 px-3"
+                                onclick="deleteReservation('{% url 'delete_reservation' gift_id=item.gift.id %}', {{ reservation.reserver.id }}, {{ item.gift.id }}, {{ item.group_id }})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                {% endfor %}
+
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="modal-footer border-0 p-4 pt-0">
+    <button type="button" class="btn btn-info rounded-pill px-4 w-100"
+            data-bs-dismiss="modal">{% trans "Close" %}</button>
+</div>
