@@ -85,10 +85,6 @@ msgstr "Se déconnecter"
 msgid "Log in"
 msgstr "Se connecter"
 
-#: gifts/templates/base.html:153
-msgid "Changelog"
-msgstr "Changelog"
-
 #: gifts/templates/emails/gift_added_notification.html:7
 msgid "New gift added"
 msgstr "Nouveau cadeau ajouté"
@@ -261,10 +257,6 @@ msgstr "Confirmer le nouveau mot de passe"
 #: gifts/templates/gifts/change_password.html:75
 msgid "Update Password"
 msgstr "Mettre à jour le mot de passe"
-
-#: gifts/templates/gifts/changelog.html:15
-msgid "Back"
-msgstr "Retour"
 
 #: gifts/templates/gifts/dashboard.html:12
 msgid "Click me!"
@@ -1082,10 +1074,6 @@ msgstr "Le nouveau mot de passe est trop court"
 #: gifts/views.py:493
 msgid "Password successfully updated !"
 msgstr "Mot de passe modifié avec succès !"
-
-#: gifts/views.py:514
-msgid "Changelog not found."
-msgstr "Changelog introuvable"
 
 #: gifts/views.py:532
 msgid "Estimated price updated!"
