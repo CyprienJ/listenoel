@@ -146,13 +146,7 @@
         <a class="navbar-brand fw-bold text-primary"
            href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'welcome' %}{% endif %}">
             <span class="small text-muted">Nos Cadeaux</span>
-        </a>    
-        <div class="d-flex gap-3">
-            <a href="{% url 'changelog' %}"
-               class="link-secondary link-underline-opacity-0 link-underline-opacity-100-hover small">
-                <i class="bi bi-journal-text me-1"></i>{% trans "Changelog" %}
-            </a>
-        </div>
+        </a>
     </div>
 </footer>
 
