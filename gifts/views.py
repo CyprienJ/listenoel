@@ -1,10 +1,8 @@
 import datetime
 import json
-import os
 import random
 from decimal import Decimal, InvalidOperation
 
-import markdown
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -16,15 +14,12 @@ from django.core.management import call_command
 from django.db.models import QuerySet, Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponseForbidden, HttpRequest
-from django.db import transaction, IntegrityError, models
 from django.template.loader import render_to_string
 from django.urls import reverse
-from django.utils import translation
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.decorators.http import require_POST
 from django.utils.translation import gettext as _
-from pydantic_core.core_schema import none_schema
 
 from .forms import LocalUserCreationForm, GroupForm, UserProfileForm
 from .models import User, Gift, Reservation, Group
