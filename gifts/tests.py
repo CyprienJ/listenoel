@@ -11,64 +11,67 @@ from django.utils.http import urlsafe_base64_encode
 from .models import Gift, Group, User
 
 
+def create_users():
+    user1 = User.objects.create_user(
+        username="user1@test.com", email="user1@test.com", password="password", is_verified=True, nickname="User1"
+    )
+    user2 = User.objects.create_user(
+        username="user2@test.com", email="user2@test.com", password="password", is_verified=True, nickname="User2"
+    )
+    user3 = User.objects.create_user(
+        username="user3@test.com", email="user3@test.com", password="password", is_verified=True, nickname="User3"
+    )
+    return user1, user2, user3
+
+
 class UserCleanupTest(TestCase):
+    def setUp(self):
+        self.user1, self.user2, self.user3 = create_users()
+
     def test_cleanup_unverified_users_command(self):
         # Create a verified user
-        User.objects.create_user(
-            username="verified@test.com", email="verified@test.com", password="password123", is_verified=True
-        )
 
-        # Create an unverified user (recent)
-        User.objects.create_user(
-            username="recent@test.com", email="recent@test.com", password="password123", is_verified=False
-        )
+        # set user2 and 3 as not verified
+        self.user2.is_verified = False
+        self.user2.save()
 
-        # Create an unverified user (old)
-        old_user = User.objects.create_user(
-            username="old@test.com", email="old@test.com", password="password123", is_verified=False
-        )
+        self.user3.is_verified = False
+        self.user3.save()
+
         # Manually set date_joined to 31 minutes ago
-        old_user.date_joined = timezone.now() - timedelta(minutes=31)
-        old_user.save()
+        self.user3.date_joined = timezone.now() - timedelta(minutes=31)
+        self.user3.save()
 
         # Run command
         call_command("cleanup_unverified_users")
 
         # Check results
-        self.assertTrue(User.objects.filter(email="verified@test.com").exists())
-        self.assertTrue(User.objects.filter(email="recent@test.com").exists())
-        self.assertFalse(User.objects.filter(email="old@test.com").exists())
+        self.assertTrue(User.objects.filter(email="user1@test.com").exists())
+        self.assertTrue(User.objects.filter(email="user2@test.com").exists())
+        self.assertFalse(User.objects.filter(email="user3@test.com").exists())
 
     def test_cleanup_in_view(self):
         # Create an unverified user (old)
-        old_user = User.objects.create_user(
-            username="old_view@test.com", email="old_view@test.com", password="password123", is_verified=False
-        )
-        old_user.date_joined = timezone.now() - timedelta(minutes=31)
-        old_user.save()
+        self.user1.is_verified = False
+        self.user1.date_joined = timezone.now() - timedelta(minutes=31)
+        self.user1.save()
 
         # Using reverse to be sure about the URL
         self.client.get(reverse("register"))
 
-        self.assertFalse(User.objects.filter(email="old_view@test.com").exists())
+        self.assertFalse(User.objects.filter(email="user1@test.com").exists())
 
 
 class AccessControlTest(TestCase):
     def setUp(self):
-        self.unverified_user = User.objects.create_user(
-            username="unverified@test.com",
-            email="unverified@test.com",
-            password="password123",
-            is_verified=False,
-            nickname="Unverified",
-        )
-        self.verified_user = User.objects.create_user(
-            username="verified@test.com",
-            email="verified@test.com",
-            password="password123",
-            is_verified=True,
-            nickname="Verified",
-        )
+
+        user1, user2, _ = create_users()
+        user1.is_verified = False
+        user1.save()
+
+        self.unverified_user = user1
+
+        self.verified_user = user2
 
     def test_anonymous_access(self):
         """
@@ -148,24 +151,21 @@ class AccessControlTest(TestCase):
 
 class PasswordResetTest(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
-            username="testuser@example.com",
-            email="testuser@example.com",
-            password="oldpassword123",
-            is_verified=True,
-            nickname="TestUser",
-        )
+
+        user1, _, _ = create_users()
+
+        self.user = user1
 
     def test_password_reset_flow(self):
         # 1. Reset request
-        response = self.client.post(reverse("password_reset"), {"email": "testuser@example.com"})
+        response = self.client.post(reverse("password_reset"), {"email": "user1@test.com"})
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse("password_reset_done"))
 
         # Verify that an email was sent
         self.assertEqual(len(mail.outbox), 1)
         reset_mail = mail.outbox[0]
-        self.assertIn("testuser@example.com", reset_mail.to)
+        self.assertIn("user1@test.com", reset_mail.to)
 
         # Verify that the email contains HTML (since we configured html_email_template_name)
         self.assertTrue(any(alt[1] == "text/html" for alt in reset_mail.alternatives))
@@ -197,15 +197,8 @@ class PasswordResetTest(TestCase):
 
 class GiftAccessControlTest(TestCase):
     def setUp(self):
-        self.user1 = User.objects.create_user(
-            username="user1@test.com", email="user1@test.com", password="password", is_verified=True, nickname="User1"
-        )
-        self.user2 = User.objects.create_user(
-            username="user2@test.com", email="user2@test.com", password="password", is_verified=True, nickname="User2"
-        )
-        self.user3 = User.objects.create_user(
-            username="user3@test.com", email="user3@test.com", password="password", is_verified=True, nickname="User3"
-        )
+
+        self.user1, self.user2, self.user3 = create_users()
 
         # Group between User1 and User2
         self.group = Group.objects.create(name="Group 1-2")
@@ -260,16 +253,8 @@ class GiftAccessControlTest(TestCase):
 
 class SubscriptionTest(TestCase):
     def setUp(self):
-        self.user1 = User.objects.create_user(
-            username="user1@test.com", email="user1@test.com", password="password", is_verified=True, nickname="User1"
-        )
-        self.user2 = User.objects.create_user(
-            username="user2@test.com", email="user2@test.com", password="password", is_verified=True, nickname="User2"
-        )
-        self.user3 = User.objects.create_user(
-            username="user3@test.com", email="user3@test.com", password="password", is_verified=True, nickname="User3"
-        )
 
+        self.user1, self.user2, self.user3 = create_users()
         self.group = Group.objects.create(name="Group 1-2")
         self.group.members.add(self.user1, self.user2)
 
@@ -379,47 +364,10 @@ class SubscriptionTest(TestCase):
         self.assertFalse(Gift.objects.filter(title="Bad Surprise").exists())
 
 
-class ReservationSharingTest(TestCase):
-    def setUp(self):
-        self.user1 = User.objects.create_user(
-            username="user1@test.com", email="user1@test.com", password="password", is_verified=True, nickname="User1"
-        )
-        self.user2 = User.objects.create_user(
-            username="user2@test.com", email="user2@test.com", password="password", is_verified=True, nickname="User2"
-        )
-        self.user3 = User.objects.create_user(
-            username="user3@test.com", email="user3@test.com", password="password", is_verified=True, nickname="User3"
-        )
-
-        self.group = Group.objects.create(name="Group 1-2-3")
-        self.group.members.add(self.user1, self.user2, self.user3)
-
-        self.gift = Gift.objects.create(owner=self.user1, title="Shared Gift", price=100)
-
-
 class GroupManagementTest(TestCase):
     def setUp(self):
-        self.creator = User.objects.create_user(
-            username="creator@test.com",
-            email="creator@test.com",
-            password="password",
-            is_verified=True,
-            nickname="Creator",
-        )
-        self.member = User.objects.create_user(
-            username="member@test.com",
-            email="member@test.com",
-            password="password",
-            is_verified=True,
-            nickname="Member",
-        )
-        self.outsider = User.objects.create_user(
-            username="outsider@test.com",
-            email="outsider@test.com",
-            password="password",
-            is_verified=True,
-            nickname="Outsider",
-        )
+
+        self.creator, self.member, self.outsider = create_users()
 
         self.group = Group.objects.create(name="Original Name", created_by=self.creator)
         self.group.members.add(self.creator, self.member)
