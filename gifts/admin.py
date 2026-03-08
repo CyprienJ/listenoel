@@ -12,9 +12,8 @@ class UserAdmin(BaseUserAdmin):
     ordering = ("username",)
 
     list_editable = ("is_verified",)
-    fieldsets = BaseUserAdmin.fieldsets + (
-        (_("More information"), {"fields": ("nickname", "is_verified")}),
-    )
+    fieldsets = BaseUserAdmin.fieldsets + ((_("More information"), {"fields": ("nickname", "is_verified")}),)
+
 
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
@@ -23,13 +22,16 @@ class GroupAdmin(admin.ModelAdmin):
 
     def member_count(self, obj):
         return obj.members.count()
+
     member_count.short_description = "Member count"
+
 
 @admin.register(Gift)
 class GiftAdmin(admin.ModelAdmin):
     list_display = ("title", "owner", "created_by", "created_at", "price")
     list_filter = ("owner", "created_by")
     search_fields = ("title", "description")
+
 
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):

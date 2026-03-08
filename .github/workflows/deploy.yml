@@ -24,6 +24,8 @@ jobs:
         run: uv sync --all-extras --dev
       - name: Run linter
         run: uv run ruff check .
+      - name: Run formater check
+        run: uv run ruff format --check .
 
   test:
     runs-on: ubuntu-latest

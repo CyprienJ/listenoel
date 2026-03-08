@@ -7,16 +7,13 @@ from gifts.models import User
 
 
 class Command(BaseCommand):
-    help = 'Deletes unverified users older than 30 minutes'
+    help = "Deletes unverified users older than 30 minutes"
 
     def handle(self, *args, **options):
         expiry_time = timezone.now() - timedelta(minutes=30)
         unverified_users = User.objects.filter(
-            is_verified=False,
-            date_joined__lt=expiry_time,
-            is_staff=False,
-            is_superuser=False
+            is_verified=False, date_joined__lt=expiry_time, is_staff=False, is_superuser=False
         )
         count = unverified_users.count()
         unverified_users.delete()
-        self.stdout.write(self.style.SUCCESS(f'Successfully deleted {count} unverified users.'))
+        self.stdout.write(self.style.SUCCESS(f"Successfully deleted {count} unverified users."))
