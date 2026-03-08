@@ -28,7 +28,7 @@ from .models import Gift, Group, Reservation, User
 
 @login_required
 def profile(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         old_email = request.user.email
         form = UserProfileForm(request.POST, instance=request.user)
         if form.is_valid():
@@ -39,24 +39,24 @@ def profile(request):
                 user.save()
                 send_verification_email(request, user)
                 messages.success(request, _("Profile updated! Please verify your new email address."))
-                return redirect('verify_email_sent')
+                return redirect("verify_email_sent")
 
             form.save()
             messages.success(request, _("Your profile has been updated!"))
-            return redirect('profile')
+            return redirect("profile")
     else:
         form = UserProfileForm(instance=request.user)
 
-    return render(request, 'gifts/profile.html', {'form': form})
+    return render(request, "gifts/profile.html", {"form": form})
 
 
 def welcome(request):
     if request.user.is_authenticated:
         if request.user.is_verified:
-            return redirect('dashboard')
+            return redirect("dashboard")
         else:
-            return redirect('verify_email_sent')
-    return render(request, 'gifts/welcome.html')
+            return redirect("verify_email_sent")
+    return render(request, "gifts/welcome.html")
 
 
 @login_required
@@ -66,26 +66,26 @@ def delete_account(request):
     auth_logout(request)
     user.delete()
     messages.success(request, _("Your account has been successfully deleted."))
-    return redirect('welcome')
+    return redirect("welcome")
 
 
 def register(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
-    call_command('cleanup_unverified_users')
+        return redirect("dashboard")
+    call_command("cleanup_unverified_users")
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = LocalUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
 
-            login(request, user, backend='gifts.backends.CaseInsensitiveModelBackend')
+            login(request, user, backend="gifts.backends.CaseInsensitiveModelBackend")
             send_verification_email(request, user)
 
-            return redirect('dashboard')
+            return redirect("dashboard")
     else:
         form = LocalUserCreationForm()
-    return render(request, 'registration/register.html', {'form': form})
+    return render(request, "registration/register.html", {"form": form})
 
 
 def send_verification_email(request, user):
@@ -95,20 +95,20 @@ def send_verification_email(request, user):
 
     link = f"http://{domain}{reverse('verify_email_confirm', kwargs={'uidb64': uid, 'token': token})}"
 
-    context = {'nickname': user.nickname, 'verification_link': link}
+    context = {"nickname": user.nickname, "verification_link": link}
     subject = _("Verify your email address on Nos Cadeaux!")
-    message_txt = render_to_string('emails/verify_email.txt', context)
-    message_html = render_to_string('emails/verify_email.html', context)
+    message_txt = render_to_string("emails/verify_email.txt", context)
+    message_html = render_to_string("emails/verify_email.html", context)
 
     send_mail(subject, message_txt, None, [user.email], html_message=message_html)
 
 
 def verify_email_sent(request):
     if not request.user.is_authenticated:
-        return redirect('welcome')
+        return redirect("welcome")
     if request.user.is_verified:
-        return redirect('dashboard')
-    return render(request, 'gifts/verify_email_sent.html')
+        return redirect("dashboard")
+    return render(request, "gifts/verify_email_sent.html")
 
 
 def verify_email_confirm(request, uidb64, token):
@@ -124,22 +124,22 @@ def verify_email_confirm(request, uidb64, token):
         user.is_verified = True
         user.save()
         messages.success(request, _("Your account is now verified !"))
-        return redirect('dashboard')
+        return redirect("dashboard")
     else:
         messages.error(request, _("The verification link is invalid"))
-        return redirect('welcome')
+        return redirect("welcome")
 
 
 @login_required
 def resend_verification(request):
     if not request.user.is_authenticated:
-        return redirect('welcome')
+        return redirect("welcome")
     if request.user.is_verified:
         messages.success(request, _("Your email is already verified."))
-        return redirect('dashboard')
+        return redirect("dashboard")
     send_verification_email(request, request.user)
     messages.success(request, _("A new verification email has been sent."))
-    return redirect('verify_email_sent')
+    return redirect("verify_email_sent")
 
 
 @login_required
@@ -148,11 +148,15 @@ def dashboard(request):
 
     current_emoji_set = emojis()
 
-    return render(request, "gifts/dashboard.html", {
-        "user_groups": user_groups,
-        "greeting_emoji": random.choice(current_emoji_set),
-        "rain_emojis": current_emoji_set,
-    })
+    return render(
+        request,
+        "gifts/dashboard.html",
+        {
+            "user_groups": user_groups,
+            "greeting_emoji": random.choice(current_emoji_set),
+            "rain_emojis": current_emoji_set,
+        },
+    )
 
 
 def emojis():
@@ -174,24 +178,24 @@ def create_group(request):
         group.save()
         group.members.add(request.user)
         msg = _("Group '%(name)s' created ! Share this code: %(token)s") % {
-            'name': group.name,
-            'token': group.invite_token
+            "name": group.name,
+            "token": group.invite_token,
         }
         messages.success(request, msg)
     else:
         for error in form.errors.values():
             messages.error(request, error.as_text())
 
-    return redirect('dashboard')
+    return redirect("dashboard")
 
 
 @login_required
 @require_POST
 def join_group(request):
-    token = request.POST.get('invite_token', '').strip().upper()
+    token = request.POST.get("invite_token", "").strip().upper()
     if not token:
         messages.error(request, _("Please enter a group code."))
-        return redirect('dashboard')
+        return redirect("dashboard")
 
     group = Group.objects.filter(invite_token=token).first()
 
@@ -201,11 +205,11 @@ def join_group(request):
         else:
             group.members.add(request.user)
             messages.success(request, _("You have joined the group '%s'!") % group.name)
-        return redirect('group_detail', group_id=group.id)
+        return redirect("group_detail", group_id=group.id)
     else:
         messages.error(request, _("No group found with this code."))
 
-    return redirect('dashboard')
+    return redirect("dashboard")
 
 
 @login_required
@@ -213,12 +217,12 @@ def group_detail(request, group_id):
     group = Group.objects.filter(id=group_id).first()
 
     if not group:
-        return render(request, 'gifts/group_not_found.html', status=404)
+        return render(request, "gifts/group_not_found.html", status=404)
 
     if request.user not in group.members.all():
         return HttpResponseForbidden(_("You are not a member of this group."))
 
-    return render(request, 'gifts/group_detail.html', {'group': group})
+    return render(request, "gifts/group_detail.html", {"group": group})
 
 
 @login_required
@@ -230,29 +234,35 @@ def leave_group(request, group_id):
         messages.success(request, _("You have left the group '%s'.") % group.name)
     if group.members.count() == 0:
         group.delete()
-    return redirect('dashboard')
+    return redirect("dashboard")
 
 
 @login_required
 @require_POST
 def edit_group(request, group_id):
-    group = get_object_or_404(Group, id=group_id, )
-    new_name = request.POST.get('name', '').strip()
+    group = get_object_or_404(
+        Group,
+        id=group_id,
+    )
+    new_name = request.POST.get("name", "").strip()
     if new_name:
         group.name = new_name
         group.save()
         messages.success(request, _("Group name updated !"))
-    return redirect('group_detail', group_id=group.id)
+    return redirect("group_detail", group_id=group.id)
 
 
 @login_required
 @require_POST
 def regenerate_group_token(request, group_id):
-    group = get_object_or_404(Group, id=group_id, )
+    group = get_object_or_404(
+        Group,
+        id=group_id,
+    )
     group.invite_token = ""  # Will be regenerated in save()
     group.save()
     messages.success(request, _("New invitation code generated !"))
-    return redirect('group_detail', group_id=group.id)
+    return redirect("group_detail", group_id=group.id)
 
 
 @login_required
@@ -263,7 +273,7 @@ def view_list(request: HttpRequest, user_id: int):
     if not target_user:
         return render(request, "gifts/user_not_found.html", status=404)
 
-    is_owner = (request.user.id == target_user.id)
+    is_owner = request.user.id == target_user.id
 
     if not is_owner:
         common_groups = Group.objects.filter(members=request.user).filter(members=target_user).exists()
@@ -272,13 +282,13 @@ def view_list(request: HttpRequest, user_id: int):
 
     all_gifts_query: QuerySet[Gift] = Gift.objects.filter(owner=target_user).order_by("created_at")
 
-    from_group_id = request.GET.get('from_group')
+    from_group_id = request.GET.get("from_group")
     if from_group_id and not is_owner:
         all_gifts_query = all_gifts_query.filter(
             Q(visible_in__isnull=True) | Q(visible_in__id=from_group_id)
         ).distinct()
 
-    all_gifts = all_gifts_query.prefetch_related('visible_in')
+    all_gifts = all_gifts_query.prefetch_related("visible_in")
     user_groups = request.user.gift_groups.all()
 
     gifts: list = []
@@ -290,11 +300,10 @@ def view_list(request: HttpRequest, user_id: int):
             if g.created_by == g.owner:
                 gifts.append({"gift": g, "is_reserved": None})
     else:
-        all_reservations = Reservation.objects.filter(gift__in=all_gifts).select_related('reserver')
+        all_reservations = Reservation.objects.filter(gift__in=all_gifts).select_related("reserver")
 
         other_members = []
         if from_group_id:
-
             group = get_object_or_404(Group, id=from_group_id)
 
             other_members = group.members.exclude(id__in=[request.user.id, target_user.id])
@@ -322,15 +331,19 @@ def view_list(request: HttpRequest, user_id: int):
             else:
                 surprises.append(item)
 
-    return render(request, "gifts/view_list.html", {
-        "user": target_user,
-        "gifts": gifts,
-        "surprises": surprises,
-        "is_owner": is_owner,
-        "from_group_id": from_group_id,
-        "user_groups": user_groups,
-        "is_subscribed": request.user.subscriptions.filter(id=target_user.id).exists() if not is_owner else False,
-    })
+    return render(
+        request,
+        "gifts/view_list.html",
+        {
+            "user": target_user,
+            "gifts": gifts,
+            "surprises": surprises,
+            "is_owner": is_owner,
+            "from_group_id": from_group_id,
+            "user_groups": user_groups,
+            "is_subscribed": request.user.subscriptions.filter(id=target_user.id).exists() if not is_owner else False,
+        },
+    )
 
 
 @login_required
@@ -345,12 +358,12 @@ def toggle_subscription(request, user_id):
 
     if request.user.subscriptions.filter(id=target_user.id).exists():
         request.user.subscriptions.remove(target_user)
-        messages.success(request, _("You are no longer subscribed to %(name)s's list") % {'name': target_user.nickname})
+        messages.success(request, _("You are no longer subscribed to %(name)s's list") % {"name": target_user.nickname})
     else:
         request.user.subscriptions.add(target_user)
-        messages.success(request, _("You are now subscribed to %(name)s's list") % {'name': target_user.nickname})
+        messages.success(request, _("You are now subscribed to %(name)s's list") % {"name": target_user.nickname})
 
-    return redirect('view_list', user_id=user_id)
+    return redirect("view_list", user_id=user_id)
 
 
 @login_required
@@ -361,13 +374,14 @@ def unsubscribe_token(request, uidb64, token):
 
         if request.user.subscriptions.filter(id=target_user.id).exists():
             request.user.subscriptions.remove(target_user)
-            messages.success(request,
-                             _("You are no longer subscribed to %(name)s's list") % {'name': target_user.nickname})
+            messages.success(
+                request, _("You are no longer subscribed to %(name)s's list") % {"name": target_user.nickname}
+            )
 
-        return redirect('view_list', user_id=target_user.id)
+        return redirect("view_list", user_id=target_user.id)
     except (TypeError, ValueError, OverflowError):
         messages.error(request, _("The unsubscription link is invalid"))
-        return redirect('dashboard')
+        return redirect("dashboard")
 
 
 @login_required
@@ -376,8 +390,7 @@ def add_gift(request, owner_id):
     owner = get_object_or_404(User, id=owner_id)
 
     # Security check: can only add to own list or list of someone in common group
-    if (owner != request.user
-            and not Group.objects.filter(members=request.user).filter(members=owner).exists()):
+    if owner != request.user and not Group.objects.filter(members=request.user).filter(members=owner).exists():
         return HttpResponseForbidden(_("You don't have access to this list"))
 
     title = request.POST.get("title", "").strip()
@@ -392,24 +405,21 @@ def add_gift(request, owner_id):
         group_ids = request.POST.getlist("visible_in")
         if group_ids:
             # Security check: can only set visibility for groups user is member of
-            valid_groups = (Group.objects
-                            .filter(id__in=group_ids, members=request.user))
+            valid_groups = Group.objects.filter(id__in=group_ids, members=request.user)
             gift.visible_in.set(valid_groups)
 
         # Send notification to all subscribers of the owner
         if owner == request.user:
             subscribers = owner.subscribers.all()
             if subscribers.exists():
-                protocol = 'https' if request.is_secure() else 'http'
+                protocol = "https" if request.is_secure() else "http"
                 domain = get_current_site(request).domain
                 list_url = f"{protocol}://{domain}{reverse('view_list', args=[owner.id])}"
 
                 for subscriber in subscribers:
                     if Group.objects.filter(members=owner).filter(members=subscriber).exists():
-
                         gift_groups = gift.visible_in.all()
-                        if (gift_groups.exists() and
-                                not gift_groups.filter(members=subscriber).exists()):
+                        if gift_groups.exists() and not gift_groups.filter(members=subscriber).exists():
                             continue
 
                         uid = urlsafe_base64_encode(force_bytes(owner.pk))
@@ -417,23 +427,23 @@ def add_gift(request, owner_id):
                         unsubscribe_url = f"{protocol}://{domain}{reverse('unsubscribe_token', args=[uid, token])}"
 
                         context = {
-                            'subscriber': subscriber,
-                            'owner': owner,
-                            'gift': gift,
-                            'list_url': list_url,
-                            'unsubscribe_url': unsubscribe_url,
+                            "subscriber": subscriber,
+                            "owner": owner,
+                            "gift": gift,
+                            "list_url": list_url,
+                            "unsubscribe_url": unsubscribe_url,
                         }
 
-                        subject = _("New gift on %(name)s's list!") % {'name': owner.nickname}
-                        html_message = render_to_string('emails/gift_added_notification.html', context)
-                        plain_message = render_to_string('emails/gift_added_notification.txt', context)
+                        subject = _("New gift on %(name)s's list!") % {"name": owner.nickname}
+                        html_message = render_to_string("emails/gift_added_notification.html", context)
+                        plain_message = render_to_string("emails/gift_added_notification.txt", context)
 
                         send_mail(
                             subject,
                             plain_message,
                             settings.DEFAULT_FROM_EMAIL,
                             [subscriber.email],
-                            html_message=html_message
+                            html_message=html_message,
                         )
     return redirect("view_list", user_id=owner.id)
 
@@ -475,10 +485,10 @@ def edit_gift(request: HttpRequest, gift_id: int):
 # ... existing code ...
 @login_required
 def change_password(request):
-    if request.method == 'POST':
-        old_password = request.POST.get('old_password')
-        new_password = request.POST.get('new_password')
-        confirm_password = request.POST.get('confirm_password')
+    if request.method == "POST":
+        old_password = request.POST.get("old_password")
+        new_password = request.POST.get("new_password")
+        confirm_password = request.POST.get("confirm_password")
 
         if not request.user.check_password(old_password):
             messages.error(request, _("Old password incorrect"))
@@ -491,9 +501,9 @@ def change_password(request):
             request.user.save()
             update_session_auth_hash(request, request.user)
             messages.success(request, _("Password successfully updated !"))
-            return redirect('dashboard')
+            return redirect("dashboard")
 
-    return render(request, 'gifts/change_password.html')
+    return render(request, "gifts/change_password.html")
 
 
 @login_required
@@ -529,8 +539,8 @@ def reserve_gift(request: HttpRequest, gift_id: int):
         return JsonResponse({"success": False, "error": "TypeError: Please provide valid data"}, status=400)
 
     try:
-        exclusivity = data.get('exclusivity')
-        user_id = data.get('user_id')
+        exclusivity = data.get("exclusivity")
+        user_id = data.get("user_id")
     except (ValueError, TypeError):
         return JsonResponse({"success": False, "error": "Unable to find exclusivity"}, status=400)
 
@@ -552,7 +562,7 @@ def reserve_gift(request: HttpRequest, gift_id: int):
 
     Reservation.objects.create(gift=gift, reserver=user, exclusivity=exclusivity)
 
-    group_id = data.get('group_id')
+    group_id = data.get("group_id")
     group = Group.objects.get(id=group_id)
 
     if not group.members.filter(id=gift.owner.id):
@@ -561,29 +571,29 @@ def reserve_gift(request: HttpRequest, gift_id: int):
     gift.group_reserved_on = group
     gift.save()
 
-    reservations = Reservation.objects.filter(gift=gift).order_by('id')
+    reservations = Reservation.objects.filter(gift=gift).order_by("id")
 
     user_res = next((r for r in reservations if r.reserver_id == request.user.id), None)
 
     user_already_participating = (r.reserver.id for r in reservations)
 
     group = get_object_or_404(Group, id=group_id)
-    other_members = (group.members
-                     .exclude(id__in=[request.user.id, gift.owner.id])
-                     .exclude(id__in=user_already_participating))
+    other_members = group.members.exclude(id__in=[request.user.id, gift.owner.id]).exclude(
+        id__in=user_already_participating
+    )
 
     context = {
-        'item': {
+        "item": {
             "current_user": request.user,
-            'gift': gift,
-            'reservations': reservations,
-            'user_reservation': user_res,
+            "gift": gift,
+            "reservations": reservations,
+            "user_reservation": user_res,
             "other_non_participant": other_members,
-            "group_id": group_id
+            "group_id": group_id,
         }
     }
 
-    return render(request, 'gifts/includes/_reserve_modal_content.html', context)
+    return render(request, "gifts/includes/_reserve_modal_content.html", context)
 
 
 @login_required
@@ -619,11 +629,11 @@ def modify_reservation(request: HttpRequest, gift_id: int):
         reservation.exclusivity = True
         reservation.save()
 
-    reservations = Reservation.objects.filter(gift=gift).order_by('id')
+    reservations = Reservation.objects.filter(gift=gift).order_by("id")
 
     user_res = next((r for r in reservations if r.reserver_id == request.user.id), None)
 
-    group_id = data.get('group_id')
+    group_id = data.get("group_id")
     group = get_object_or_404(Group, id=group_id)
     other_members = group.members.exclude(id__in=[request.user.id, gift.owner.id])
 
@@ -634,11 +644,11 @@ def modify_reservation(request: HttpRequest, gift_id: int):
             "reservations": reservations,
             "user_reservation": user_res,
             "other_non_participant": other_members,
-            "group_id": group_id
+            "group_id": group_id,
         }
     }
 
-    return render(request, 'gifts/includes/_reserve_modal_content.html', context)
+    return render(request, "gifts/includes/_reserve_modal_content.html", context)
 
 
 @login_required
@@ -668,23 +678,23 @@ def delete_reservation(request, gift_id):
 
     reservation_to_delete.delete()
 
-    reservations = Reservation.objects.filter(gift=gift).order_by('id')
+    reservations = Reservation.objects.filter(gift=gift).order_by("id")
 
     user_res = next((r for r in reservations if r.reserver_id == request.user.id), None)
 
-    group_id = data.get('group_id')
+    group_id = data.get("group_id")
     group = get_object_or_404(Group, id=group_id)
     other_members = group.members.exclude(id__in=[request.user.id, gift.owner.id])
 
     context = {
-        'item': {
-            'current_user': request.user,
-            'gift': gift,
-            'reservations': reservations,
-            'user_reservation': user_res,
+        "item": {
+            "current_user": request.user,
+            "gift": gift,
+            "reservations": reservations,
+            "user_reservation": user_res,
             "other_non_participant": other_members,
-            "group_id": group_id
+            "group_id": group_id,
         }
     }
 
-    return render(request, 'gifts/includes/_reserve_modal_content.html', context)
+    return render(request, "gifts/includes/_reserve_modal_content.html", context)

@@ -10,25 +10,31 @@ class LocalUserCreationForm(UserCreationForm):
 
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ("nickname", "email", )
+        fields = (
+            "nickname",
+            "email",
+        )
 
     def clean_nickname(self):
         return self.cleaned_data["nickname"].lower()
+
 
 class GroupForm(forms.ModelForm):
     class Meta:
         model = Group
         fields = ("name",)
         widgets = {
-            'name': forms.TextInput(
-                attrs={'class': 'form-control rounded-pill border-0 bg-light p-3', 'placeholder': 'ex: Famille Smith'}),
+            "name": forms.TextInput(
+                attrs={"class": "form-control rounded-pill border-0 bg-light p-3", "placeholder": "ex: Famille Smith"}
+            ),
         }
+
 
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['nickname', 'email']
+        fields = ["nickname", "email"]
         labels = {
-            'nickname': _("Nickname"),
-            'email': _("Email"),
+            "nickname": _("Nickname"),
+            "email": _("Email"),
         }
