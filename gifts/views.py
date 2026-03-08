@@ -25,6 +25,12 @@ from django.views.decorators.http import require_POST
 from .forms import GroupForm, LocalUserCreationForm, UserProfileForm
 from .models import Gift, Group, Reservation, User
 
+RESERVE_MODAL_MODEL_PATH = "gifts/includes/_reserve_modal_content.html"
+
+
+def redirect_dashboard():
+    return redirect("dashboard")
+
 
 @login_required
 def profile(request):
@@ -53,7 +59,7 @@ def profile(request):
 def welcome(request):
     if request.user.is_authenticated:
         if request.user.is_verified:
-            return redirect("dashboard")
+            return redirect_dashboard()
         else:
             return redirect("verify_email_sent")
     return render(request, "gifts/welcome.html")
@@ -71,7 +77,7 @@ def delete_account(request):
 
 def register(request):
     if request.user.is_authenticated:
-        return redirect("dashboard")
+        return redirect_dashboard()
     call_command("cleanup_unverified_users")
 
     if request.method == "POST":
@@ -82,7 +88,7 @@ def register(request):
             login(request, user, backend="gifts.backends.CaseInsensitiveModelBackend")
             send_verification_email(request, user)
 
-            return redirect("dashboard")
+            return redirect_dashboard()
     else:
         form = LocalUserCreationForm()
     return render(request, "registration/register.html", {"form": form})
@@ -107,7 +113,7 @@ def verify_email_sent(request):
     if not request.user.is_authenticated:
         return redirect("welcome")
     if request.user.is_verified:
-        return redirect("dashboard")
+        return redirect_dashboard()
     return render(request, "gifts/verify_email_sent.html")
 
 
@@ -124,7 +130,7 @@ def verify_email_confirm(request, uidb64, token):
         user.is_verified = True
         user.save()
         messages.success(request, _("Your account is now verified !"))
-        return redirect("dashboard")
+        return redirect_dashboard()
     else:
         messages.error(request, _("The verification link is invalid"))
         return redirect("welcome")
@@ -136,7 +142,7 @@ def resend_verification(request):
         return redirect("welcome")
     if request.user.is_verified:
         messages.success(request, _("Your email is already verified."))
-        return redirect("dashboard")
+        return redirect_dashboard()
     send_verification_email(request, request.user)
     messages.success(request, _("A new verification email has been sent."))
     return redirect("verify_email_sent")
@@ -186,7 +192,7 @@ def create_group(request):
         for error in form.errors.values():
             messages.error(request, error.as_text())
 
-    return redirect("dashboard")
+    return redirect_dashboard()
 
 
 @login_required
@@ -195,7 +201,7 @@ def join_group(request):
     token = request.POST.get("invite_token", "").strip().upper()
     if not token:
         messages.error(request, _("Please enter a group code."))
-        return redirect("dashboard")
+        return redirect_dashboard()
 
     group = Group.objects.filter(invite_token=token).first()
 
@@ -209,7 +215,7 @@ def join_group(request):
     else:
         messages.error(request, _("No group found with this code."))
 
-    return redirect("dashboard")
+    return redirect_dashboard()
 
 
 @login_required
@@ -234,7 +240,7 @@ def leave_group(request, group_id):
         messages.success(request, _("You have left the group '%s'.") % group.name)
     if group.members.count() == 0:
         group.delete()
-    return redirect("dashboard")
+    return redirect_dashboard()
 
 
 @login_required
@@ -381,7 +387,7 @@ def unsubscribe_token(request, uidb64, token):
         return redirect("view_list", user_id=target_user.id)
     except (TypeError, ValueError, OverflowError):
         messages.error(request, _("The unsubscription link is invalid"))
-        return redirect("dashboard")
+        return redirect_dashboard()
 
 
 @login_required
@@ -501,7 +507,7 @@ def change_password(request):
             request.user.save()
             update_session_auth_hash(request, request.user)
             messages.success(request, _("Password successfully updated !"))
-            return redirect("dashboard")
+            return redirect_dashboard()
 
     return render(request, "gifts/change_password.html")
 
@@ -593,7 +599,7 @@ def reserve_gift(request: HttpRequest, gift_id: int):
         }
     }
 
-    return render(request, "gifts/includes/_reserve_modal_content.html", context)
+    return render(request, RESERVE_MODAL_MODEL_PATH, context)
 
 
 @login_required
@@ -648,7 +654,7 @@ def modify_reservation(request: HttpRequest, gift_id: int):
         }
     }
 
-    return render(request, "gifts/includes/_reserve_modal_content.html", context)
+    return render(request, RESERVE_MODAL_MODEL_PATH, context)
 
 
 @login_required
@@ -697,4 +703,4 @@ def delete_reservation(request, gift_id):
         }
     }
 
-    return render(request, "gifts/includes/_reserve_modal_content.html", context)
+    return render(request, RESERVE_MODAL_MODEL_PATH, context)
