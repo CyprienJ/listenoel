@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.core import mail
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
-from .models import User, Group, Gift, Reservation
+from .models import User, Group, Gift
 
 class UserCleanupTest(TestCase):
     def test_cleanup_unverified_users_command(self):
