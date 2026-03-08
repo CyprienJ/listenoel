@@ -1,7 +1,10 @@
+from datetime import timedelta
+
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from datetime import timedelta
+
 from gifts.models import User
+
 
 class Command(BaseCommand):
     help = 'Deletes unverified users older than 30 minutes'
