@@ -5,24 +5,25 @@ from decimal import Decimal, InvalidOperation
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import login, update_session_auth_hash
+from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login, update_session_auth_hash, logout as auth_logout
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.core.management import call_command
-from django.db.models import QuerySet, Q
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse, HttpResponseForbidden, HttpRequest
+from django.db.models import Q, QuerySet
+from django.http import HttpRequest, HttpResponseForbidden, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.views.decorators.http import require_POST
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.translation import gettext as _
+from django.views.decorators.http import require_POST
 
-from .forms import LocalUserCreationForm, GroupForm, UserProfileForm
-from .models import User, Gift, Reservation, Group
+from .forms import GroupForm, LocalUserCreationForm, UserProfileForm
+from .models import Gift, Group, Reservation, User
 
 
 @login_required
@@ -375,9 +376,9 @@ def add_gift(request, owner_id):
     owner = get_object_or_404(User, id=owner_id)
 
     # Security check: can only add to own list or list of someone in common group
-    if owner != request.user:
-        if not Group.objects.filter(members=request.user).filter(members=owner).exists():
-            return HttpResponseForbidden(_("You don't have access to this list"))
+    if (owner != request.user
+            and not Group.objects.filter(members=request.user).filter(members=owner).exists()):
+        return HttpResponseForbidden(_("You don't have access to this list"))
 
     title = request.POST.get("title", "").strip()
     if title:
@@ -391,7 +392,8 @@ def add_gift(request, owner_id):
         group_ids = request.POST.getlist("visible_in")
         if group_ids:
             # Security check: can only set visibility for groups user is member of
-            valid_groups = Group.objects.filter(id__in=group_ids, members=request.user)
+            valid_groups = (Group.objects
+                            .filter(id__in=group_ids, members=request.user))
             gift.visible_in.set(valid_groups)
 
         # Send notification to all subscribers of the owner
@@ -406,9 +408,9 @@ def add_gift(request, owner_id):
                     if Group.objects.filter(members=owner).filter(members=subscriber).exists():
 
                         gift_groups = gift.visible_in.all()
-                        if gift_groups.exists():
-                            if not gift_groups.filter(members=subscriber).exists():
-                                continue
+                        if (gift_groups.exists() and
+                                not gift_groups.filter(members=subscriber).exists()):
+                            continue
 
                         uid = urlsafe_base64_encode(force_bytes(owner.pk))
                         token = default_token_generator.make_token(subscriber)
@@ -566,7 +568,9 @@ def reserve_gift(request: HttpRequest, gift_id: int):
     user_already_participating = (r.reserver.id for r in reservations)
 
     group = get_object_or_404(Group, id=group_id)
-    other_members = group.members.exclude(id__in=[request.user.id, gift.owner.id]).exclude(id__in=user_already_participating)
+    other_members = (group.members
+                     .exclude(id__in=[request.user.id, gift.owner.id])
+                     .exclude(id__in=user_already_participating))
 
     context = {
         'item': {

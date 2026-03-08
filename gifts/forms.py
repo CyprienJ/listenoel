@@ -1,7 +1,9 @@
-from django.contrib.auth.forms import UserCreationForm
-from .models import User, Group
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import gettext as _
+
+from .models import Group, User
+
 
 class LocalUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True, label="Email")
@@ -18,7 +20,8 @@ class GroupForm(forms.ModelForm):
         model = Group
         fields = ("name",)
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control rounded-pill border-0 bg-light p-3', 'placeholder': 'ex: Famille Smith'}),
+            'name': forms.TextInput(
+                attrs={'class': 'form-control rounded-pill border-0 bg-light p-3', 'placeholder': 'ex: Famille Smith'}),
         }
 
 class UserProfileForm(forms.ModelForm):

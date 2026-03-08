@@ -24,7 +24,9 @@ class EmailVerificationMiddleware:
                 reverse('unsubscribe_token', kwargs={'uidb64': 'dummy', 'token': 'dummy'}).split('dummy')[0],
             ]
 
-            if not any(request.path == url or (url != reverse('welcome') and request.path.startswith(url)) for url in allowed_urls):
+            if not any(request.path == url
+                       or (url != reverse('welcome')
+                           and request.path.startswith(url)) for url in allowed_urls):
                 return redirect('verify_email_sent')
 
         return self.get_response(request)

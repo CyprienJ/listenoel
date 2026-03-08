@@ -59,7 +59,12 @@ class Gift(models.Model):
     visible_in = models.ManyToManyField(Group, related_name="visible_gifts", blank=True)
     price = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
     offered = models.BooleanField(default=False)
-    group_reserved_on = models.ForeignKey(Group, blank=True, null=True, on_delete=models.SET_NULL, related_name="reservations_group")
+    group_reserved_on = models.ForeignKey(
+        Group,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="reservations_group")
 
     def __str__(self):
         return f"{self.title} ({self.owner.nickname})"
