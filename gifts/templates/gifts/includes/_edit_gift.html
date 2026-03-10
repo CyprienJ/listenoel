@@ -1,73 +1,77 @@
 {% load i18n %}
 {% with gift_id=item.gift.id|stringformat:"s" %}
-{% with final_id=prefix|add:gift_id %}
-<div class="modal fade" id="{{ final_id }}" tabindex="-1"
-     aria-labelledby="{{ final_id }}Label" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
+    {% with final_id=prefix|add:gift_id %}
+        <div class="modal fade" id="{{ final_id }}" tabindex="-1"
+             aria-labelledby="{{ final_id }}Label" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
 
-            <div class="modal-header">
-                <h5 class="modal-title"
-                    id="{{ final_id }}Label">{{ modal_title }}</h5>
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="{% trans 'Close' %}">
-                </button>
-            </div>
+                    <div class="modal-header">
+                        <h5 class="modal-title"
+                            id="{{ final_id }}Label">{{ modal_title }}</h5>
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="{% trans 'Close' %}">
+                        </button>
+                    </div>
 
-            <form method="post" action="{% url 'edit_gift' item.gift.id %}">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <input type="text"
-                               name="title"
-                               class="form-control"
-                               placeholder="{% trans 'Gift name' %}"
-                               aria-label="{% trans 'Gift name' %}"
-                               value="{{ item.gift.title }}"
-                               required>
-                    </div>
-                    <div class="mb-3">
-                        <input type="text"
-                               name="description"
-                               class="form-control"
-                               placeholder="{% trans 'Description' %}"
-                               aria-label="{% trans 'Description' %}"
-                               value="{{ item.gift.description }}">
-                    </div>
-                    <div class="mb-3">
-                        <input type="url"
-                               name="url"
-                               class="form-control"
-                               placeholder="{% trans 'Link' %}"
-                               aria-label="{% trans 'Link' %}"
-                               value="{{ item.gift.url }}">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">{% trans "Visible in" %}</label>
-                        {% for group in user_groups %}
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="visible_in" value="{{ group.id }}"
-                                       id="groupEdit{{ item.gift.id }}{{ group.id }}"
-                                       {% if group in item.gift.visible_in.all %}checked{% endif %}>
-                                <label class="form-check-label" for="groupEdit{{ item.gift.id }}{{ group.id }}">
-                                    {{ group.name }}
-                                </label>
+                    <form method="post" action="{% url 'edit_gift' item.gift.id %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <input type="text"
+                                       name="title"
+                                       class="form-control"
+                                       placeholder="{% trans 'Gift name' %}"
+                                       aria-label="{% trans 'Gift name' %}"
+                                       value="{{ item.gift.title }}"
+                                       required>
                             </div>
-                        {% endfor %}
-                    </div>
-                </div>
+                            <div class="mb-3">
+                                <input type="text"
+                                       name="description"
+                                       class="form-control"
+                                       placeholder="{% trans 'Description' %}"
+                                       aria-label="{% trans 'Description' %}"
+                                       value="{{ item.gift.description }}">
+                            </div>
+                            <div class="mb-3">
+                                <input type="url"
+                                       name="url"
+                                       class="form-control"
+                                       placeholder="{% trans 'Link' %}"
+                                       aria-label="{% trans 'Link' %}"
+                                       value="{{ item.gift.url }}">
+                            </div>
+                            <div class="mb-3">
+                                <fieldset>
+                                    <legend class="form-label small fw-bold">{% trans "Visible in" %}</legend>
+                                    {% for group in user_groups %}
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="visible_in"
+                                                   value="{{ group.id }}"
+                                                   id="groupEdit{{ item.gift.id }}{{ group.id }}"
+                                                   {% if group in item.gift.visible_in.all %}checked{% endif %}>
+                                            <label class="form-check-label"
+                                                   for="groupEdit{{ item.gift.id }}{{ group.id }}">
+                                                {{ group.name }}
+                                            </label>
+                                        </div>
+                                    {% endfor %}
+                                </fieldset>
+                            </div>
+                        </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary"
-                            data-bs-dismiss="modal">{% trans "Cancel" %}</button>
-                    <button type="submit" class="btn btn-primary">{% trans "Modify" %}</button>
-                </div>
-            </form>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary"
+                                    data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                            <button type="submit" class="btn btn-primary">{% trans "Modify" %}</button>
+                        </div>
+                    </form>
 
+                </div>
+            </div>
         </div>
-    </div>
-</div>
-{% endwith %}
+    {% endwith %}
 {% endwith %}

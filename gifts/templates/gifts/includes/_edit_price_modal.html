@@ -10,11 +10,12 @@
                 {% csrf_token %}
                 <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label class="form-label fw-medium">{% trans "Estimated price (€)" %}</label>
+                        <label for="priceInput" class="form-label fw-medium">{% trans "Estimated price (€)" %}</label>
                         <input type="number" step="0.01" name="price"
                                class="form-control rounded-4 auth-input"
                                value="{{ item.gift.price|default:'' }}"
-                               placeholder="ex: 45.00">
+                               placeholder="ex: 45.00"
+                               id="priceInput">
                     </div>
                     <p class="small text-muted">
                         <i class="bi bi-info-circle"></i>
@@ -22,7 +23,8 @@
                     </p>
                 </div>
                 <div class="modal-footer border-0 p-4 pt-0">
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="button" class="btn btn-light rounded-pill px-4"
+                            data-bs-dismiss="modal">{% trans "Cancel" %}</button>
                     <button type="submit" class="btn btn-primary rounded-pill px-4">{% trans "Save" %}</button>
                 </div>
             </form>

@@ -22,15 +22,15 @@
 
                 {% if item.gift.description %}
                     <div class="mb-4">
-                        <label class="small text-uppercase fw-bold text-muted mb-2 d-block">{% trans "Description" %}</label>
-                        <p class="mb-0 text-secondary" style="white-space: pre-line;">{{ item.gift.description }}</p>
+                        <label for="gift_description" class="small text-uppercase fw-bold text-muted mb-2 d-block">{% trans "Description" %}</label>
+                        <p id="gift_description" class="mb-0 text-secondary" style="white-space: pre-line;">{{ item.gift.description }}</p>
                     </div>
                 {% endif %}
 
                 {% if item.gift.url %}
                     <div class="mb-4">
-                        <label class="small text-uppercase fw-bold text-muted mb-2 d-block">{% trans "Link" %}</label>
-                        <a href="{{ item.gift.url }}" target="_blank"
+                        <label for="gift_url" class="small text-uppercase fw-bold text-muted mb-2 d-block">{% trans "Link" %}</label>
+                        <a id="gift_url" href="{{ item.gift.url }}" target="_blank"
                            class="btn btn-outline-primary rounded-pill w-100">
                             <i class="bi bi-box-arrow-up-right me-2"></i> {% trans "See on website" %}
                         </a>
