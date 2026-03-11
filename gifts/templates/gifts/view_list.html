@@ -101,20 +101,20 @@
                     {% csrf_token %}
                     <div class="modal-body p-4">
                         <div class="mb-3">
-                            <label class="form-label fw-medium">{% trans "Gift name" %}</label>
-                            <input type="text" name="title" class="form-control rounded-4 auth-input" required>
+                            <label for="title" class="form-label fw-medium">{% trans "Gift name" %}</label>
+                            <input id="title" type="text" name="title" class="form-control rounded-4 auth-input" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-medium">{% trans "Description" %}</label>
-                            <textarea name="description" class="form-control rounded-4 auth-input" rows="3"></textarea>
+                            <label for="description" class="form-label fw-medium">{% trans "Description" %}</label>
+                            <textarea id="description" name="description" class="form-control rounded-4 auth-input" rows="3"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-medium">{% trans "Link (URL)" %}</label>
-                            <input type="url" name="url" class="form-control rounded-4 auth-input">
+                            <label for="link" class="form-label fw-medium">{% trans "Link (URL)" %}</label>
+                            <input id="link" type="url" name="url" class="form-control rounded-4 auth-input">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-medium">{% trans "Visible in" %}</label>
-                            <div class="form-check small text-muted mb-2">
+                            <label for="visibility" class="form-label fw-medium">{% trans "Visible in" %}</label>
+                            <div id = "visibility" class="form-check small text-muted mb-2">
                                 <i class="bi bi-info-circle"></i> {% trans "If none selected, visible to all your groups." %}
                             </div>
                             {% for group in user_groups %}
@@ -193,14 +193,14 @@
             document.body.addEventListener('click', function (e) {
                 const button = e.target.closest('.btn-reserve');
                 if (button) {
-                    const giftId = button.getAttribute('data-gift-id');
+                    const giftId = button.dataset.giftId;
                     reserve(giftId, button);
                 }
             });
 
             document.querySelectorAll('.btn-delete').forEach(button => {
                 button.addEventListener('click', function (e) {
-                    const msg = button.getAttribute('data-confirm-msg');
+                    const msg = button.dataset.confirmMsg;
                     if (!confirm(msg)) {
                         e.preventDefault();
                     }

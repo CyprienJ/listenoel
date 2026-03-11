@@ -19,9 +19,9 @@
     <script>
         (function () {
             const stored = localStorage.getItem("theme") || "auto";
-            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            const resolved = stored === "auto" ? (prefersDark ? "dark" : "light") : stored;
-            document.documentElement.setAttribute("data-bs-theme", resolved);
+            const prefersDark = globalThis.matchMedia("(prefers-color-scheme: dark)").matches;
+            const theme = (prefersDark ? "dark" : "light")
+            document.documentElement.dataset.bsTheme =  stored === "auto" ? theme : stored;
         })();
     </script>
 </head>
@@ -156,20 +156,19 @@
         if (!select) return;
 
         function applyTheme(choice) {
-            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            const resolved = choice === "auto" ? (prefersDark ? "dark" : "light") : choice;
-            document.documentElement.setAttribute("data-bs-theme", resolved);
+            const prefersDark = globalThis.matchMedia("(prefers-color-scheme: dark)").matches;
+            const theme = prefersDark ? "dark" : "light"
+            document.documentElement.dataset.bsTheme = choice === "auto" ? theme : choice;
         }
 
-        const stored = localStorage.getItem("theme") || "auto";
-        select.value = stored;
+        select.value = localStorage.getItem("theme") || "auto";
 
         select.addEventListener("change", function () {
             localStorage.setItem("theme", select.value);
             applyTheme(select.value);
         });
 
-        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+        globalThis.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
             if (localStorage.getItem("theme") === "auto") applyTheme("auto");
         });
     })();
