@@ -26,6 +26,10 @@ from .forms import GroupForm, LocalUserCreationForm, UserProfileForm
 from .models import Gift, Group, Reservation, User
 
 RESERVE_MODAL_MODEL_PATH = "gifts/includes/_reserve_modal_content.html"
+ACCESS_REFUSED_MSG = "You don't have access to this list"
+VALUE_ERROR_MSG = "ValueError: Please provide valid data"
+TYPE_ERROR_MSG = "TypeError: Please provide valid data"
+METHOD_NOT_AUTHORIZED_MESSAGE = "Method {} not authorized"
 
 
 def redirect_dashboard():
@@ -360,7 +364,7 @@ def toggle_subscription(request, user_id):
         return HttpResponseForbidden(_("You cannot subscribe to yourself"))
 
     if not Group.objects.filter(members=request.user).filter(members=target_user).exists():
-        return HttpResponseForbidden(_("You don't have access to this list"))
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
     if request.user.subscriptions.filter(id=target_user.id).exists():
         request.user.subscriptions.remove(target_user)
@@ -397,7 +401,7 @@ def add_gift(request, owner_id):
 
     # Security check: can only add to own list or list of someone in common group
     if owner != request.user and not Group.objects.filter(members=request.user).filter(members=owner).exists():
-        return HttpResponseForbidden(_("You don't have access to this list"))
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
     title = request.POST.get("title", "").strip()
     if title:
@@ -535,14 +539,14 @@ def edit_gift_price(request, gift_id):
 @login_required
 def reserve_gift(request: HttpRequest, gift_id: int):
     if request.method != "POST":
-        return JsonResponse({"error": "Method " + request.method + " not authorized"}, status=405)
+        return JsonResponse({"error": METHOD_NOT_AUTHORIZED_MESSAGE.format(request.method)}, status=405)
 
     try:
         data = json.loads(request.body)
     except ValueError:
-        return JsonResponse({"success": False, "error": "ValueError: Please provide valid data"}, status=400)
+        return JsonResponse({"success": False, "error": VALUE_ERROR_MSG}, status=400)
     except TypeError:
-        return JsonResponse({"success": False, "error": "TypeError: Please provide valid data"}, status=400)
+        return JsonResponse({"success": False, "error": TYPE_ERROR_MSG}, status=400)
 
     try:
         exclusivity = data.get("exclusivity")
@@ -558,7 +562,7 @@ def reserve_gift(request: HttpRequest, gift_id: int):
 
     # Common group verification
     if not Group.objects.filter(members=request.user).filter(members=gift.owner).exists():
-        return HttpResponseForbidden(_("You don't have access to this list"))
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
     if Reservation.objects.filter(gift=gift, reserver=user).exists():
         return JsonResponse({"success": False, "error": "This person already joined this gift"}, status=409)
@@ -572,7 +576,7 @@ def reserve_gift(request: HttpRequest, gift_id: int):
     group = Group.objects.get(id=group_id)
 
     if not group.members.filter(id=gift.owner.id):
-        return HttpResponseForbidden(_("You don't have access to this list"))
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
     gift.group_reserved_on = group
     gift.save()
@@ -605,14 +609,14 @@ def reserve_gift(request: HttpRequest, gift_id: int):
 @login_required
 def modify_reservation(request: HttpRequest, gift_id: int):
     if request.method != "POST":
-        return JsonResponse({"error": "Method " + request.method + " not authorized"}, status=405)
+        return JsonResponse({"error": METHOD_NOT_AUTHORIZED_MESSAGE.format(request.method)}, status=405)
 
     try:
         data = json.loads(request.body)
     except ValueError:
-        return JsonResponse({"success": False, "error": "ValueError: Please provide valid data"}, status=400)
+        return JsonResponse({"success": False, "error": VALUE_ERROR_MSG}, status=400)
     except TypeError:
-        return JsonResponse({"success": False, "error": "TypeError: Please provide valid data"}, status=400)
+        return JsonResponse({"success": False, "error": TYPE_ERROR_MSG}, status=400)
 
     gift = get_object_or_404(Gift, id=gift_id)
 
@@ -661,14 +665,14 @@ def modify_reservation(request: HttpRequest, gift_id: int):
 @require_POST
 def delete_reservation(request, gift_id):
     if request.method != "POST":
-        return JsonResponse({"error": "Method " + request.method + " not authorized"}, status=405)
+        return JsonResponse({"error": METHOD_NOT_AUTHORIZED_MESSAGE.format(request.method)}, status=405)
 
     try:
         data = json.loads(request.body)
     except ValueError:
-        return JsonResponse({"success": False, "error": "ValueError: Please provide valid data"}, status=400)
+        return JsonResponse({"success": False, "error": VALUE_ERROR_MSG}, status=400)
     except TypeError:
-        return JsonResponse({"success": False, "error": "TypeError: Please provide valid data"}, status=400)
+        return JsonResponse({"success": False, "error": TYPE_ERROR_MSG}, status=400)
 
     gift = get_object_or_404(Gift, id=gift_id)
     gift.group_reserved_on = None
