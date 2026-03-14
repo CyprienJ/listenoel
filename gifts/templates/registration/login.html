@@ -23,16 +23,16 @@
                 <form method="post">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label class="form-label fw-medium card-label">{% trans "Email" %}</label>
-                        <input type="email" name="username"
+                        <label for="email-field" class="form-label fw-medium card-label">{% trans "Email" %}</label>
+                        <input id="email-field" type="email" name="username"
                                class="form-control form-control-lg rounded-pill border-1 p-3"
                                placeholder="{% trans 'Your email' %}"
                                aria-label="{% trans 'Your email' %}"
                                value="{{ form.username.value|default:'' }}">
                     </div>
                     <div class="mb-4">
-                        <label class="form-label fw-medium card-label">{% trans "Password" %}</label>
-                        <div class="input-group">
+                        <label for="password-field" class="form-label fw-medium card-label">{% trans "Password" %}</label>
+                        <div id="password-field" class="input-group">
                             <input type="password" name="password" id="id_password"
                                    class="form-control rounded-start-pill border-1 p-3 border-0"
                                    placeholder="{% trans 'Your password' %}"

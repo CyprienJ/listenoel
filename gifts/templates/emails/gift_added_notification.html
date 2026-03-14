@@ -7,14 +7,14 @@
     <title>{% translate "New gift added" %}</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Inter', Helvetica, Arial, sans-serif; background-color: #f9f9f9; -webkit-text-size-adjust: 100%;">
-    <table role="presentation" style="width: 100%; border-collapse: collapse; border: 0; margin: 0 auto;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse; border: 0; margin: 0 auto; background-color: #f9f9f9;">
         <tr>
             <td style="padding: 20px 10px 40px 10px; text-align: center;">
                 <table role="presentation" style="width: 100%; max-width: 600px; border-collapse: collapse; border: 1px solid #eeeeee; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin: 0 auto; text-align: left;">
 
                     <!-- Header -->
                     <tr>
-                        <td align="center" style="padding: 40px 20px; background-color: #D32F2F;">
+                        <td style="padding: 40px 20px; background-color: #D32F2F; text-align: center;">
                             <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">🎁 Nos Cadeaux</h1>
                         </td>
                     </tr>
@@ -43,7 +43,7 @@
                                         {% endif %}
                                         {% if gift.url %}
                                             <a href="{{ gift.url }}" style="font-size: 14px; color: #D32F2F; text-decoration: none; font-weight: 600;">
-                                                <i style="font-style: normal;">🔗</i> {% translate "Link to product" %}
+                                                <span style="font-style: normal; text-decoration: none;">🔗</span> {% translate "Link to product" %}
                                             </a>
                                         {% endif %}
                                     </td>
@@ -51,10 +51,10 @@
 
                                 <!-- Action button -->
                                 <tr>
-                                    <td align="center" style="padding-top: 32px;">
-                                        <table role="presentation" style="border-collapse: separate; border: 0;">
+                                    <td style="padding-top: 32px; text-align: center;">
+                                        <table role="presentation" style="border-collapse: separate; border: 0; margin: 0 auto;">
                                             <tr>
-                                                <td align="center" style="border-radius: 100px; background-color: #D32F2F;">
+                                                <td style="border-radius: 100px; background-color: #D32F2F; text-align: center;">
                                                     <a href="{{ list_url }}" style="font-size: 16px; font-weight: 700; color: #ffffff; text-decoration: none; padding: 16px 32px; display: inline-block;">
                                                         {% translate "View the list" %}
                                                     </a>
@@ -69,7 +69,7 @@
 
                     <!-- Footer -->
                     <tr>
-                        <td style="padding: 32px; background-color: #F5F5F5; color: #74777F; font-size: 12px; text-align: center; line-height: 18px;">
+                        <td style="padding: 32px; background-color: #f4f4f4; color: #505050; font-size: 12px; text-align: center; line-height: 18px;">
                             <p style="margin: 0 0 8px 0;">{% translate "You're receiving this because you subscribed to this list." %}</p>
                             <a href="{{ unsubscribe_url }}" style="color: #D32F2F; text-decoration: underline; font-weight: 600;">
                                 {% translate "Unsubscribe from this list" %}
