@@ -20,11 +20,11 @@
                 </div>
                 <div class="d-inline-flex align-items-center mt-2">
                     <button type="button"
-                            class="btn p-0 border-0 bg-transparent cursor-pointer me-1"
+                            class="btn p-0 border-0 me-1"
                             onclick="copyInviteCode('{{ group.invite_token }}')"
                             aria-label="{% trans 'Copy invite code' %}">
-                        <span class="badge rounded-pill bg-primary-container text-primary px-3 py-2 border border-primary-subtle">
-                            <i class="bi bi-share-fill me-2"></i>
+                        <span class="badge rounded-pill bg-primary-container text-primary px-3 py-2 border border-secondary-subtle">
+                            <i class="bi bi-copy me-2"></i>
                             <span id="inviteCodeText">{{ group.invite_token }}</span>
                         </span>
                     </button>
