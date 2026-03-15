@@ -5,13 +5,10 @@ from decimal import Decimal, InvalidOperation
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login, update_session_auth_hash
-from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
-from django.core.management import call_command
 from django.db.models import Q, QuerySet
 from django.http import HttpRequest, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -22,7 +19,6 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
-from .forms import GroupForm, LocalUserCreationForm, UserProfileForm
 from .models import Gift, Group, Reservation, User
 
 RESERVE_MODAL_MODEL_PATH = "gifts/includes/_reserve_modal_content.html"
@@ -36,30 +32,6 @@ def redirect_dashboard():
     return redirect("dashboard")
 
 
-@login_required
-def profile(request):
-    if request.method == "POST":
-        old_email = request.user.email
-        form = UserProfileForm(request.POST, instance=request.user)
-        if form.is_valid():
-            user = form.save(commit=False)
-
-            if user.email != old_email:
-                user.is_verified = False
-                user.save()
-                send_verification_email(request, user)
-                messages.success(request, _("Profile updated! Please verify your new email address."))
-                return redirect("verify_email_sent")
-
-            form.save()
-            messages.success(request, _("Your profile has been updated!"))
-            return redirect("profile")
-    else:
-        form = UserProfileForm(instance=request.user)
-
-    return render(request, "gifts/profile.html", {"form": form})
-
-
 def welcome(request):
     if request.user.is_authenticated:
         if request.user.is_verified:
@@ -67,89 +39,6 @@ def welcome(request):
         else:
             return redirect("verify_email_sent")
     return render(request, "gifts/welcome.html")
-
-
-@login_required
-@require_POST
-def delete_account(request):
-    user = request.user
-    auth_logout(request)
-    user.delete()
-    messages.success(request, _("Your account has been successfully deleted."))
-    return redirect("welcome")
-
-
-def register(request):
-    if request.user.is_authenticated:
-        return redirect_dashboard()
-    call_command("cleanup_unverified_users")
-
-    if request.method == "POST":
-        form = LocalUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-
-            login(request, user, backend="gifts.backends.CaseInsensitiveModelBackend")
-            send_verification_email(request, user)
-
-            return redirect_dashboard()
-    else:
-        form = LocalUserCreationForm()
-    return render(request, "registration/register.html", {"form": form})
-
-
-def send_verification_email(request, user):
-    token = default_token_generator.make_token(user)
-    uid = urlsafe_base64_encode(force_bytes(user.pk))
-    domain = get_current_site(request).domain
-
-    link = f"http://{domain}{reverse('verify_email_confirm', kwargs={'uidb64': uid, 'token': token})}"
-
-    context = {"nickname": user.nickname, "verification_link": link}
-    subject = _("Verify your email address on Nos Cadeaux!")
-    message_txt = render_to_string("emails/verify_email.txt", context)
-    message_html = render_to_string("emails/verify_email.html", context)
-
-    send_mail(subject, message_txt, None, [user.email], html_message=message_html)
-
-
-def verify_email_sent(request):
-    if not request.user.is_authenticated:
-        return redirect("welcome")
-    if request.user.is_verified:
-        return redirect_dashboard()
-    return render(request, "gifts/verify_email_sent.html")
-
-
-def verify_email_confirm(request, uidb64, token):
-    # call_command('cleanup_unverified_users')
-
-    try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
-
-    if user is not None and default_token_generator.check_token(user, token):
-        user.is_verified = True
-        user.save()
-        messages.success(request, _("Your account is now verified !"))
-        return redirect_dashboard()
-    else:
-        messages.error(request, _("The verification link is invalid"))
-        return redirect("welcome")
-
-
-@login_required
-def resend_verification(request):
-    if not request.user.is_authenticated:
-        return redirect("welcome")
-    if request.user.is_verified:
-        messages.success(request, _("Your email is already verified."))
-        return redirect_dashboard()
-    send_verification_email(request, request.user)
-    messages.success(request, _("A new verification email has been sent."))
-    return redirect("verify_email_sent")
 
 
 @login_required
@@ -176,103 +65,6 @@ def emojis():
         return christmas_emojis
     else:
         return gift_emojis
-
-
-@login_required
-@require_POST
-def create_group(request):
-    form = GroupForm(request.POST)
-    if form.is_valid():
-        group = form.save(commit=False)
-        group.created_by = request.user
-        group.save()
-        group.members.add(request.user)
-        msg = _("Group '%(name)s' created ! Share this code: %(token)s") % {
-            "name": group.name,
-            "token": group.invite_token,
-        }
-        messages.success(request, msg)
-    else:
-        for error in form.errors.values():
-            messages.error(request, error.as_text())
-
-    return redirect_dashboard()
-
-
-@login_required
-@require_POST
-def join_group(request):
-    token = request.POST.get("invite_token", "").strip().upper()
-    if not token:
-        messages.error(request, _("Please enter a group code."))
-        return redirect_dashboard()
-
-    group = Group.objects.filter(invite_token=token).first()
-
-    if group:
-        if request.user in group.members.all():
-            messages.info(request, _("You are already a member of the group '%s'.") % group.name)
-        else:
-            group.members.add(request.user)
-            messages.success(request, _("You have joined the group '%s'!") % group.name)
-        return redirect("group_detail", group_id=group.id)
-    else:
-        messages.error(request, _("No group found with this code."))
-
-    return redirect_dashboard()
-
-
-@login_required
-def group_detail(request, group_id):
-    group = Group.objects.filter(id=group_id).first()
-
-    if not group:
-        return render(request, "gifts/group_not_found.html", status=404)
-
-    if request.user not in group.members.all():
-        return HttpResponseForbidden(_("You are not a member of this group."))
-
-    return render(request, "gifts/group_detail.html", {"group": group})
-
-
-@login_required
-@require_POST
-def leave_group(request, group_id):
-    group = get_object_or_404(Group, id=group_id)
-    if request.user in group.members.all():
-        group.members.remove(request.user)
-        messages.success(request, _("You have left the group '%s'.") % group.name)
-    if group.members.count() == 0:
-        group.delete()
-    return redirect_dashboard()
-
-
-@login_required
-@require_POST
-def edit_group(request, group_id):
-    group = get_object_or_404(
-        Group,
-        id=group_id,
-    )
-    new_name = request.POST.get("name", "").strip()
-    if new_name:
-        group.name = new_name
-        group.save()
-        messages.success(request, _("Group name updated !"))
-    return redirect("group_detail", group_id=group.id)
-
-
-@login_required
-@require_POST
-def regenerate_group_token(request, group_id):
-    group = get_object_or_404(
-        Group,
-        id=group_id,
-    )
-    group.invite_token = ""  # Will be regenerated in save()
-    group.save()
-    messages.success(request, _("New invitation code generated !"))
-    return redirect("group_detail", group_id=group.id)
 
 
 @login_required
@@ -490,30 +282,6 @@ def edit_gift(request: HttpRequest, gift_id: int):
             gift.visible_in.clear()
 
     return redirect("view_list", user_id=gift.owner.id)
-
-
-# ... existing code ...
-@login_required
-def change_password(request):
-    if request.method == "POST":
-        old_password = request.POST.get("old_password")
-        new_password = request.POST.get("new_password")
-        confirm_password = request.POST.get("confirm_password")
-
-        if not request.user.check_password(old_password):
-            messages.error(request, _("Old password incorrect"))
-        elif new_password != confirm_password:
-            messages.error(request, _("The new passwords don't match."))
-        elif len(new_password) < 8:
-            messages.error(request, _("New password is too short."))
-        else:
-            request.user.set_password(new_password)
-            request.user.save()
-            update_session_auth_hash(request, request.user)
-            messages.success(request, _("Password successfully updated !"))
-            return redirect_dashboard()
-
-    return render(request, "gifts/change_password.html")
 
 
 @login_required

@@ -10,18 +10,19 @@ class EmailVerificationMiddleware:
         if request.user.is_authenticated and not request.user.is_verified:
             # List of authorised URL even if not verified
             allowed_urls = [
-                reverse("profile"),
+                reverse("account"),
                 reverse("verify_email_sent"),
                 reverse("verify_email_confirm", kwargs={"uidb64": "dummy", "token": "dummy"}).split("dummy")[0],
                 reverse("resend_verification"),
                 reverse("logout"),
                 reverse("login"),
                 reverse("welcome"),
-                reverse("password_reset"),
-                reverse("password_reset_done"),
-                reverse("password_reset_confirm", kwargs={"uidb64": "dummy", "token": "dummy"}).split("dummy")[0],
-                reverse("password_reset_complete"),
-                reverse("unsubscribe_token", kwargs={"uidb64": "dummy", "token": "dummy"}).split("dummy")[0],
+                reverse("account/password_reset"),
+                reverse("account/password_reset_done"),
+                reverse("account/password_reset_confirm", kwargs={"uidb64": "dummy", "token": "dummy"}).split("dummy")[
+                    0
+                ],
+                reverse("account/password_reset_complete"),
             ]
 
             if not any(

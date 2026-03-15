@@ -78,7 +78,7 @@ class AccessControlTest(TestCase):
         Test access for an unauthenticated user.
         - login/register : OK (200)
         - welcome : OK (200)
-        - dashboard/profile/etc : Redirect to login (302)
+        - dashboard/account/etc : Redirect to login (302)
         """
         # OK
         self.assertEqual(self.client.get(reverse("login")).status_code, 200)
@@ -88,7 +88,7 @@ class AccessControlTest(TestCase):
         # Redirect to login by @login_required
         protected_urls = [
             reverse("dashboard"),
-            reverse("profile"),
+            reverse("account"),
             reverse("create_group"),
         ]
         for url in protected_urls:
@@ -101,7 +101,7 @@ class AccessControlTest(TestCase):
         - login : OK (200)
         - register : Redirect to verify_email_sent (302)
         - welcome : Redirect to verify_email_sent (302)
-        - verify_email_sent/resend/profile/logout : OK (200 or 302 depending on action)
+        - verify_email_sent/resend/account/logout : OK (200 or 302 depending on action)
         - dashboard/groups/etc : Redirect to verify_email_sent (302) via middleware
         """
         self.client.force_login(self.unverified_user)
@@ -117,7 +117,7 @@ class AccessControlTest(TestCase):
 
         # Authorized access for unverified users
         self.assertEqual(self.client.get(reverse("verify_email_sent")).status_code, 200)
-        self.assertEqual(self.client.get(reverse("profile")).status_code, 200)
+        self.assertEqual(self.client.get(reverse("account")).status_code, 200)
 
         # URLs blocked by middleware and redirected to verify_email_sent
         self.assertRedirects(self.client.get(reverse("dashboard")), reverse("verify_email_sent"))
@@ -142,7 +142,7 @@ class AccessControlTest(TestCase):
 
         # Authorized access
         self.assertEqual(self.client.get(reverse("dashboard")).status_code, 200)
-        self.assertEqual(self.client.get(reverse("profile")).status_code, 200)
+        self.assertEqual(self.client.get(reverse("account")).status_code, 200)
 
         # For @require_POST views, we just test that we are not redirected by the middleware
         # (thus 405 instead of 302 to verify_email_sent)
@@ -158,9 +158,9 @@ class PasswordResetTest(TestCase):
 
     def test_password_reset_flow(self):
         # 1. Reset request
-        response = self.client.post(reverse("password_reset"), {"email": "user1@test.com"})
+        response = self.client.post(reverse("account/password_reset"), {"email": "user1@test.com"})
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse("password_reset_done"))
+        self.assertRedirects(response, reverse("account/password_reset_done"))
 
         # Verify that an email was sent
         self.assertEqual(len(mail.outbox), 1)
@@ -171,7 +171,7 @@ class PasswordResetTest(TestCase):
         self.assertTrue(any(alt[1] == "text/html" for alt in reset_mail.alternatives))
 
         # 2. Verify access to password_reset_done
-        response = self.client.get(reverse("password_reset_done"))
+        response = self.client.get(reverse("account/password_reset_done"))
         self.assertEqual(response.status_code, 200)
 
     def test_password_reset_unverified_user(self):
@@ -180,14 +180,14 @@ class PasswordResetTest(TestCase):
 
         self.client.force_login(self.user)
         # Should not be redirected to verify_email_sent by the middleware
-        response = self.client.get(reverse("password_reset"))
+        response = self.client.get(reverse("account/password_reset"))
         self.assertEqual(response.status_code, 200)
 
     def test_password_reset_confirm_unverified_user(self):
         self.user.is_verified = False
         self.user.save()
 
-        url = reverse("password_reset_confirm", kwargs={"uidb64": "MQ", "token": "abc-123"})
+        url = reverse("account/password_reset_confirm", kwargs={"uidb64": "MQ", "token": "abc-123"})
 
         self.client.force_login(self.user)
         # Should not be redirected to verify_email_sent by the middleware

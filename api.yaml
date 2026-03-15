@@ -1,0 +1,239 @@
+openapi: 3.1.0
+info:
+  title: NosCadeaux API
+  version: 1.0.0
+  description: API of the backend of the noscadeaux website
+
+servers:
+  - url: https://noscadeaux.fr/
+    description: Production server
+  - url: http://localhost:8080/
+    description: Development server
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: sessionid
+
+paths:
+  /:
+    get:
+      summary: Welcome page
+      responses:
+        "200":
+          description: HTML of the welcome page with a description of the website features
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /dashboard/:
+    get:
+      summary: Dashboard page
+      security:
+        - sessionCookie: [ ]
+      responses:
+        "200":
+          description: HTML of the dashboard page with a list of its groups, and a link to its list
+          content:
+            text/html:
+              schema:
+                type: string
+        "302":
+          description: User is not logged in
+
+  /register/:
+    get:
+      tags: [ Auth ]
+      summary: Register page
+      responses:
+        "200":
+          description: HTML of the user creation page
+          content:
+            text/html:
+              schema:
+                type: string
+        "302":
+          description: User is already logged in
+    post:
+      tags: [ Auth ]
+      summary: register
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                password: { type: string, format: password }
+                email: { type: string, format: email}
+                pseudonyme: { type: string }
+      responses:
+        "302":
+          description: User created successfully, redirection to the dashboard
+        "400":
+          description: Invalid input
+
+  /login/:
+    get:
+      tags: [ Auth ]
+      summary: Login account page
+      responses:
+        "200":
+          description: HTML of the login page
+          content:
+            text/html:
+              schema:
+                type: string
+        "302":
+          description: User is already logged in
+    post:
+      tags: [ Auth ]
+      summary: Log in
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                password: { type: string, format: password }
+                email: { type: string, format: email }
+      responses:
+        "302":
+          description: User logged in successfully, redirection to the dashboard
+        "400":
+          description: Invalid input
+
+  /account/:
+    get:
+      tags: [ Settings ]
+      security:
+        - sessionCookie: [ ]
+      summary: Account page
+      responses:
+        "200":
+          description: HTML of the account page, with the pseudonyme, the email, the possibility to change its password, or to delete its account
+          content:
+            text/html:
+              schema:
+                type: string
+        "302":
+          description: User is not logged in
+    post:
+      tags: [ Settings ]
+      summary: Change pseudonyme or email
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                pseudonyme: { type: string }
+                email: { type: string, format: email }
+      security:
+        - sessionCookie: [ ]
+      responses:
+        "200":
+          description: Data changed
+        "400":
+          description: Invalid input
+        "403":
+          description: User is not logged in
+
+  /account/change_password:
+    get:
+      tags: [settings]
+      summary: change password HTML page
+      security:
+        - sessionCookie: [ ]
+      responses:
+        "200":
+          description: HTML of the change password page
+          content:
+            text/html:
+              schema:
+                type: string
+        "403":
+          description: User is not logged in
+    post:
+      tags: [settings]
+      summary: change password
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                old_password: { type: string, format: password }
+                new_password: { type: string, format: password }
+      responses:
+        "200":
+          description: password changed successfully
+        "400":
+          description: Invalid input
+        "403":
+          description: User is not logged in
+
+  /groups/:
+    get:
+      tags: [ Groups ]
+      security:
+        - sessionCookie: [ ]
+      summary: HTML page of the list of groups the user is member of
+      responses:
+        "200":
+          description: HTML page of the list
+          content:
+            text/html:
+              schema:
+                type: string
+        "403":
+          description: User is not logged in
+
+  /groups/join/{invite_token}/:
+    get:
+      summary: Open an invite link to join a group (confirmation page)
+      tags: [ Groups ]
+      parameters:
+        - name: invite_token
+          in: path
+          required: true
+          description: Invite token embedded in the shareable URL
+          schema:
+            type: string
+            minLength: 1
+
+      responses:
+        "200":
+          description: HTML confirmation page (or info page) for joining the group
+          content:
+            text/html:
+              schema:
+                type: string
+        "302":
+          description: Redirect (e.g. not logged in, invalid token, already a member)
+
+  /group/join/:
+    post:
+      summary: Join a group using an invite token
+      operationId: joinGroup
+      tags: [Groups]
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                invite_token:
+                  type: string
+                  description: Invite token entered or provided by confirmation form
+      responses:
+        "302":
+          description: Redirect to the group page on success, or to dashboard on error
+
