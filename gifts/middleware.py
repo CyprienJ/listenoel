@@ -23,6 +23,8 @@ class EmailVerificationMiddleware:
                     0
                 ],
                 reverse("account/password_reset_complete"),
+                "/fr/admin/",
+                "/en/admin/",
             ]
 
             if not any(
