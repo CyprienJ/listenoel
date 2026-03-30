@@ -810,10 +810,9 @@ msgid "Copy invite link"
 msgstr "Copier le lien d'invitation"
 
 #: gifts/templates/groups/group_detail.html:37
-#, fuzzy
 #| msgid "See link"
 msgid "Invite link"
-msgstr "Voir le lien"
+msgstr "Lien d'invitation"
 
 #: gifts/templates/groups/group_detail.html:41
 msgid ""
@@ -881,10 +880,9 @@ msgid "You're Invited!"
 msgstr "Vous êtes invités !"
 
 #: gifts/templates/groups/group_preview.html:26
-#, fuzzy
 #| msgid "You have joined the group '%s'!"
 msgid "You have been invited to join the group"
-msgstr "Vous avez rejoint le groupe '%s' !"
+msgstr "Vous avez été invités à rejoindre le groupe"
 
 #: gifts/templates/groups/group_preview.html:40
 msgid "Accept Invitation"
