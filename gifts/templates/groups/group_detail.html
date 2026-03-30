@@ -30,7 +30,7 @@
                     </button>
                     <button type="button"
                             class="btn p-0 border-0 me-1"
-                            onclick="copyInviteLink('{{ request.scheme }}://{{ request.get_host }}/{% url 'join_group' group.group_token %}')"
+                            onclick="copyInviteLink('{{ request.scheme }}://{{ request.get_host }}{% url 'join_group' group.group_token %}')"
                             aria-label="{% trans 'Copy invite link' %}">
                         <span class="badge rounded-pill bg-primary-container text-primary px-3 py-2 border border-secondary-subtle">
                             <i class="bi bi-share me-2"></i>
