@@ -20,7 +20,7 @@ def create_group(request):
         group.members.add(request.user)
         msg = _("Group '%(name)s' created ! Share this code: %(token)s") % {
             "name": group.name,
-            "token": group.invite_token,
+            "token": group.group_token,
         }
         messages.success(request, msg)
     else:
@@ -31,14 +31,26 @@ def create_group(request):
 
 
 @login_required
-@require_POST
-def join_group(request):
-    token = request.POST.get("invite_token", "").strip().upper()
-    if not token:
-        messages.error(request, _("Please enter a group code."))
+@require_GET
+def join_group(request, token=None):
+
+    if request.user in Group.objects.get(group_token=token).members.all():
+        messages.info(
+            request, _("You are already a member of the group '%s'.") % Group.objects.get(group_token=token).name
+        )
         return redirect("dashboard")
 
-    group = Group.objects.filter(invite_token=token).first()
+    group = Group.objects.filter(group_token=token).first()
+    if not group:
+        return render(request, "groups/group_not_found.html", status=404)
+
+    return render(request, "groups/group_preview.html", status=200, context={"group": group})
+
+
+@login_required
+@require_GET
+def join_group_confirm(request, token):
+    group = Group.objects.filter(group_token=token).first()
 
     if group:
         if request.user in group.members.all():
@@ -101,7 +113,7 @@ def regenerate_group_token(request, group_id):
         Group,
         id=group_id,
     )
-    group.invite_token = ""  # Will be regenerated in save()
+    group.group_token = ""  # Will be regenerated in save()
     group.save()
     messages.success(request, _("New invitation code generated !"))
     return redirect("group_detail", group_id=group.id)

@@ -55,6 +55,8 @@ urlpatterns = [
     # Groups
     path("group/create/", groups.create_group, name="create_group"),
     path("group/join/", groups.join_group, name="join_group"),
+    path("group/join/<str:token>/", groups.join_group, name="join_group"),
+    path("group/join/<str:token>/confirm/", groups.join_group_confirm, name="join_group_confirm"),
     path("group/<int:group_id>/", groups.group_detail, name="group_detail"),
     path("group/<int:group_id>/edit/", groups.edit_group, name="edit_group"),
     path("group/<int:group_id>/regenerate-token/", groups.regenerate_group_token, name="regenerate_group_token"),

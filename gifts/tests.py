@@ -371,7 +371,7 @@ class GroupManagementTest(TestCase):
 
         self.group = Group.objects.create(name="Original Name", created_by=self.creator)
         self.group.members.add(self.creator, self.member)
-        self.original_token = self.group.invite_token
+        self.original_token = self.group.group_token
 
     def test_edit_group_name_as_creator(self):
         self.client.force_login(self.creator)
@@ -392,13 +392,13 @@ class GroupManagementTest(TestCase):
         response = self.client.post(reverse("regenerate_group_token", args=[self.group.id]))
         self.assertEqual(response.status_code, 302)
         self.group.refresh_from_db()
-        self.assertNotEqual(self.group.invite_token, self.original_token)
-        self.assertTrue(len(self.group.invite_token) > 0)
+        self.assertNotEqual(self.group.group_token, self.original_token)
+        self.assertTrue(len(self.group.group_token) > 0)
 
     def test_regenerate_token_as_member(self):
         self.client.force_login(self.member)
         response = self.client.post(reverse("regenerate_group_token", args=[self.group.id]))
         self.assertEqual(response.status_code, 302)
         self.group.refresh_from_db()
-        self.assertNotEqual(self.group.invite_token, self.original_token)
-        self.assertTrue(len(self.group.invite_token) > 0)
+        self.assertNotEqual(self.group.group_token, self.original_token)
+        self.assertTrue(len(self.group.group_token) > 0)
