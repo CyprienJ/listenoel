@@ -21,11 +21,20 @@
                 <div class="d-inline-flex align-items-center mt-2">
                     <button type="button"
                             class="btn p-0 border-0 me-1"
-                            onclick="copyInviteCode('{{ group.invite_token }}')"
+                            onclick="copyGroupCode('{{ group.group_token }}')"
                             aria-label="{% trans 'Copy invite code' %}">
                         <span class="badge rounded-pill bg-primary-container text-primary px-3 py-2 border border-secondary-subtle">
                             <i class="bi bi-copy me-2"></i>
-                            <span id="inviteCodeText">{{ group.invite_token }}</span>
+                            <span id="groupCodeText">{{ group.group_token }}</span>
+                        </span>
+                    </button>
+                    <button type="button"
+                            class="btn p-0 border-0 me-1"
+                            onclick="copyInviteLink('{{ request.scheme }}://{{ request.get_host }}/{% url 'join_group' group.group_token %}')"
+                            aria-label="{% trans 'Copy invite link' %}">
+                        <span class="badge rounded-pill bg-primary-container text-primary px-3 py-2 border border-secondary-subtle">
+                            <i class="bi bi-share me-2"></i>
+                            <span id="inviteLinkText"> {% trans "Invite link" %} </span>
                         </span>
                     </button>
                     <form method="post" action="{% url 'regenerate_group_token' group.id %}" class="m-0"
@@ -152,50 +161,27 @@
         </div>
     </div>
 
-    {#    <style>#}
-    {#        .bg-primary-container {#}
-    {#            background-color: var(--bs-primary-bg-subtle);#}
-    {#        }#}
-    {##}
-    {#        .avatar-circle-small {#}
-    {#            width: 45px;#}
-    {#            height: 45px;#}
-    {#            background-color: #f8f9fa;#}
-    {#            color: var(--bs-primary);#}
-    {#            border: 1px solid var(--bs-primary-border-subtle);#}
-    {#            border-radius: 50%;#}
-    {#            display: flex;#}
-    {#            align-items: center;#}
-    {#            justify-content: center;#}
-    {#            font-weight: bold;#}
-    {#            font-size: 1.1rem;#}
-    {#        }#}
-    {##}
-    {#        .hover-lift {#}
-    {#            transition: transform 0.2s ease, shadow 0.2s ease;#}
-    {#        }#}
-    {##}
-    {#        .hover-lift:hover {#}
-    {#            transform: translateY(-3px);#}
-    {#            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .1) !important;#}
-    {#        }#}
-    {##}
-    {#        .cursor-pointer:active {#}
-    {#            transform: scale(0.95);#}
-    {#            transition: transform 0.1s;#}
-    {#        }#}
-    {#    </style>#}
-
     <script>
-        function copyInviteCode(code) {
+        function copyGroupCode(code) {
             navigator.clipboard.writeText(code).then(() => {
-                const textEl = document.getElementById('inviteCodeText');
+                const textEl = document.getElementById('groupCodeText');
                 const originalText = textEl.innerText;
                 textEl.innerText = "{% trans 'Copied!' %}";
                 setTimeout(() => {
                     textEl.innerText = originalText;
                 }, 1500);
             });
+        }
+
+        function copyInviteLink(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                const textEl = document.getElementById('inviteLinkText');
+                const originalText = textEl.innerText;
+                textEl.innerText = "{% trans 'Copied!' %}";
+                setTimeout(() => {
+                    textEl.innerText = originalText;
+                }, 1500);
+            })
         }
     </script>
 {% endblock %}

@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 class Group(models.Model):
     name = models.CharField(max_length=100)
     members = models.ManyToManyField("User", related_name="gift_groups")
-    invite_token = models.CharField(max_length=12, unique=True, blank=True)
+    group_token = models.CharField(max_length=12, unique=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey("User", on_delete=models.SET_NULL, null=True, related_name="owned_groups")
 
@@ -17,8 +17,8 @@ class Group(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        if not self.invite_token:
-            self.invite_token = uuid.uuid4().hex[:8].upper()
+        if not self.group_token:
+            self.group_token = uuid.uuid4().hex[:8].upper()
 
         super().save(*args, **kwargs)
 

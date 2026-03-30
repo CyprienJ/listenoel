@@ -195,12 +195,12 @@ paths:
         "403":
           description: User is not logged in
 
-  /groups/join/{invite_token}/:
+  /groups/join/{group_token}/:
     get:
       summary: Open an invite link to join a group (confirmation page)
       tags: [ Groups ]
       parameters:
-        - name: invite_token
+        - name: group_token
           in: path
           required: true
           description: Invite token embedded in the shareable URL
@@ -230,7 +230,7 @@ paths:
             schema:
               type: object
               properties:
-                invite_token:
+                group_token:
                   type: string
                   description: Invite token entered or provided by confirmation form
       responses:
