@@ -375,14 +375,18 @@ class GroupManagementTest(TestCase):
 
     def test_edit_group_name_as_creator(self):
         self.client.force_login(self.creator)
-        response = self.client.post(reverse("edit_group", args=[self.group.id]), {"name": "New Name"})
+        response = self.client.post(
+            reverse("edit_group", args=[self.group.id]), {"name": "New Name", "description": ""}
+        )
         self.assertEqual(response.status_code, 302)
         self.group.refresh_from_db()
         self.assertEqual(self.group.name, "New Name")
 
     def test_edit_group_name_as_member(self):
         self.client.force_login(self.member)
-        response = self.client.post(reverse("edit_group", args=[self.group.id]), {"name": "New Name"})
+        response = self.client.post(
+            reverse("edit_group", args=[self.group.id]), {"name": "New Name", "description": ""}
+        )
         self.assertEqual(response.status_code, 302)
         self.group.refresh_from_db()
         self.assertEqual(self.group.name, "New Name")

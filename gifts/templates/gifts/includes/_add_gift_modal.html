@@ -1,0 +1,83 @@
+{% load i18n %}
+
+<div class="modal fade" id="addGiftModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-5 shadow-lg auth-card">
+            <div class="modal-header border-0 p-4 pb-0">
+                <h5 class="modal-title fw-bold text-primary">
+                    {% if is_owner %}
+                        <i class="bi bi-gift me-2"></i>{% trans "New wish" %}
+                    {% else %}
+                        <i class="bi bi-magic me-2"></i>{% trans "New surprise" %}
+                    {% endif %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form method="post" action="{% url 'add_gift' user.id %}">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label for="title" class="form-label fw-medium small text-muted">{% trans "Gift name" %}</label>
+                        <input id="title" type="text" name="title" class="form-control rounded-4 bg-body-tertiary border-0 p-3"
+                               placeholder="{% trans 'What is it?' %}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label fw-medium small text-muted">{% trans "Description" %}</label>
+                        <textarea id="description" name="description" class="form-control rounded-4 bg-body-tertiary border-0 p-3"
+                                  rows="3" placeholder="{% trans 'Size, color, details...' %}"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="link" class="form-label fw-medium small text-muted">{% trans "Link (URL)" %}</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-body-tertiary border-0 rounded-start-4"><i class="bi bi-link-45deg"></i></span>
+                            <input id="link" type="url" name="url" class="form-control rounded-end-4 bg-body-tertiary border-0 p-3"
+                                   placeholder="https://...">
+                        </div>
+                    </div>
+
+                    <div class="mb-0">
+                        <fieldset>
+                            <legend class="form-label fw-medium small text-muted border-0 p-0 mb-2">
+                                {% trans "Visible in" %}
+                            </legend>
+
+                            <div class="p-3 bg-body-tertiary rounded-4">
+                                <div class="form-check small text-muted mb-2">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    {% trans "If none selected, visible to all your groups." %}
+                                </div>
+
+                                <div class="row g-2">
+                                    {% for g in user_groups %}
+                                        <div class="col-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="visible_in"
+                                                       value="{{ g.id }}" id="groupAdd{{ g.id }}"
+                                                       {% if g.id|stringformat:"s" == from_group_id %}checked{% endif %}>
+                                                <label class="form-check-label small text-truncate" for="groupAdd{{ g.id }}">
+                                                    {{ g.name }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                        {% trans "Cancel" %}
+                    </button>
+                    <button type="submit" class="btn btn-primary px-4 rounded-pill shadow-sm">
+                        {% trans "Add" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

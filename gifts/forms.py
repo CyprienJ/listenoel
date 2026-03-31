@@ -25,7 +25,10 @@ class GroupForm(forms.ModelForm):
         fields = ("name",)
         widgets = {
             "name": forms.TextInput(
-                attrs={"class": "form-control rounded-pill border-0 bg-light p-3", "placeholder": "ex: Famille Smith"}
+                attrs={
+                    "class": "form-control rounded-pill border-0 bg-body-tertiary p-3",
+                    "placeholder": "ex: Famille Smith",
+                }
             ),
         }
 

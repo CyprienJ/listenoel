@@ -191,3 +191,10 @@ body {
 [aria-expanded="true"].btn-hide-on-show {
     display: none;
 }
+
+.list-group-item.active {
+    color: #d15f00 !important;
+    font-weight: bold;
+    border-left: 4px solid #d15f00 !important;
+    border-radius: 0 !important;
+}

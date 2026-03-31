@@ -1,0 +1,75 @@
+{% load i18n %}
+
+<div class="modal fade" id="editGroupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-5 shadow-lg">
+            <div class="modal-header border-0 p-4 pb-0">
+                <h5 class="modal-title fw-bold">{% trans "Edit group" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form method="post" action="{% url 'edit_group' group.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+
+                    <div class="mb-3">
+                        <label for="groupName" class="form-label small fw-bold text-muted">{% trans "Group Name" %}</label>
+                        <input type="text" class="form-control rounded-4 bg-light border-0 p-3"
+                               id="groupName" name="name" value="{{ group.name }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="groupDesc" class="form-label small fw-bold text-muted">{% trans "Description" %}</label>
+                        <textarea class="form-control rounded-4 bg-light border-0 p-3"
+                                  id="groupDesc" name="description" rows="3"
+                                  placeholder="{% trans 'Tell us about this group...' %}">{{ group.description|default:'' }}</textarea>
+                    </div>
+
+                    <div class="mb-0">
+                        <label for="groupImage" class="form-label small fw-bold text-muted">{% trans "Group Cover Image" %}</label>
+                        <input type="file" class="form-control rounded-4 bg-light border-0 p-3"
+                               id="groupImage" name="image" accept="image/*">
+                        {% if group.image %}
+                            <div class="form-text mt-2 small text-primary">
+                                <i class="bi bi-image me-1"></i> {% trans "An image is already set. Upload a new one to replace it." %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4"
+                            data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">{% trans "Save changes" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="leaveGroupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-5 shadow-lg auth-card">
+            <div class="modal-header border-0 p-4 pb-0">
+                <h5 class="modal-title fw-bold">{% trans "Leave group?" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-start">
+                <p class="text-muted mb-0">
+                    {% trans "Are you sure you want to leave this group? You won't be able to see the shared lists anymore." %}
+                </p>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                    {% trans "Cancel" %}
+                </button>
+                <form method="post" action="{% url 'leave_group' group.id %}" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger rounded-pill px-4">
+                        {% trans "Confirm" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
