@@ -1,3 +1,5 @@
+import os
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
@@ -94,15 +96,34 @@ def leave_group(request, group_id):
 @login_required
 @require_POST
 def edit_group(request, group_id):
-    group = get_object_or_404(
-        Group,
-        id=group_id,
-    )
-    new_name = request.POST.get("name", "").strip()
-    if new_name:
-        group.name = new_name
+    group = get_object_or_404(Group, id=group_id)
+
+    if request.user not in group.members.all():
+        return redirect("dashboard")
+
+    if request.method == "POST":
+        new_name = request.POST.get("name")
+        new_description = request.POST.get("description")
+        new_image = request.FILES.get("image")
+
+        if new_name:
+            group.name = new_name
+
+        if new_image:
+            if group.image and os.path.isfile(group.image.path):
+                os.remove(group.image.path)
+
+            group.image = new_image
+
+        group.description = new_description
+
+        if new_image:
+            group.image = new_image
+
         group.save()
-        messages.success(request, _("Group name updated !"))
+
+        return redirect("group_detail", group_id=group.id)
+
     return redirect("group_detail", group_id=group.id)
 
 

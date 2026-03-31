@@ -1,0 +1,15 @@
+{% load i18n %}
+
+{% for item in gifts %}
+    {% include "gifts/includes/_view_gift.html" with item=item show_creator=False %}
+    {% include "gifts/includes/_edit_gift.html" with item=item prefix="editGiftModal" modal_title=_("Modify the gift") %}
+    {% include "gifts/includes/_reserve_modal.html" with item=item %}
+    {% include "gifts/includes/_edit_price_modal.html" with item=item %}
+{% endfor %}
+
+{% for item in surprises %}
+    {% include "gifts/includes/_view_gift.html" with item=item show_creator=True %}
+    {% include "gifts/includes/_edit_gift.html" with item=item prefix="editSurpriseModal" modal_title=_("Modify the surprise") %}
+    {% include "gifts/includes/_reserve_modal.html" with item=item %}
+    {% include "gifts/includes/_edit_price_modal.html" with item=item %}
+{% endfor %}

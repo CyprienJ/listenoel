@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.urls import path, reverse_lazy
 
@@ -74,3 +76,7 @@ urlpatterns = [
     path("subscribe/<int:user_id>/", views.toggle_subscription, name="toggle_subscription"),
     path("unsubscribe/<uidb64>/<token>/", views.unsubscribe_token, name="unsubscribe_token"),
 ]
+
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

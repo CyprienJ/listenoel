@@ -1,213 +1,51 @@
-{% extends "base.html" %}
+{% extends from_group_id|yesno:"groups/group_detail.html,base.html" %}
 {% load i18n %}
-{% block title %}
-    {% if is_owner %}
-        {% trans "My list" %}
-    {% else %}
-        {% trans "List of" %} {{ user.nickname|capfirst }}
-    {% endif %}
-{% endblock %}
 
-{% block content %}
-
+{% block group_main_content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-primary mb-0">
-            {% if is_owner %}
-                🎁 {% trans "My list" %}
-            {% else %}
-                🎁 {% trans "List of" %} {{ user.nickname|capfirst }}
-            {% endif %}
+        <h2 class="h4 fw-bold text-primary mb-0">
+            {% if is_owner %} 🎁 {% trans "My list" %} {% else %} 🎁 {% trans "List of" %} {{ user.nickname|capfirst }} {% endif %}
         </h2>
-        <div class="mb-4">
-            {% if from_group_id %}
-                <a href="{% url 'group_detail' from_group_id %}" class="btn rounded-circle shadow-sm">
-                    <i class="bi bi-chevron-left"></i>
-                </a>
-            {% else %}
-                <a href="{% url 'dashboard' %}" class="btn rounded-circle shadow-sm">
-                    <i class="bi bi-chevron-left"></i>
-                </a>
+        <div class="d-flex gap-2">
+            {% if not is_owner %}
+                <form method="post" action="{% url 'toggle_subscription' user.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn {% if is_subscribed %}btn-danger{% else %}btn-outline-primary{% endif %} btn-sm rounded-pill px-3">
+                        {% if is_subscribed %}<i class="bi bi-bell-slash"></i>{% else %}<i class="bi bi-bell"></i>{% endif %}
+                    </button>
+                </form>
             {% endif %}
+            <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#addGiftModal">
+                <i class="bi bi-plus-lg me-1"></i> {% trans "Add" %}
+            </button>
         </div>
     </div>
 
-    <div class="mb-4 text-end d-flex justify-content-end gap-2">
-        {% if not is_owner %}
-            <form method="post" action="{% url 'toggle_subscription' user.id %}">
-                {% csrf_token %}
-                <button type="submit"
-                        class="btn {% if is_subscribed %}btn-outline-danger{% else %}btn-outline-primary{% endif %} btn-lg rounded-pill shadow-sm">
-                    {% if is_subscribed %}
-                        <i class="bi bi-bell-slash"></i> {% trans "Unsubscribe" %}
-                    {% else %}
-                        <i class="bi bi-bell"></i> {% trans "Subscribe" %}
-                    {% endif %}
-                </button>
-            </form>
-        {% endif %}
-        <button class="btn btn-primary btn-lg rounded-pill shadow-sm" data-bs-toggle="modal"
-                data-bs-target="#addGiftModal">
-            {% if is_owner %}
-                <i class="bi bi-plus-lg"></i> {% trans "Add a gift" %}
-            {% else %}
-                <i class="bi bi-magic"></i> {% trans "Add a surprise" %}
-            {% endif %}
-        </button>
-    </div>
-
-    <!-- Gifts -->
     {% if gifts %}
         <div class="card border-0 shadow-sm rounded-4 mb-5">
             <div class="card-body p-4">
-                <h3 class="h5 fw-bold mb-4">{% trans "Wishes from" %} {{ user.nickname|capfirst }}</h3>
-                {% include "gifts/includes/_gift_table.html" with items=gifts modal_prefix="editGiftModal" modal_title=_("Modify the gift") show_creator=False show_action=is_owner hide_status=is_owner %}
+                <h3 class="h6 fw-bold text-muted mb-3">{% trans "Wishes" %}</h3>
+                {% include "gifts/includes/_gift_table.html" with items=gifts modal_prefix="editGiftModal" show_creator=False show_action=is_owner hide_status=is_owner %}
             </div>
         </div>
     {% else %}
-        <div class="text-center py-5 rounded-5 mb-5">
-            <i class="bi bi-gift opacity-25" style="max-width: 100%;"></i>
-            <p class="lead text-muted mt-3">
-                {% if is_owner %}
-                    {% trans "You haven't wished for anything yet" %}
-                {% else %}
-                    {{ user.nickname|capfirst }} {% trans "hasn't wished for anything yet" %}
-                {% endif %}
-            </p>
+        <div class="text-center py-5 mb-5 bg-body-tertiary rounded-5">
+            <p class="text-muted mb-0">{% trans "No wishes yet." %}</p>
         </div>
     {% endif %}
 
-    <!-- Surprises -->
     {% if surprises %}
-        <div class="card border-0 shadow-sm rounded-4 bg-primary-container">
+        <div class="card border-0 shadow-sm rounded-4 bg-primary-container border-start border-primary border-4">
             <div class="card-body p-4">
-                <h3 class="h5 fw-bold mb-4 text-primary">✨ {% trans "Surprises suggested by others" %}</h3>
-                {% include "gifts/includes/_gift_table.html" with items=surprises modal_prefix="editSurpriseModal" modal_title=_("Modify the surprise") show_creator=True show_action=True %}
+                <h3 class="h6 fw-bold text-primary mb-3">✨ {% trans "Surprises from others" %}</h3>
+                {% include "gifts/includes/_gift_table.html" with items=surprises modal_prefix="editSurpriseModal" show_creator=True show_action=True %}
             </div>
         </div>
     {% endif %}
 
-    <!-- Modal to add a gift -->
-    <div class="modal fade" id="addGiftModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 rounded-5 shadow-lg auth-card">
-                <div class="modal-header border-0 p-4 pb-0">
-                    <h5 class="modal-title fw-bold">
-                        {% if is_owner %} {% trans "New wish" %} {% else %} {% trans "New surprise" %} {% endif %}
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-
-                <form method="post" action="{% url 'add_gift' user.id %}">
-                    {% csrf_token %}
-                    <div class="modal-body p-4">
-                        <div class="mb-3">
-                            <label for="title" class="form-label fw-medium">{% trans "Gift name" %}</label>
-                            <input id="title" type="text" name="title" class="form-control rounded-4 auth-input" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="description" class="form-label fw-medium">{% trans "Description" %}</label>
-                            <textarea id="description" name="description" class="form-control rounded-4 auth-input" rows="3"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="link" class="form-label fw-medium">{% trans "Link (URL)" %}</label>
-                            <input id="link" type="url" name="url" class="form-control rounded-4 auth-input">
-                        </div>
-                        <div class="mb-3">
-                            <label for="visibility" class="form-label fw-medium">{% trans "Visible in" %}</label>
-                            <div id = "visibility" class="form-check small text-muted mb-2">
-                                <i class="bi bi-info-circle"></i> {% trans "If none selected, visible to all your groups." %}
-                            </div>
-                            {% for group in user_groups %}
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="visible_in"
-                                           value="{{ group.id }}" id="groupAdd{{ group.id }}">
-                                    <label class="form-check-label" for="groupAdd{{ group.id }}">
-                                        {{ group.name }}
-                                    </label>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <div class="modal-footer border-0 p-4 pt-0">
-                        <button type="button" class="btn btn-outline-secondary rounded-pill"
-                                data-bs-dismiss="modal">{% trans "Cancel" %}</button>
-                        <button type="submit" class="btn btn-primary px-4 rounded-pill">{% trans "Add" %}</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    {% include "gifts/includes/_add_gift_modal.html" %}
 {% endblock %}
 
 {% block extra_body %}
-    {% for item in gifts %}
-        {% include "gifts/includes/_view_gift.html" with item=item show_creator=False %}
-        {% include "gifts/includes/_edit_gift.html" with item=item prefix="editGiftModal" modal_title=_("Modify the gift") %}
-        {% include "gifts/includes/_reserve_modal.html" with item=item %}
-        {% include "gifts/includes/_edit_price_modal.html" with item=item %}
-
-
-    {% endfor %}
-
-    {% for item in surprises %}
-        {% include "gifts/includes/_view_gift.html" with item=item show_creator=True %}
-        {% include "gifts/includes/_edit_gift.html" with item=item prefix="editSurpriseModal" modal_title=_("Modify the surprise") %}
-        {% include "gifts/includes/_reserve_modal.html" with item=item %}
-        {% include "gifts/includes/_edit_price_modal.html" with item=item %}
-
-    {% endfor %}
+    {% include "gifts/includes/_gift_modals_logic.html" %}
 {% endblock %}
-
-{% block extra_js %}
-    <script>
-        async function reserve(giftId, button) {
-            button.disabled = true;
-            const originalHtml = button.innerHTML;
-            button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
-
-            try {
-                const response = await fetch(`/gift/${giftId}/reserve/`, {
-                    method: "POST",
-                    headers: {
-                        "X-CSRFToken": "{{ csrf_token }}",
-                        "X-Requested-With": "XMLHttpRequest"
-                    }
-                });
-
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    const data = await response.json();
-                    alert(data.error || "{% trans 'An error occurred' %}");
-                    button.disabled = false;
-                    button.innerHTML = originalHtml;
-                }
-            } catch (error) {
-                console.error("Erreur lors de la réservation:", error);
-                button.disabled = false;
-                button.innerHTML = originalHtml;
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            document.body.addEventListener('click', function (e) {
-                const button = e.target.closest('.btn-reserve');
-                if (button) {
-                    const giftId = button.dataset.giftId;
-                    reserve(giftId, button);
-                }
-            });
-
-            document.querySelectorAll('.btn-delete').forEach(button => {
-                button.addEventListener('click', function (e) {
-                    const msg = button.dataset.confirmMsg;
-                    if (!confirm(msg)) {
-                        e.preventDefault();
-                    }
-                });
-            });
-        });
-    </script>
-{% endblock %}
-
-

@@ -4,184 +4,186 @@
 {% block title %}{{ group.name }}{% endblock %}
 
 {% block content %}
-    <div class="container py-4">
-        <!-- Minimalist header -->
-        <div class="d-flex align-items-center justify-content-between mb-4">
-            <a href="{% url 'dashboard' %}" class="btn rounded-circle shadow-sm">
-                <i class="bi bi-chevron-left"></i>
-            </a>
-            <div class="text-center">
-                <div class="d-flex align-items-center justify-content-center">
-                    <h1 class="h3 fw-bold mb-0 text-primary">{{ group.name }}</h1>
-                    <button type="button" class="btn btn-sm text-primary ms-2" data-bs-toggle="modal"
-                            data-bs-target="#editGroupModal">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                </div>
-                <div class="d-inline-flex align-items-center mt-2">
-                    <button type="button"
-                            class="btn p-0 border-0 me-1"
-                            onclick="copyGroupCode('{{ group.group_token }}')"
-                            aria-label="{% trans 'Copy invite code' %}">
-                        <span class="badge rounded-pill bg-primary-container text-primary px-3 py-2 border border-secondary-subtle">
-                            <i class="bi bi-copy me-2"></i>
-                            <span id="groupCodeText">{{ group.group_token }}</span>
-                        </span>
-                    </button>
-                    <button type="button"
-                            class="btn p-0 border-0 me-1"
-                            onclick="copyInviteLink('{{ request.scheme }}://{{ request.get_host }}{% url 'join_group' group.group_token %}')"
-                            aria-label="{% trans 'Copy invite link' %}">
-                        <span class="badge rounded-pill bg-primary-container text-primary px-3 py-2 border border-secondary-subtle">
-                            <i class="bi bi-share me-2"></i>
-                            <span id="inviteLinkText"> {% trans "Invite link" %} </span>
-                        </span>
-                    </button>
-                    <form method="post" action="{% url 'regenerate_group_token' group.id %}" class="m-0"
-                          onsubmit="return confirm('{% trans "Are you sure you want to generate a new code? The old one will no longer work." %}')">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-sm text-muted" title="{% trans "Regenerate code" %}">
-                            <i class="bi bi-arrow-clockwise"></i>
-                        </button>
-                    </form>
-                </div>
-            </div>
+    <div class="container-fluid py-4">
+        <div class="row g-4">
 
-            <!-- Modal Edit Group Name -->
-            <div class="modal fade" id="editGroupModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content border-0 rounded-5 shadow-lg auth-card">
-                        <div class="modal-header border-0 p-4 pb-0">
-                            <h5 class="modal-title fw-bold">{% trans "Edit group name" %}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                        </div>
-                        <form method="post" action="{% url 'edit_group' group.id %}">
-                            {% csrf_token %}
-                            <div class="modal-body p-4">
-                                <div class="mb-3">
-                                    <label for="groupName"
-                                           class="form-label small text-muted">{% trans "Group Name" %}</label>
-                                    <input type="text" class="form-control rounded-pill border-0 bg-light p-3"
-                                           id="groupName" name="name" value="{{ group.name }}" required>
-                                </div>
-                            </div>
-                            <div class="modal-footer border-0 p-4 pt-0">
-                                <button type="button" class="btn btn-outline-secondary rounded-pill px-4"
-                                        data-bs-dismiss="modal">{% trans "Cancel" %}</button>
-                                <button type="submit"
-                                        class="btn btn-primary rounded-pill px-4">{% trans "Save" %}</button>
-                            </div>
-                        </form>
+            <aside class="col-md-3 col-lg-2">
+                <div class="sticky-top" style="top: 20px;">
+                    <div class="d-flex align-items-center mb-3">
+                        <a href="{% url 'dashboard' %}" class="btn btn-sm btn-secondary rounded-circle shadow-sm me-2">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                        <h3 class="h6 fw-bold text-uppercase text-muted mb-0">{% trans "Members" %}</h3>
                     </div>
-                </div>
-            </div>
 
-            <button type="button" class="btn rounded-circle shadow-sm text-danger" data-bs-toggle="modal"
-                    data-bs-target="#leaveGroupModal">
-                <i class="bi bi-box-arrow-right"></i>
-            </button>
+                    <div class="list-group list-group-flush shadow-sm rounded-4 overflow-hidden border">
+                        <a href="{% url 'view_list' request.user.id %}?from_group={{ group.id }}"
+                           class="list-group-item list-group-item-action border-0 py-3 d-flex align-items-center {% if request.user.id == user_being_viewed.id %}active bg-primary-subtle text-primary border-start border-4 border-primary{% endif %}">
+                            <div class="avatar-circle-small me-2 bg-primary"
+                                 style="width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; font-size: 0.8rem;">
+                                {{ request.user.nickname|first|upper }}
+                            </div>
+                            <span class="small fw-bold">{% trans "My list" %}</span>
+                            <i class="bi bi-pin-angle-fill text-primary ms-auto small"></i>
+                        </a>
 
-            <!-- Button to leave the groupe-->
-            <div class="modal fade" id="leaveGroupModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content border-0 rounded-5 shadow-lg auth-card">
-                        <div class="modal-header border-0 p-4 pb-0">
-                            <h5 class="modal-title fw-bold">{% trans "Leave group?" %}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body p-4 text-start">
-                            <p class="text-muted mb-0">
-                                {% trans "Are you sure you want to leave this group? You won't be able to see the shared lists anymore." %}
-                            </p>
-                        </div>
-                        <div class="modal-footer border-0 p-4 pt-0">
-                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4"
-                                    data-bs-dismiss="modal">
-                                {% trans "Cancel" %}
-                            </button>
-                            <form method="post" action="{% url 'leave_group' group.id %}" class="m-0">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-danger rounded-pill px-4">
-                                    {% trans "Confirm" %}
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                        <div class="bg-body-tertiary py-1 border-top border-bottom"></div>
 
-        <!-- Section: My List -->
-        <div class="card border-0 shadow-sm rounded-5 bg-primary text-white mb-5 overflow-hidden">
-            <div class="card-body p-4 d-flex align-items-center justify-content-between">
-                <div>
-                    <h2 class="h4 fw-bold mb-1 text-primary">{% trans "My list" %}</h2>
-                    <p class="mb-0 opacity-75 small text-primary">{% trans "Update your wishes for this group" %}</p>
-                </div>
-                <a href="{% url 'view_list' request.user.id %}?from_group={{ group.id }}"
-                   class="btn rounded-pill px-4 fw-bold text-primary shadow-sm">
-                    {% trans "View" %}
-                </a>
-            </div>
-        </div>
-
-        <!-- Section: Group members -->
-        <div class="d-flex align-items-center mb-3">
-            <h3 class="h5 fw-bold mb-0">{% trans "Group members" %}</h3>
-        </div>
-
-        <div class="row g-3">
-            {% for member in group.members.all %}
-                {% if member != request.user %}
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card border-0 shadow-sm rounded-4 hover-lift">
-                            <a href="{% url 'view_list' member.id %}?from_group={{ group.id }}"
-                               class="text-decoration-none text-reset">
-                                <div class="card-body d-flex align-items-center p-3">
-                                    <div class="avatar-circle-small me-3">
+                        {% for member in group.members.all %}
+                            {% if member != request.user %}
+                                <a href="{% url 'view_list' member.id %}?from_group={{ group.id }}"
+                                   class="list-group-item list-group-item-action border-0 py-3 d-flex align-items-center {% if member.id == user_being_viewed.id %}active bg-primary-subtle text-primary border-start border-4 border-primary{% endif %}">
+                                    <div class="avatar-circle-small me-2 bg-secondary"
+                                         style="width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; font-size: 0.8rem;">
                                         {{ member.nickname|first|upper }}
                                     </div>
-                                    <div class="flex-grow-1">
-                                        <span class="fw-bold d-block">{{ member.nickname|capfirst }}</span>
-                                    </div>
-                                </div>
-                            </a>
+                                    <span class="small fw-medium text-truncate">{{ member.nickname|capfirst }}</span>
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </aside>
 
+            <main class="col-md-9 col-lg-10">
+                <div class="card border-0 shadow-sm rounded-5 mb-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                            <div>
+                                <h1 class="h3 fw-bold mb-1 text-primary">{{ group.name }}</h1>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button type="button"
+                                            class="badge bg-body-tertiary text-primary border px-3 py-2 rounded-pill font-monospace"
+                                            onclick="copyToClipboard('{{ group.group_token }}', this)"
+                                            title="{% trans 'Click to copy token' %}"
+                                            aria-label="{% trans 'Group token:' %} {{ group.group_token }}. {% trans 'Click to copy' %}."
+                                            style="border-style: solid !important; font-size: inherit; line-height: inherit;">
+                                        <i class="bi bi-hash me-1" aria-hidden="true"></i>
+                                        <span class="token-text">{{ group.group_token }}</span>
+                                    </button>
+
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                            onclick="copyInviteLink('{{ group.group_token }}', this)">
+                                        <i class="bi bi-person-plus-fill me-1" aria-hidden="true"></i>
+                                        <span class="btn-text">{% trans "Invite link" %}</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="dropdown">
+                                    <button class="btn bg-body-tertiary rounded-circle shadow-sm" type="button"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow rounded-4 p-2">
+                                        <li>
+                                            <button class="dropdown-item rounded-3 py-2" data-bs-toggle="modal"
+                                                    data-bs-target="#editGroupModal">
+                                                <i class="bi bi-pencil me-2 text-primary"></i> {% trans "Edit group" %}
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <form method="post" action="{% url 'regenerate_group_token' group.id %}"
+                                                  onsubmit="return confirm('{% trans "Regenerate code?" %}')">
+                                                {% csrf_token %}
+                                                <button type="submit" class="dropdown-item rounded-3 py-2 text-warning">
+                                                    <i class="bi bi-arrow-clockwise me-2"></i> {% trans "Reset token" %}
+                                                </button>
+                                            </form>
+                                        </li>
+                                        <li>
+                                            <hr class="dropdown-divider opacity-50">
+                                        </li>
+                                        <li>
+                                            <button class="dropdown-item rounded-3 py-2 text-danger"
+                                                    data-bs-toggle="modal" data-bs-target="#leaveGroupModal">
+                                                <i class="bi bi-box-arrow-right me-2"></i> {% trans "Leave group" %}
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                {% endif %}
-            {% empty %}
-                <div class="col-12 text-center py-5 text-muted">
-                    <i class="bi bi-people fs-1 opacity-25 d-block mb-2"></i>
-                    {% trans "You are the only member here." %}
                 </div>
-            {% endfor %}
+
+                {% block group_main_content %}
+                    {% if not user_being_viewed %}
+                        <div class="card border-0 shadow-sm rounded-5 overflow-hidden mb-4">
+                            <div class="row g-0">
+                                {% if group.image %}
+                                    <div class="col-md-5">
+                                        <img src="{{ group.image.url }}" class="img-fluid h-100"
+                                             style="object-fit: cover; min-height: 250px;" alt="{{ group.name }}">
+                                    </div>
+                                {% endif %}
+
+                                <div class="col-md-{% if group.image %}7{% else %}12{% endif %}">
+                                    <div class="card-body p-4 p-lg-5">
+                                        <h2 class="display-6 fw-bold mb-3">{{ group.name }}</h2>
+
+                                        <div class="text-muted mb-4 lead">
+                                            {% if group.description %}
+                                                {{ group.description|linebreaks }}
+                                            {% else %}
+                                                <p>{% trans "Welcome! Select a member from the sidebar to discover their wishes and start gifting." %}</p>
+                                            {% endif %}
+                                        </div>
+
+                                        <hr class="my-4 opacity-25">
+
+                                        <div class="row g-3">
+                                            <div class="col-6 col-sm-4">
+                                                <div class="small text-muted">{% trans "Members" %}</div>
+                                                <div class="fw-bold fs-5">{{ group.members.count }}</div>
+                                            </div>
+                                            <div class="col-6 col-sm-4">
+                                                <div class="small text-muted">{% trans "Created" %}</div>
+                                                <div class="fw-bold fs-5">{{ group.created_at|date:"M Y" }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endblock %}
+            </main>
         </div>
     </div>
 
+    {% include "groups/includes/_group_modals.html" %}
+{% endblock %}
+
+{% block extra_js %}
     <script>
-        function copyGroupCode(code) {
-            navigator.clipboard.writeText(code).then(() => {
-                const textEl = document.getElementById('groupCodeText');
-                const originalText = textEl.innerText;
-                textEl.innerText = "{% trans 'Copied!' %}";
+        function copyToClipboard(text, element) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalHTML = element.innerHTML;
+
+                if (element.tagName === 'BUTTON') {
+                    element.classList.replace('btn-outline-primary', 'btn-success');
+                    element.innerHTML = '<i class="bi bi-check2 me-1"></i> {% trans "Copied!" %}';
+                } else {
+                    element.classList.replace('text-primary', 'text-success');
+                    element.innerHTML = '<i class="bi bi-check2 me-1"></i> {% trans "Copied!" %}';
+                }
+
                 setTimeout(() => {
-                    textEl.innerText = originalText;
-                }, 1500);
+                    if (element.tagName === 'BUTTON') {
+                        element.classList.replace('btn-success', 'btn-outline-primary');
+                    } else {
+                        element.classList.replace('text-success', 'text-primary');
+                    }
+                    element.innerHTML = originalHTML;
+                }, 2000);
             });
         }
 
-        function copyInviteLink(code) {
-            navigator.clipboard.writeText(code).then(() => {
-                const textEl = document.getElementById('inviteLinkText');
-                const originalText = textEl.innerText;
-                textEl.innerText = "{% trans 'Copied!' %}";
-                setTimeout(() => {
-                    textEl.innerText = originalText;
-                }, 1500);
-            })
+        function copyInviteLink(token, btn) {
+            const inviteUrl = globalThis.location.origin + "/group/join/" + token + "/";
+            copyToClipboard(inviteUrl, btn);
         }
     </script>
 {% endblock %}

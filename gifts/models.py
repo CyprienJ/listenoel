@@ -1,9 +1,17 @@
+import os
 import uuid
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django_resized import ResizedImageField
+
+
+def get_group_image_path(instance, filename):
+    ext = filename.split(".")[-1]
+    filename = f"{uuid.uuid4()}.{ext}"
+    return os.path.join("groups", str(instance.id), filename)
 
 
 class Group(models.Model):
@@ -12,6 +20,10 @@ class Group(models.Model):
     group_token = models.CharField(max_length=12, unique=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey("User", on_delete=models.SET_NULL, null=True, related_name="owned_groups")
+    description = models.TextField(blank=True)
+    image = ResizedImageField(
+        size=[800, 600], crop=["middle", "center"], upload_to=get_group_image_path, quality=75, blank=True, null=True
+    )
 
     def __str__(self):
         return self.name

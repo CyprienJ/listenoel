@@ -168,3 +168,6 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 CSRF_TRUSTED_ORIGINS = ["https://noscadeaux.fr", "https://www.noscadeaux.fr"]
 
 SECURE_SSL_REDIRECT = not DEBUG and "test" not in sys.argv
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")

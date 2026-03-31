@@ -69,13 +69,16 @@ def emojis():
 
 @login_required
 def view_list(request: HttpRequest, user_id: int):
-    # the user whose list we're viewing
     target_user = User.objects.filter(id=user_id).first()
-
     if not target_user:
         return render(request, "gifts/user_not_found.html", status=404)
 
     is_owner = request.user.id == target_user.id
+    from_group_id = request.GET.get("from_group")
+
+    group = None
+    if from_group_id:
+        group = get_object_or_404(Group, id=from_group_id)
 
     if not is_owner:
         common_groups = Group.objects.filter(members=request.user).filter(members=target_user).exists()
@@ -84,7 +87,6 @@ def view_list(request: HttpRequest, user_id: int):
 
     all_gifts_query: QuerySet[Gift] = Gift.objects.filter(owner=target_user).order_by("created_at")
 
-    from_group_id = request.GET.get("from_group")
     if from_group_id and not is_owner:
         all_gifts_query = all_gifts_query.filter(
             Q(visible_in__isnull=True) | Q(visible_in__id=from_group_id)
@@ -97,26 +99,19 @@ def view_list(request: HttpRequest, user_id: int):
     surprises: list = []
 
     if is_owner:
-        # Someone views their own list -> don't show surprises nor who reserved a gift
         for g in all_gifts:
             if g.created_by == g.owner:
                 gifts.append({"gift": g, "is_reserved": None})
     else:
         all_reservations = Reservation.objects.filter(gift__in=all_gifts).select_related("reserver")
-
         other_members = []
-        if from_group_id:
-            group = get_object_or_404(Group, id=from_group_id)
-
+        if group:
             other_members = group.members.exclude(id__in=[request.user.id, target_user.id])
 
         for gift in all_gifts:
             gift_reservations = [r for r in all_reservations if r.gift_id == gift.id]
-
             user_res = next((r for r in gift_reservations if r.reserver_id == request.user.id), None)
-
             participant_ids = {r.reserver_id for r in gift_reservations}
-
             other_non_participants = [m for m in other_members if m.id not in participant_ids]
 
             item = {
@@ -138,6 +133,8 @@ def view_list(request: HttpRequest, user_id: int):
         "gifts/view_list.html",
         {
             "user": target_user,
+            "user_being_viewed": target_user,
+            "group": group,
             "gifts": gifts,
             "surprises": surprises,
             "is_owner": is_owner,
@@ -247,6 +244,10 @@ def add_gift(request, owner_id):
                             [subscriber.email],
                             html_message=html_message,
                         )
+    referer = request.META.get("HTTP_REFERER")
+    if referer:
+        return redirect(referer)
+
     return redirect("view_list", user_id=owner.id)
 
 
@@ -256,6 +257,10 @@ def delete_gift(request, gift_id):
     gift = get_object_or_404(Gift, id=gift_id, created_by=request.user)
     owner_id = gift.owner.id
     gift.delete()
+    referer = request.META.get("HTTP_REFERER")
+    if referer:
+        return redirect(referer)
+
     return redirect("view_list", user_id=owner_id)
 
 
@@ -281,7 +286,11 @@ def edit_gift(request: HttpRequest, gift_id: int):
         else:
             gift.visible_in.clear()
 
-    return redirect("view_list", user_id=gift.owner.id)
+    referer = request.META.get("HTTP_REFERER")
+    if referer:
+        return redirect(referer)
+    owner_id = gift.owner.id
+    return redirect("view_list", user_id=owner_id)
 
 
 @login_required
