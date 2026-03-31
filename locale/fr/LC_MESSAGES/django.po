@@ -405,8 +405,8 @@ msgid "Group Code"
 msgstr "Code du groupe"
 
 #: gifts/templates/gifts/dashboard.html:140
-msgid "Join Group"
-msgstr "Rejoindre le groupe"
+msgid "See group"
+msgstr "Voir le groupe"
 
 #: gifts/templates/gifts/includes/_edit_gift.html:15
 #: gifts/templates/gifts/includes/_reserve_modal_content.html:139
