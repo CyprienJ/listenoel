@@ -137,7 +137,7 @@
                             <div class="modal-footer border-0 pt-0">
                                 <button type="button" id="btnJoinConfirm"
                                         class="btn btn-secondary w-100 rounded-pill py-3 fw-bold">
-                                    {% trans "Join Group" %}
+                                    {% trans "See group" %}
                                 </button>
                             </div>
                         </div>
@@ -178,22 +178,28 @@
         });
 
         document.addEventListener('DOMContentLoaded', function () {
-            const btnJoin = document.getElementById('btnJoinConfirm');
-            const tokenInput = document.getElementById('group_token_input');
+    const confirmButton = document.getElementById('btnJoinConfirm');
+    const tokenInput = document.getElementById('group_token_input');
 
-            if (btnJoin && tokenInput) {
-                btnJoin.addEventListener('click', function () {
-                    const token = tokenInput.value.trim();
-                    if (token) {
-                        const baseUrl = "{% url 'join_group_confirm' 'PLACEHOLDER' %}";
-                        window.location.href = baseUrl.replace('PLACEHOLDER', encodeURIComponent(token));
-                    }
-                });
+    if (confirmButton && tokenInput) {
+        const redirectToGroup = () => {
+            const token = tokenInput.value.trim();
+            if (token) {
+                const baseUrl = "{% url 'join_group' 'TEMP_TOKEN' %}";
+                window.location.href = baseUrl.replace('TEMP_TOKEN', encodeURIComponent(token));
+            } else {
+                alert("{% trans 'Please enter a valid code.' %}");
+            }
+        };
 
-                tokenInput.addEventListener('keypress', function (e) {
-                    if (e.key === 'Enter') btnJoin.click();
-                });
+        confirmButton.addEventListener('click', redirectToGroup);
+
+        tokenInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                redirectToGroup();
             }
         });
+    }
+});
     </script>
 {% endblock %}
