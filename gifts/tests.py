@@ -1,14 +1,28 @@
+import io
+import os
+import shutil
+import tempfile
 from datetime import timedelta
 
 from django.core import mail
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+from PIL import Image
 
 from .models import Gift, Group, User
+
+
+def make_image(name="test.jpg", width=200, height=200):
+    img = Image.new("RGB", (width, height), color="blue")
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG")
+    buf.seek(0)
+    return SimpleUploadedFile(name, buf.read(), content_type="image/jpeg")
 
 
 def create_users():
@@ -406,3 +420,92 @@ class GroupManagementTest(TestCase):
         self.group.refresh_from_db()
         self.assertNotEqual(self.group.group_token, self.original_token)
         self.assertTrue(len(self.group.group_token) > 0)
+
+
+class GroupImageTest(TestCase):
+    def setUp(self):
+        self.user, self.member, self.outsider = create_users()
+        self.group = Group.objects.create(name="Photo Group", created_by=self.user)
+        self.group.members.add(self.user, self.member)
+        self.media_dir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.media_dir, ignore_errors=True)
+
+    def test_upload_image_as_member(self):
+        """A member can upload a group image."""
+        self.client.force_login(self.member)
+        with override_settings(MEDIA_ROOT=self.media_dir):
+            response = self.client.post(
+                reverse("edit_group", args=[self.group.id]),
+                {"name": "Photo Group", "description": "", "image": make_image()},
+            )
+        self.assertEqual(response.status_code, 302)
+        self.group.refresh_from_db()
+        self.assertTrue(self.group.image)
+        self.assertIn(f"groups/{self.group.id}/", self.group.image.name)
+
+    def test_image_filename_uses_uuid(self):
+        """The stored filename is a UUID, not the original upload name."""
+        self.client.force_login(self.user)
+        with override_settings(MEDIA_ROOT=self.media_dir):
+            self.client.post(
+                reverse("edit_group", args=[self.group.id]),
+                {"name": "Photo Group", "description": "", "image": make_image("my_photo.jpg")},
+            )
+        self.group.refresh_from_db()
+        filename = os.path.basename(self.group.image.name)
+        self.assertNotEqual(filename, "my_photo.jpg")
+
+    def test_replace_image_removes_old_file(self):
+        """Uploading a new image deletes the previous file from disk."""
+        self.client.force_login(self.user)
+        with override_settings(MEDIA_ROOT=self.media_dir):
+            self.client.post(
+                reverse("edit_group", args=[self.group.id]),
+                {"name": "Photo Group", "description": "", "image": make_image("first.jpg")},
+            )
+            self.group.refresh_from_db()
+            old_path = self.group.image.path
+
+            self.client.post(
+                reverse("edit_group", args=[self.group.id]),
+                {"name": "Photo Group", "description": "", "image": make_image("second.jpg")},
+            )
+            self.assertFalse(os.path.isfile(old_path))
+
+        self.group.refresh_from_db()
+        self.assertTrue(self.group.image)
+
+    def test_edit_without_image_keeps_existing(self):
+        """Editing name/description without a new image preserves the existing image."""
+        self.client.force_login(self.user)
+        with override_settings(MEDIA_ROOT=self.media_dir):
+            self.client.post(
+                reverse("edit_group", args=[self.group.id]),
+                {"name": "Photo Group", "description": "", "image": make_image()},
+            )
+            self.group.refresh_from_db()
+            old_image_name = self.group.image.name
+
+            self.client.post(
+                reverse("edit_group", args=[self.group.id]),
+                {"name": "New Name", "description": "New desc"},
+            )
+
+        self.group.refresh_from_db()
+        self.assertEqual(self.group.image.name, old_image_name)
+        self.assertEqual(self.group.name, "New Name")
+
+    def test_outsider_cannot_upload_image(self):
+        """A non-member is redirected to dashboard and the group is unchanged."""
+        self.client.force_login(self.outsider)
+        with override_settings(MEDIA_ROOT=self.media_dir):
+            response = self.client.post(
+                reverse("edit_group", args=[self.group.id]),
+                {"name": "Hacked", "description": "", "image": make_image()},
+            )
+        self.assertRedirects(response, reverse("dashboard"))
+        self.group.refresh_from_db()
+        self.assertFalse(self.group.image)
+        self.assertEqual(self.group.name, "Photo Group")
