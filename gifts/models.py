@@ -14,6 +14,12 @@ def get_group_image_path(instance, filename):
     return os.path.join("groups", str(instance.id), filename)
 
 
+def get_avatar_path(instance, filename):
+    ext = filename.split(".")[-1]
+    filename = f"{uuid.uuid4()}.{ext}"
+    return os.path.join("profiles", str(instance.id), filename)
+
+
 class Group(models.Model):
     name = models.CharField(max_length=100)
     members = models.ManyToManyField("User", related_name="gift_groups")
@@ -47,6 +53,9 @@ class User(AbstractUser):
     nickname = models.CharField(max_length=150, blank=False)
     is_verified = models.BooleanField(default=False)
     subscriptions = models.ManyToManyField("self", symmetrical=False, related_name="subscribers", blank=True)
+    avatar = ResizedImageField(
+        size=[200, 200], crop=["middle", "center"], upload_to=get_avatar_path, quality=80, blank=True, null=True
+    )
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
 

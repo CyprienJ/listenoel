@@ -10,9 +10,36 @@
                         <h2 class="fw-bold mb-4 text-primary"><i
                                 class="bi bi-person-gear me-2"></i>{% trans "My Profile" %}</h2>
 
-                        <form method="post">
+                        <form method="post" enctype="multipart/form-data">
                             {% csrf_token %}
+
+                            <div class="mb-4 text-center">
+                                {% if request.user.avatar %}
+                                    <img id="avatar-preview" src="{{ request.user.avatar.url }}"
+                                         class="rounded-circle border shadow-sm"
+                                         style="width: 100px; height: 100px; object-fit: cover;">
+                                {% else %}
+                                    <div id="avatar-preview-placeholder"
+                                         class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center shadow-sm"
+                                         style="width: 100px; height: 100px; font-size: 2.5rem; color: white;">
+                                        {{ request.user.nickname|first|upper }}
+                                    </div>
+                                    <img id="avatar-preview" src="" class="rounded-circle border shadow-sm d-none"
+                                         style="width: 100px; height: 100px; object-fit: cover;">
+                                {% endif %}
+                                <div class="mt-2">
+                                    <label for="id_avatar" class="btn btn-sm btn-outline-secondary rounded-pill">
+                                        <i class="bi bi-camera me-1"></i>{% trans "Change photo" %}
+                                    </label>
+                                    <input type="file" id="id_avatar" name="avatar" accept="image/*" class="d-none">
+                                    {% if form.avatar.errors %}
+                                        <div class="text-danger small mt-1">{{ form.avatar.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
                             {% for field in form %}
+                                {% if field.name != 'avatar' %}
                                 <div class="mb-3">
                                     <label class="form-label fw-medium">{{ field.label }}
                                         {% if field.name == 'email' %}
@@ -29,6 +56,7 @@
                                         {{ field.errors }}
                                     </label>
                                 </div>
+                                {% endif %}
                             {% endfor %}
 
                             <div class="d-grid gap-2 mt-4">
@@ -81,5 +109,19 @@
     <script>
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
         const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+
+        document.getElementById('id_avatar').addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const preview = document.getElementById('avatar-preview');
+                const placeholder = document.getElementById('avatar-preview-placeholder');
+                preview.src = e.target.result;
+                preview.classList.remove('d-none');
+                if (placeholder) placeholder.classList.add('d-none');
+            };
+            reader.readAsDataURL(file);
+        });
     </script>
 {% endblock %}

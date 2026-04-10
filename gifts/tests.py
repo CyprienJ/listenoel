@@ -509,3 +509,101 @@ class GroupImageTest(TestCase):
         self.group.refresh_from_db()
         self.assertFalse(self.group.image)
         self.assertEqual(self.group.name, "Photo Group")
+
+
+class AvatarUploadTest(TestCase):
+    def setUp(self):
+        self.user, self.other, _ = create_users()
+        self.media_dir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.media_dir, ignore_errors=True)
+
+    def test_upload_avatar(self):
+        """User can upload an avatar from the account page."""
+        self.client.force_login(self.user)
+        with override_settings(MEDIA_ROOT=self.media_dir):
+            response = self.client.post(
+                reverse("account"),
+                {"nickname": self.user.nickname, "email": self.user.email, "avatar": make_image()},
+            )
+        self.assertRedirects(response, reverse("account"))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.avatar)
+        self.assertIn(f"profiles/{self.user.id}/", self.user.avatar.name)
+
+    def test_avatar_filename_uses_uuid(self):
+        """The stored filename is a UUID, not the original upload name."""
+        self.client.force_login(self.user)
+        with override_settings(MEDIA_ROOT=self.media_dir):
+            self.client.post(
+                reverse("account"),
+                {"nickname": self.user.nickname, "email": self.user.email, "avatar": make_image("my_photo.jpg")},
+            )
+        self.user.refresh_from_db()
+        filename = os.path.basename(self.user.avatar.name)
+        self.assertNotEqual(filename, "my_photo.jpg")
+
+    def test_replace_avatar_removes_old_file(self):
+        """Uploading a new avatar deletes the previous file from disk."""
+        self.client.force_login(self.user)
+        with override_settings(MEDIA_ROOT=self.media_dir):
+            self.client.post(
+                reverse("account"),
+                {"nickname": self.user.nickname, "email": self.user.email, "avatar": make_image("first.jpg")},
+            )
+            self.user.refresh_from_db()
+            old_path = self.user.avatar.path
+
+            self.client.post(
+                reverse("account"),
+                {"nickname": self.user.nickname, "email": self.user.email, "avatar": make_image("second.jpg")},
+            )
+            self.assertFalse(os.path.isfile(old_path))
+
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.avatar)
+
+    def test_update_profile_without_avatar_keeps_existing(self):
+        """Updating nickname/email without a new image preserves the existing avatar."""
+        self.client.force_login(self.user)
+        with override_settings(MEDIA_ROOT=self.media_dir):
+            self.client.post(
+                reverse("account"),
+                {"nickname": self.user.nickname, "email": self.user.email, "avatar": make_image()},
+            )
+            self.user.refresh_from_db()
+            old_avatar_name = self.user.avatar.name
+
+            self.client.post(
+                reverse("account"),
+                {"nickname": "newnick", "email": self.user.email},
+            )
+
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.avatar.name, old_avatar_name)
+        self.assertEqual(self.user.nickname, "newnick")
+
+    def test_unauthenticated_cannot_upload_avatar(self):
+        """Anonymous users are redirected to login."""
+        with override_settings(MEDIA_ROOT=self.media_dir):
+            response = self.client.post(
+                reverse("account"),
+                {"nickname": "hacker", "email": "hacker@test.com", "avatar": make_image()},
+            )
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("login", response["Location"])
+
+    def test_avatar_image_is_resized(self):
+        """Uploaded avatar is resized to 200x200."""
+        self.client.force_login(self.user)
+        with override_settings(MEDIA_ROOT=self.media_dir):
+            self.client.post(
+                reverse("account"),
+                {"nickname": self.user.nickname, "email": self.user.email, "avatar": make_image(width=800, height=600)},
+            )
+            self.user.refresh_from_db()
+            from PIL import Image as PILImage
+
+            with PILImage.open(self.user.avatar.path) as img:
+                self.assertEqual(img.size, (200, 200))

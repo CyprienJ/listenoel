@@ -36,8 +36,9 @@ class GroupForm(forms.ModelForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ["nickname", "email"]
+        fields = ["nickname", "email", "avatar"]
         labels = {
             "nickname": _("Nickname"),
             "email": _("Email"),
+            "avatar": _("Profile picture"),
         }

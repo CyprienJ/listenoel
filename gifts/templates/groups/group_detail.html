@@ -19,10 +19,16 @@
                     <div class="list-group list-group-flush shadow-sm rounded-4 overflow-hidden border">
                         <a href="{% url 'view_list' request.user.id %}?from_group={{ group.id }}"
                            class="list-group-item list-group-item-action border-0 py-3 d-flex align-items-center {% if request.user.id == user_being_viewed.id %}active bg-primary-subtle text-primary border-start border-4 border-primary{% endif %}">
-                            <div class="avatar-circle-small me-2 bg-primary"
-                                 style="width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; font-size: 0.8rem;">
-                                {{ request.user.nickname|first|upper }}
-                            </div>
+                            {% if request.user.avatar %}
+                                <img src="{{ request.user.avatar.url }}" alt="{{ request.user.nickname }}"
+                                     class="me-2 flex-shrink-0"
+                                     style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover;">
+                            {% else %}
+                                <div class="avatar-circle-small me-2 bg-primary"
+                                     style="width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; font-size: 1rem;">
+                                    {{ request.user.nickname|first|upper }}
+                                </div>
+                            {% endif %}
                             <span class="small fw-bold">{% trans "My list" %}</span>
                             <i class="bi bi-pin-angle-fill text-primary ms-auto small"></i>
                         </a>
@@ -33,10 +39,16 @@
                             {% if member != request.user %}
                                 <a href="{% url 'view_list' member.id %}?from_group={{ group.id }}"
                                    class="list-group-item list-group-item-action border-0 py-3 d-flex align-items-center {% if member.id == user_being_viewed.id %}active bg-primary-subtle text-primary border-start border-4 border-primary{% endif %}">
-                                    <div class="avatar-circle-small me-2 bg-secondary"
-                                         style="width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; font-size: 0.8rem;">
-                                        {{ member.nickname|first|upper }}
-                                    </div>
+                                    {% if member.avatar %}
+                                        <img src="{{ member.avatar.url }}" alt="{{ member.nickname }}"
+                                             class="me-2 flex-shrink-0"
+                                             style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover;">
+                                    {% else %}
+                                        <div class="avatar-circle-small me-2 bg-secondary"
+                                             style="width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; font-size: 1rem;">
+                                            {{ member.nickname|first|upper }}
+                                        </div>
+                                    {% endif %}
                                     <span class="small fw-medium text-truncate">{{ member.nickname|capfirst }}</span>
                                 </a>
                             {% endif %}
