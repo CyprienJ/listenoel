@@ -1,3 +1,5 @@
+import os
+
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -37,9 +39,13 @@ def send_verification_email(request, user):
 def account(request):
     if request.method == "POST":
         old_email = request.user.email
-        form = UserProfileForm(request.POST, instance=request.user)
+        old_avatar = request.user.avatar
+        form = UserProfileForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             user = form.save(commit=False)
+
+            if "avatar" in request.FILES and old_avatar and os.path.isfile(old_avatar.path):
+                os.remove(old_avatar.path)
 
             if user.email != old_email:
                 user.is_verified = False
@@ -48,7 +54,7 @@ def account(request):
                 messages.success(request, _("Profile updated! Please verify your new email address."))
                 return redirect("verify_email_sent")
 
-            form.save()
+            user.save()
             messages.success(request, _("Your profile has been updated!"))
             return redirect("account")
     else:
