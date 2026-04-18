@@ -47,5 +47,98 @@
 {% endblock %}
 
 {% block extra_body %}
+    <!-- Shared offer modal (used by both direct button and in-modal button) -->
+    <div class="modal fade" id="offerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-5 shadow-lg" id="offerModalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        function setupSplitTotal() {
+            const inputs = document.querySelectorAll('#offerModalContent .split-amount');
+            if (!inputs.length) return;
+            function updateTotal() {
+                let total = 0;
+                inputs.forEach(function (i) { total += Number.parseFloat(i.value || 0); });
+                const el = document.getElementById('splitTotal');
+                if (el) el.textContent = total.toFixed(2) + ' €';
+            }
+            inputs.forEach(function (input) { input.addEventListener('input', updateTotal); });
+            updateTotal();
+        }
+
+        async function offerFromList(url, groupId) {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+                body: JSON.stringify({group_id: groupId})
+            });
+            if (response.ok) {
+                document.getElementById('offerModalContent').innerHTML = await response.text();
+                setupSplitTotal();
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('offerModal')).show();
+            } else {
+                const data = await response.json();
+                alert(data.error || '{% trans "An error occurred." %}');
+            }
+        }
+
+        async function confirmOffer(url, giftId, groupId, skipSplit) {
+            const amounts = {};
+            if (!skipSplit) {
+                document.querySelectorAll('#offerModalContent [data-reserver-id]').forEach(function (input) {
+                    if (input.value) amounts[input.dataset.reserverId] = input.value;
+                });
+            }
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+                body: JSON.stringify({confirm: true, skip_split: skipSplit, amounts: amounts, group_id: groupId})
+            });
+            const data = await response.json();
+            if (data.success) {
+                globalThis.location.reload();
+            } else {
+                const body = document.querySelector('#offerModalContent .modal-body');
+                if (body) body.innerHTML = '<div class="alert alert-danger rounded-4 border-0 m-0">' + (data.error || '{% trans "An error occurred." %}') + '</div>';
+            }
+        }
+
+        async function markReceived(url, groupId) {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+                body: JSON.stringify({group_id: groupId || null})
+            });
+            if (response.ok) {
+                document.getElementById('offerModalContent').innerHTML = await response.text();
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('offerModal')).show();
+            } else {
+                const data = await response.json();
+                alert(data.error || '{% trans "An error occurred." %}');
+            }
+        }
+
+        async function confirmMarkReceived(url, groupId) {
+            const giverIds = [];
+            document.querySelectorAll('#offerModalContent .giver-checkbox:checked').forEach(function (cb) {
+                giverIds.push(Number.parseInt(cb.value));
+            });
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+                body: JSON.stringify({confirm: true, giver_ids: giverIds, group_id: groupId || null})
+            });
+            const data = await response.json();
+            if (data.success) {
+                globalThis.location.reload();
+            } else {
+                const body = document.querySelector('#offerModalContent .modal-body');
+                if (body) body.innerHTML = '<div class="alert alert-danger rounded-4 border-0 m-0">' + (data.error || '{% trans "An error occurred." %}') + '</div>';
+            }
+        }
+    </script>
+
     {% include "gifts/includes/_gift_modals_logic.html" %}
 {% endblock %}

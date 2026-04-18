@@ -72,6 +72,13 @@ urlpatterns = [
     path("gift/<int:gift_id>/modify_reservation/", views.modify_reservation, name="modify_reservation"),
     path("gift/<int:gift_id>/delete_reservation/", views.delete_reservation, name="delete_reservation"),
     path("gift/<int:gift_id>/edit-price/", views.edit_gift_price, name="edit_gift_price"),
+    path("gift/<int:gift_id>/offer/", views.offer_gift, name="offer_gift"),
+    path("gift/<int:gift_id>/un-offer/", views.un_offer_gift, name="un_offer_gift"),
+    path("gift/<int:gift_id>/delete-offered/", views.delete_offered_gift, name="delete_offered_gift"),
+    path("gift/<int:gift_id>/edit-offered-amounts/", views.edit_offered_amounts, name="edit_offered_amounts"),
+    path("history/", views.history_view, name="history"),
+    path("history/<int:group_id>/", views.history_view, name="history_group"),
+    path("gift/<int:gift_id>/mark-received/", views.mark_received, name="mark_received"),
     # Notification
     path("subscribe/<int:user_id>/", views.toggle_subscription, name="toggle_subscription"),
     path("unsubscribe/<uidb64>/<token>/", views.unsubscribe_token, name="unsubscribe_token"),

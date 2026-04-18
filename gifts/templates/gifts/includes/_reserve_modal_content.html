@@ -134,7 +134,13 @@
     </div>
 </div>
 
-<div class="modal-footer border-0 p-4 pt-0">
+<div class="modal-footer border-0 p-4 pt-0 flex-column gap-2">
+    {% if item.user_reservation %}
+        <button type="button" class="btn btn-success rounded-pill px-4 w-100"
+                onclick="offerGift('{% url 'offer_gift' gift_id=item.gift.id %}', {{ item.gift.id }}, {{ item.group_id }})">
+            <i class="bi bi-gift-fill me-1"></i> {% trans "Mark as offered" %}
+        </button>
+    {% endif %}
     <button type="button" class="btn btn-info rounded-pill px-4 w-100"
             data-bs-dismiss="modal">{% trans "Close" %}</button>
 </div>

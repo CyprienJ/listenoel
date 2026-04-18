@@ -112,13 +112,16 @@ def edit_group(request, group_id):
         if new_image:
             if group.image and os.path.isfile(group.image.path):
                 os.remove(group.image.path)
-
             group.image = new_image
 
         group.description = new_description
 
-        if new_image:
-            group.image = new_image
+        new_show_history = request.POST.get("show_history") == "on"
+        if group.show_history and not new_show_history:
+            from .models import Gift
+
+            Gift.objects.filter(group_reserved_on=group, offered=True).delete()
+        group.show_history = new_show_history
 
         group.save()
 

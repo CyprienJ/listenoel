@@ -70,4 +70,22 @@
         await updateModal(response, giftId);
     }
 
+    async function offerGift(url, giftId, groupId) {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({group_id: groupId})
+        });
+        if (response.ok) {
+            document.getElementById('offerModalContent').innerHTML = await response.text();
+            if (typeof setupSplitTotal === 'function') setupSplitTotal();
+            const reserveModal = bootstrap.Modal.getInstance(document.getElementById(`reserveModal${giftId}`));
+            if (reserveModal) reserveModal.hide();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('offerModal')).show();
+        }
+    }
+
 </script>
