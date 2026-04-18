@@ -1,0 +1,28 @@
+{% load i18n %}
+<div class="gift-list">
+    {% for gift in offered_gifts %}
+        <div class="card border-0 bg-body-secondary rounded-4 mb-3">
+            <div class="card-body p-3">
+                <div class="row align-items-center g-2">
+                    <div class="col">
+                        <h4 class="h6 fw-bold mb-1">{{ gift.title }}</h4>
+                        <p class="small text-muted mb-0">
+                            <i class="bi bi-person-circle me-1"></i>{% trans "To:" %} {{ gift.owner.nickname|capfirst }}
+                        </p>
+                    </div>
+                    <div class="col-auto text-end">
+                        {% for res in gift.reservation.all %}
+                            {% if res.reserver == current_user and res.amount_paid %}
+                                <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1">
+                                    {{ res.amount_paid }}&nbsp;€
+                                </span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <p class="text-muted small text-center py-3">{% trans "No gifts given yet." %}</p>
+    {% endfor %}
+</div>

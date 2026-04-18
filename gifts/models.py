@@ -30,6 +30,7 @@ class Group(models.Model):
     image = ResizedImageField(
         size=[800, 600], crop=["middle", "center"], upload_to=get_group_image_path, quality=75, blank=True, null=True
     )
+    show_history = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
@@ -75,6 +76,7 @@ class Gift(models.Model):
     visible_in = models.ManyToManyField(Group, related_name="visible_gifts", blank=True)
     price = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
     offered = models.BooleanField(default=False)
+    offered_at = models.DateTimeField(null=True, blank=True)
     group_reserved_on = models.ForeignKey(
         Group, blank=True, null=True, on_delete=models.SET_NULL, related_name="reservations_group"
     )
@@ -96,3 +98,4 @@ class Reservation(models.Model):
     reserver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reservations")
     created_at = models.DateTimeField(default=timezone.now)
     exclusivity = models.BooleanField(default=False)
+    amount_paid = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)

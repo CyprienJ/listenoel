@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="container py-5 text-center" style="max-width: 480px;">
+    <div class="mb-4">
+        <i class="bi bi-lock-fill fs-1 text-muted opacity-50"></i>
+    </div>
+    <h1 class="h3 fw-bold mb-2">{% trans "Access denied" %}</h1>
+    {% if reason == "not_member" %}
+        <p class="text-muted mb-4">
+            {% blocktrans with name=group.name %}You are not a member of "{{ name }}" and cannot view its history.{% endblocktrans %}
+        </p>
+    {% endif %}
+    <a href="{% url 'dashboard' %}" class="btn btn-primary rounded-pill px-4">
+        <i class="bi bi-arrow-left me-2"></i>{% trans "Back to Dashboard" %}
+    </a>
+</div>
+{% endblock %}

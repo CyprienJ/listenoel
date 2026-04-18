@@ -33,7 +33,18 @@
                             <i class="bi bi-pin-angle-fill text-primary ms-auto small"></i>
                         </a>
 
-                        <div class="bg-body-tertiary py-1 border-top border-bottom"></div>
+                        {% if group.show_history %}
+                        <a href="{% url 'history_group' group.id %}"
+                           class="list-group-item list-group-item-action border-0 py-3 d-flex align-items-center {% if viewing_history %}active bg-primary-subtle text-primary border-start border-4 border-primary{% else %}text-muted{% endif %}">
+                            <div class="me-2 flex-shrink-0"
+                                 style="width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--bs-secondary-bg);">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                            <span class="small fw-medium">{% trans "History" %}</span>
+                        </a>
+                    {% endif %}
+
+                    <div class="bg-body-tertiary py-1 border-top border-bottom"></div>
 
                         {% for member in group.members.all %}
                             {% if member != request.user %}

@@ -1,0 +1,161 @@
+{% extends "groups/group_detail.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "History" %} — {{ group.name }}{% endblock %}
+
+{% block group_main_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h4 fw-bold text-primary mb-0">
+        <i class="bi bi-clock-history me-2"></i>{% trans "Gift history" %}
+    </h2>
+</div>
+
+{% if history_disabled %}
+    <div class="text-center py-5 bg-body-tertiary rounded-5 border">
+        <i class="bi bi-clock-history fs-1 opacity-25 d-block mb-3"></i>
+        <p class="fw-bold mb-1">{% trans "History is disabled for this group." %}</p>
+        <p class="text-muted small mb-4">{% trans "Enable it in the group settings to start recording received gifts." %}</p>
+        <button class="btn btn-primary rounded-pill px-4"
+                data-bs-toggle="modal" data-bs-target="#editGroupModal">
+            <i class="bi bi-gear me-2"></i>{% trans "Group settings" %}
+        </button>
+    </div>
+{% elif not gifts %}
+    <div class="text-center py-5 text-muted bg-body-tertiary rounded-5 border border-dashed">
+        <i class="bi bi-clock-history fs-1 opacity-25 d-block mb-2"></i>
+        {% trans "No gifts received in this group yet." %}
+    </div>
+{% else %}
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <h3 class="h6 fw-bold text-muted mb-3">
+                <i class="bi bi-heart-fill me-2 text-danger"></i>{% trans "Gifts received" %}
+            </h3>
+            {% for gift in gifts %}
+                <div class="card border-0 bg-body-secondary rounded-4 mb-3">
+                    <div class="card-body p-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="flex-grow-1 min-width-0" style="min-width:0">
+                                <h4 class="h6 fw-bold mb-1 text-truncate">{{ gift.title }}</h4>
+                                <p class="small text-muted mb-1">
+                                    <i class="bi bi-person-circle me-1"></i>
+                                    {% trans "Received by:" %} <strong>{{ gift.owner.nickname|capfirst }}</strong>
+                                    {% if gift.offered_at %}
+                                        <span class="ms-2"><i class="bi bi-calendar3 me-1"></i>{{ gift.offered_at|date:"d M Y" }}</span>
+                                    {% endif %}
+                                </p>
+                                <div class="d-flex flex-wrap gap-1 mt-1">
+                                    {% for res in gift.reservation.all %}
+                                        <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1">
+                                            <i class="bi bi-person-heart me-1"></i>{{ res.reserver.nickname }}
+                                        </span>
+                                    {% empty %}
+                                        <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2 py-1">
+                                            {% trans "Anonymous" %}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            {% if gift.owner == request.user or gift.id in user_reserved_ids %}
+                                <div class="dropdown flex-shrink-0">
+                                    <button class="btn btn-sm rounded-circle" type="button"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2">
+                                        {% if gift.reservation.all %}
+                                            <li>
+                                                <button class="dropdown-item rounded-3 py-2"
+                                                        onclick="editOfferAmounts('{% url 'edit_offered_amounts' gift.id %}')">
+                                                    <i class="bi bi-pencil me-2"></i>{% trans "Modify amounts" %}
+                                                </button>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                        {% endif %}
+                                        <li>
+                                            <form method="post" action="{% url 'un_offer_gift' gift.id %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="dropdown-item rounded-3 py-2">
+                                                    <i class="bi bi-arrow-counterclockwise me-2"></i>{% trans "Put back in list" %}
+                                                </button>
+                                            </form>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form method="post" action="{% url 'delete_offered_gift' gift.id %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="dropdown-item rounded-3 text-danger py-2 btn-delete"
+                                                        data-confirm-msg="{% trans 'Delete this gift from history?' %}">
+                                                    <i class="bi bi-trash3 me-2"></i>{% trans "Delete" %}
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+<!-- Modal for editing amounts -->
+<div class="modal fade" id="editOfferModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-5 shadow-lg" id="editOfferModalContent"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+{{ block.super }}
+<script>
+    function setupEditSplitTotal() {
+        const inputs = document.querySelectorAll('#editOfferModalContent .edit-split-amount');
+        if (!inputs.length) return;
+        function updateTotal() {
+            let total = 0;
+            inputs.forEach(function (i) { total += Number.parseFloat(i.value || 0); });
+            const el = document.getElementById('editSplitTotal');
+            if (el) el.textContent = total.toFixed(2) + ' €';
+        }
+        inputs.forEach(function (input) { input.addEventListener('input', updateTotal); });
+        updateTotal();
+    }
+
+    async function editOfferAmounts(url) {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+            body: JSON.stringify({})
+        });
+        if (response.ok) {
+            document.getElementById('editOfferModalContent').innerHTML = await response.text();
+            setupEditSplitTotal();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('editOfferModal')).show();
+        }
+    }
+
+    async function saveOfferAmounts(url) {
+        const amounts = {};
+        document.querySelectorAll('#editOfferModalContent [data-reserver-id]').forEach(function (input) {
+            amounts[input.dataset.reserverId] = input.value;
+        });
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+            body: JSON.stringify({save: true, amounts: amounts})
+        });
+        const data = await response.json();
+        if (data.success) {
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('editOfferModal')).hide();
+        } else {
+            const body = document.querySelector('#editOfferModalContent .modal-body');
+            if (body) body.innerHTML = '<div class="alert alert-danger rounded-4 border-0 m-0">' + (data.error || '{% trans "An error occurred." %}') + '</div>';
+        }
+    }
+</script>
+{% endblock %}

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-31 16:24+0000\n"
+"POT-Creation-Date: 2026-04-18 18:54+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,35 +26,35 @@ msgstr "Français"
 msgid "English"
 msgstr "English"
 
-#: gifts/account.py:28
+#: gifts/account.py:30
 msgid "Verify your email address on Nos Cadeaux!"
 msgstr "Vérifiez votre adresse email sur Nos Cadeaux !"
 
-#: gifts/account.py:48
+#: gifts/account.py:54
 msgid "Profile updated! Please verify your new email address."
 msgstr "Profil mis à jour ! Veuillez vérifier votre nouvelle adresse email."
 
-#: gifts/account.py:52
+#: gifts/account.py:58
 msgid "Your profile has been updated!"
 msgstr "Votre profil a été mis à jour !"
 
-#: gifts/account.py:66
+#: gifts/account.py:72
 msgid "Your account has been successfully deleted."
 msgstr "Votre compte a bien été supprimé."
 
-#: gifts/account.py:92
+#: gifts/account.py:98
 msgid "Your account is now verified !"
 msgstr "Votre compte est maintenant vérifié !"
 
-#: gifts/account.py:95
+#: gifts/account.py:101
 msgid "The verification link is invalid"
 msgstr "Le lien de vérification est invalide"
 
-#: gifts/account.py:105
+#: gifts/account.py:111
 msgid "Your email is already verified."
 msgstr "Votre email est déjà vérifié."
 
-#: gifts/account.py:108
+#: gifts/account.py:114
 msgid "A new verification email has been sent."
 msgstr "Un nouvel email de vérification a été envoyé."
 
@@ -70,6 +70,10 @@ msgstr "Pseudo"
 #: gifts/templates/registration/password_reset_form.html:19
 msgid "Email"
 msgstr "Email"
+
+#: gifts/forms.py:43
+msgid "Profile picture"
+msgstr ""
 
 #: gifts/groups.py:23
 #, python-format
@@ -99,19 +103,25 @@ msgstr "Vous n'êtes pas membre de ce groupe."
 msgid "You have left the group '%s'."
 msgstr "Vous avez quitté le groupe '%s'."
 
-#: gifts/groups.py:139
+#: gifts/groups.py:141
 msgid "New invitation code generated !"
 msgstr "Nouveau code d'invitation généré !"
 
-#: gifts/models.py:43
+#: gifts/models.py:50
 msgid "A user with that email already exists."
 msgstr "Un utilisateur avec cet email existe déjà"
 
-#: gifts/templates/account/account.html:11 gifts/templates/base.html:104
+#: gifts/templates/account/account.html:11 gifts/templates/base.html:105
 msgid "My Profile"
 msgstr "Mon profil"
 
-#: gifts/templates/account/account.html:22
+#: gifts/templates/account/account.html:32
+#, fuzzy
+#| msgid "Change password"
+msgid "Change photo"
+msgstr "Changer de mot de passe"
+
+#: gifts/templates/account/account.html:49
 msgid ""
 "Used for login (and in the future, to reset the password, and to receive "
 "optional notifications when a list is updated)"
@@ -120,36 +130,36 @@ msgstr ""
 "réinitialiser le mot de passe et pour recevoir des notifications "
 "optionnelles de mise à jour des listes)"
 
-#: gifts/templates/account/account.html:36
-#: gifts/templates/groups/includes/_group_modals.html:43
+#: gifts/templates/account/account.html:64
+#: gifts/templates/groups/includes/_group_modals.html:55
 msgid "Save changes"
 msgstr "Enregistrer les modifications"
 
-#: gifts/templates/account/account.html:39
+#: gifts/templates/account/account.html:67
 #: gifts/templates/registration/change_password.html:15
 msgid "Change password"
 msgstr "Changer de mot de passe"
 
-#: gifts/templates/account/account.html:45
+#: gifts/templates/account/account.html:73
 msgid "Danger Zone"
 msgstr "Zone de danger"
 
-#: gifts/templates/account/account.html:46
+#: gifts/templates/account/account.html:74
 msgid ""
 "Once you delete your account, there is no going back. Please be certain."
 msgstr ""
 "Une fois que votre compte sera supprimé, vous ne pourrez pas revenir en "
 "arrière. Soyez-en sûr."
 
-#: gifts/templates/account/account.html:49
+#: gifts/templates/account/account.html:77
 msgid "Delete my account"
 msgstr "Supprimer mon compte"
 
-#: gifts/templates/account/account.html:60
+#: gifts/templates/account/account.html:88
 msgid "Are you absolutely sure?"
 msgstr "Êtes-vous absolument sûr ?"
 
-#: gifts/templates/account/account.html:64
+#: gifts/templates/account/account.html:92
 msgid ""
 "This action will permanently delete your profile, your lists, and all your "
 "groups where you are the only member."
@@ -157,16 +167,19 @@ msgstr ""
 "Cette action supprimera définitivement votre profil, vos listes, et tous les "
 "groupes dans lesquels vous êtes le seul membre."
 
-#: gifts/templates/account/account.html:68
+#: gifts/templates/account/account.html:96
 #: gifts/templates/gifts/includes/_add_gift_modal.html:74
 #: gifts/templates/gifts/includes/_edit_gift.html:68
+#: gifts/templates/gifts/includes/_edit_offered_amounts_content.html:36
 #: gifts/templates/gifts/includes/_edit_price_modal.html:27
-#: gifts/templates/groups/includes/_group_modals.html:42
-#: gifts/templates/groups/includes/_group_modals.html:64
+#: gifts/templates/gifts/includes/_mark_received_content.html:59
+#: gifts/templates/gifts/includes/_offer_modal_content.html:73
+#: gifts/templates/groups/includes/_group_modals.html:54
+#: gifts/templates/groups/includes/_group_modals.html:90
 msgid "Cancel"
 msgstr "Annuler"
 
-#: gifts/templates/account/account.html:72
+#: gifts/templates/account/account.html:100
 msgid "Confirm Delete"
 msgstr "Confirmer la suppression"
 
@@ -174,35 +187,35 @@ msgstr "Confirmer la suppression"
 msgid "Dashboard"
 msgstr "Tableau de bord"
 
-#: gifts/templates/base.html:75
+#: gifts/templates/base.html:76
 msgid "Settings"
 msgstr "Paramètres"
 
-#: gifts/templates/base.html:80
+#: gifts/templates/base.html:81
 msgid "Appearance"
 msgstr "Apparence"
 
-#: gifts/templates/base.html:82
+#: gifts/templates/base.html:83
 msgid "Auto"
 msgstr "Auto"
 
-#: gifts/templates/base.html:83
+#: gifts/templates/base.html:84
 msgid "Bright"
 msgstr "Clair"
 
-#: gifts/templates/base.html:84
+#: gifts/templates/base.html:85
 msgid "Dark"
 msgstr "Sombre"
 
-#: gifts/templates/base.html:95
+#: gifts/templates/base.html:96
 msgid "Administration"
 msgstr "Administration"
 
-#: gifts/templates/base.html:111
+#: gifts/templates/base.html:112
 msgid "Log out"
 msgstr "Se déconnecter"
 
-#: gifts/templates/base.html:121 gifts/templates/gifts/welcome.html:17
+#: gifts/templates/base.html:122 gifts/templates/gifts/welcome.html:17
 #: gifts/templates/registration/login.html:53
 #: gifts/templates/registration/password_reset_complete.html:16
 msgid "Log in"
@@ -346,7 +359,7 @@ msgstr "Prêt à préparer de belles surprises ?"
 
 #: gifts/templates/gifts/dashboard.html:26
 #: gifts/templates/gifts/view_list.html:7
-#: gifts/templates/groups/group_detail.html:26
+#: gifts/templates/groups/group_detail.html:32
 msgid "My list"
 msgstr "Ma liste"
 
@@ -408,6 +421,63 @@ msgstr "Voir le groupe"
 msgid "Please enter a valid code."
 msgstr "Merci d'utiliser un code valide."
 
+#: gifts/templates/gifts/history.html:4
+#: gifts/templates/groups/group_detail.html:43
+msgid "History"
+msgstr "Historique"
+
+#: gifts/templates/gifts/history.html:9
+#: gifts/templates/groups/includes/_group_modals.html:41
+msgid "Gift history"
+msgstr "Historique des cadeaux"
+
+#: gifts/templates/gifts/history.html:16
+#: gifts/templates/gifts/includes/_mark_received_content.html:11
+#: gifts/templates/gifts/includes/_offer_modal_content.html:11
+msgid "History is disabled for this group."
+msgstr "L'historique est désactivé pour ce groupe."
+
+#: gifts/templates/gifts/history.html:17
+msgid "Enable it in the group settings to start recording received gifts."
+msgstr "Activez-le dans les paramètres du groupe pour commencer à enregistrer les cadeaux reçus."
+
+#: gifts/templates/gifts/history.html:20
+msgid "Group settings"
+msgstr "Paramètres du groupe"
+
+#: gifts/templates/gifts/history.html:26
+msgid "No gifts received in this group yet."
+msgstr "Aucun cadeau reçu dans ce groupe pour l'instant."
+
+#: gifts/templates/gifts/history.html:32
+msgid "Gifts received"
+msgstr "Cadeaux reçus"
+
+#: gifts/templates/gifts/history.html:42
+msgid "Received by:"
+msgstr "Reçu par :"
+
+#: gifts/templates/gifts/history.html:51
+msgid "Anonymous"
+msgstr "Anonyme"
+
+#: gifts/templates/gifts/history.html:68
+msgid "Modify amounts"
+msgstr "Modifier les montants"
+
+#: gifts/templates/gifts/history.html:77
+msgid "Put back in list"
+msgstr "Remettre dans la liste"
+
+#: gifts/templates/gifts/history.html:86
+msgid "Delete this gift from history?"
+msgstr "Supprimer ce cadeau de l'historique ?"
+
+#: gifts/templates/gifts/history.html:87
+#: gifts/templates/gifts/includes/_gift_table.html:157
+msgid "Delete"
+msgstr "Supprimer"
+
 #: gifts/templates/gifts/includes/_add_gift_modal.html:9
 msgid "New wish"
 msgstr "Nouveau souhait"
@@ -457,7 +527,7 @@ msgid "Add"
 msgstr "Ajouter"
 
 #: gifts/templates/gifts/includes/_edit_gift.html:15
-#: gifts/templates/gifts/includes/_reserve_modal_content.html:139
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:145
 #: gifts/templates/gifts/includes/_view_gift.html:73
 msgid "Close"
 msgstr "Fermer"
@@ -469,9 +539,23 @@ msgid "Link"
 msgstr "Lien"
 
 #: gifts/templates/gifts/includes/_edit_gift.html:69
-#: gifts/templates/gifts/includes/_gift_table.html:131
+#: gifts/templates/gifts/includes/_gift_table.html:145
 msgid "Modify"
 msgstr "Modifier"
+
+#: gifts/templates/gifts/includes/_edit_offered_amounts_content.html:7
+msgid "Record the amounts each person contributed."
+msgstr "Enregistrez le montant que chaque personne a contribué."
+
+#: gifts/templates/gifts/includes/_edit_offered_amounts_content.html:26
+#: gifts/templates/gifts/includes/_offer_modal_content.html:44
+msgid "Total"
+msgstr "Total"
+
+#: gifts/templates/gifts/includes/_edit_offered_amounts_content.html:34
+#: gifts/templates/gifts/includes/_edit_price_modal.html:28
+msgid "Save"
+msgstr "Enregistrer"
 
 #: gifts/templates/gifts/includes/_edit_price_modal.html:6
 msgid "Edit price"
@@ -484,10 +568,6 @@ msgstr "Prix estimé (€)"
 #: gifts/templates/gifts/includes/_edit_price_modal.html:22
 msgid "This helps others to organize collective gifts."
 msgstr "Cela aide le groupe à s'organiser pour offrir"
-
-#: gifts/templates/gifts/includes/_edit_price_modal.html:28
-msgid "Save"
-msgstr "Enregistrer"
 
 #: gifts/templates/gifts/includes/_gift_modals_logic.html:5
 msgid "Modify the gift"
@@ -555,21 +635,119 @@ msgid "Reserve"
 msgstr "Réserver"
 
 #: gifts/templates/gifts/includes/_gift_table.html:112
+#: gifts/templates/gifts/includes/_offer_modal_content.html:3
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:141
+msgid "Mark as offered"
+msgstr "Marquer comme offert"
+
+#: gifts/templates/gifts/includes/_gift_table.html:119
 #: gifts/templates/gifts/includes/_view_gift.html:53
 msgid "Reserved on another group"
 msgstr "Reservé sur un autre groupe"
 
-#: gifts/templates/gifts/includes/_gift_table.html:142
+#: gifts/templates/gifts/includes/_gift_table.html:127
+#: gifts/templates/gifts/includes/_mark_received_content.html:3
+msgid "Mark as received"
+msgstr "Marquer comme reçu"
+
+#: gifts/templates/gifts/includes/_gift_table.html:156
 msgid "Delete this gift?"
 msgstr "Supprimer ce cadeau ?"
 
-#: gifts/templates/gifts/includes/_gift_table.html:143
-msgid "Delete"
-msgstr "Supprimer"
-
-#: gifts/templates/gifts/includes/_gift_table.html:158
+#: gifts/templates/gifts/includes/_gift_table.html:172
 msgid "No gifts here yet."
 msgstr "Aucun cadeau ici pour l'instant"
+
+#: gifts/templates/gifts/includes/_mark_received_content.html:13
+#: gifts/templates/gifts/includes/_mark_received_content.html:27
+#, python-format
+msgid "Mark \"<strong>%(title)s</strong>\" as received?"
+msgstr "Marquer \"<strong>%(title)s</strong>\" comme reçu ?"
+
+#: gifts/templates/gifts/includes/_mark_received_content.html:14
+#: gifts/templates/gifts/includes/_offer_modal_content.html:14
+msgid ""
+"Since history is disabled, the gift will be permanently deleted from the "
+"list."
+msgstr "Comme l'historique est désactivé, le cadeau sera définitivement supprimé de la liste."
+
+#: gifts/templates/gifts/includes/_mark_received_content.html:16
+#, python-format
+msgid "Confirm that you received \"<strong>%(title)s</strong>\"?"
+msgstr "Confirmer que vous avez reçu \"<strong>%(title)s</strong>\" ?"
+
+#: gifts/templates/gifts/includes/_mark_received_content.html:17
+#: gifts/templates/gifts/includes/_offer_modal_content.html:19
+msgid "Offered by:"
+msgstr "Offert par :"
+
+#: gifts/templates/gifts/includes/_mark_received_content.html:25
+#: gifts/templates/gifts/includes/_mark_received_content.html:28
+msgid "The gift will be removed from your list and saved in history."
+msgstr "Le cadeau sera retiré de votre liste et sauvegardé dans l'historique."
+
+#: gifts/templates/gifts/includes/_mark_received_content.html:31
+msgid "Who gave it to you?"
+msgstr "Qui vous l'a offert ?"
+
+#: gifts/templates/gifts/includes/_mark_received_content.html:31
+msgid "optional"
+msgstr "optionnel"
+
+#: gifts/templates/gifts/includes/_mark_received_content.html:50
+#: gifts/templates/gifts/includes/_offer_modal_content.html:55
+msgid "Delete gift"
+msgstr "Supprimer le cadeau"
+
+#: gifts/templates/gifts/includes/_mark_received_content.html:55
+#: gifts/templates/gifts/includes/_offer_modal_content.html:69
+#: gifts/templates/groups/includes/_group_modals.html:95
+msgid "Confirm"
+msgstr "Confirmer"
+
+#: gifts/templates/gifts/includes/_offer_modal_content.html:13
+#: gifts/templates/gifts/includes/_offer_modal_content.html:16
+#, python-format
+msgid ""
+"Are you sure you want to mark \"<strong>%(title)s</strong>\" as offered?"
+msgstr ""
+"Êtes-vous sûr de vouloir marquer \"<strong>%(title)s</strong>\" comme "
+"offert ?"
+
+#: gifts/templates/gifts/includes/_offer_modal_content.html:21
+msgid "The gift will disappear from the list and be saved in the history."
+msgstr ""
+"Le cadeau disparaîtra de la liste et sera sauvegardé dans l'historique."
+
+#: gifts/templates/gifts/includes/_offer_modal_content.html:23
+msgid "Split the cost (optional)"
+msgstr "Répartir le coût (optionnel)"
+
+#: gifts/templates/gifts/includes/_offer_modal_content.html:24
+msgid "Record how much each person contributed. You can skip this step."
+msgstr ""
+"Enregistrez combien chaque personne a contribué. Vous pouvez ignorer cette "
+"étape."
+
+#: gifts/templates/gifts/includes/_offer_modal_content.html:60
+msgid "Confirm with amounts"
+msgstr "Confirmer avec les montants"
+
+#: gifts/templates/gifts/includes/_offer_modal_content.html:64
+msgid "Mark as offered (skip split)"
+msgstr "Marquer comme offert (sans répartition)"
+
+#: gifts/templates/gifts/includes/_offered_gifts_table.html:10
+msgid "To:"
+msgstr "À :"
+
+#: gifts/templates/gifts/includes/_offered_gifts_table.html:26
+msgid "No gifts given yet."
+msgstr "Aucun cadeau offert pour l'instant."
+
+#: gifts/templates/gifts/includes/_received_gifts_table.html:26
+msgid "No gifts received yet."
+msgstr "Aucun cadeau reçu pour l'instant."
 
 #: gifts/templates/gifts/includes/_reserve_modal_content.html:3
 msgid "Participation"
@@ -666,6 +844,7 @@ msgstr ""
 #: gifts/templates/gifts/user_not_found.html:15
 #: gifts/templates/groups/group_not_found.html:15
 #: gifts/templates/groups/group_preview.html:10
+#: gifts/templates/groups/history_access_denied.html:16
 msgid "Back to Dashboard"
 msgstr "Retour à l'accueil"
 
@@ -784,55 +963,56 @@ msgstr ""
 "liste"
 
 #: gifts/templates/groups/group_detail.html:16
-#: gifts/templates/groups/group_detail.html:138
+#: gifts/templates/groups/group_detail.html:161
 msgid "Members"
 msgstr "Membres"
 
-#: gifts/templates/groups/group_detail.html:58
+#: gifts/templates/groups/group_detail.html:81
 msgid "Click to copy token"
 msgstr "Clicker pour copier le code"
 
-#: gifts/templates/groups/group_detail.html:59
+#: gifts/templates/groups/group_detail.html:82
 msgid "Group token:"
 msgstr "Code du groupe:"
 
-#: gifts/templates/groups/group_detail.html:59
+#: gifts/templates/groups/group_detail.html:82
 msgid "Click to copy"
 msgstr "Cliquer pour copier"
 
-#: gifts/templates/groups/group_detail.html:69
+#: gifts/templates/groups/group_detail.html:92
 msgid "Invite link"
 msgstr "Lien d'invitation"
 
-#: gifts/templates/groups/group_detail.html:83
+#: gifts/templates/groups/group_detail.html:106
 #: gifts/templates/groups/includes/_group_modals.html:7
 msgid "Edit group"
 msgstr "Modifier le groupe"
 
-#: gifts/templates/groups/group_detail.html:88
+#: gifts/templates/groups/group_detail.html:111
 msgid "Regenerate code?"
 msgstr "Régénérer le code ?"
 
-#: gifts/templates/groups/group_detail.html:91
+#: gifts/templates/groups/group_detail.html:114
 msgid "Reset token"
 msgstr "Réinitialiser le code"
 
-#: gifts/templates/groups/group_detail.html:101
+#: gifts/templates/groups/group_detail.html:124
 msgid "Leave group"
 msgstr "Quitter ce groupe"
 
-#: gifts/templates/groups/group_detail.html:130
+#: gifts/templates/groups/group_detail.html:153
 msgid ""
 "Welcome! Select a member from the sidebar to discover their wishes and start "
 "gifting."
-msgstr "Bienvenue! Sélectionnez un membre sur le coté pour découvrir leurs souhaits"
+msgstr ""
+"Bienvenue! Sélectionnez un membre sur le coté pour découvrir leurs souhaits"
 
-#: gifts/templates/groups/group_detail.html:142
+#: gifts/templates/groups/group_detail.html:165
 msgid "Created"
 msgstr "Crée"
 
-#: gifts/templates/groups/group_detail.html:167
-#: gifts/templates/groups/group_detail.html:170
+#: gifts/templates/groups/group_detail.html:190
+#: gifts/templates/groups/group_detail.html:193
 msgid "Copied!"
 msgstr "Copié !"
 
@@ -864,6 +1044,15 @@ msgstr "Membres déjà dans ce groupe"
 msgid "No members yet. Be the first to join!"
 msgstr "Aucun membre pour l'instant. Soyez le 1er à le rejoindre"
 
+#: gifts/templates/groups/history_access_denied.html:9
+msgid "Access denied"
+msgstr "Accès refusé"
+
+#: gifts/templates/groups/history_access_denied.html:12
+#, python-format
+msgid "You are not a member of \"%(name)s\" and cannot view its history."
+msgstr "Vous n'êtes pas membre de \"%(name)s\" et ne pouvez pas accéder à son historique."
+
 #: gifts/templates/groups/includes/_group_modals.html:25
 msgid "Tell us about this group..."
 msgstr "Dites nous en plus sur ce groupe"
@@ -874,23 +1063,30 @@ msgstr "Image de couverture du groupe"
 
 #: gifts/templates/groups/includes/_group_modals.html:34
 msgid "An image is already set. Upload a new one to replace it."
-msgstr "Une image est déjà définie. Envoyer une nouvelle image pour la remplacer"
+msgstr ""
+"Une image est déjà définie. Envoyer une nouvelle image pour la remplacer"
 
-#: gifts/templates/groups/includes/_group_modals.html:54
+#: gifts/templates/groups/includes/_group_modals.html:42
+msgid "Members can see received gifts in this group."
+msgstr "Les membres peuvent voir les cadeaux reçus dans ce groupe."
+
+#: gifts/templates/groups/includes/_group_modals.html:69
+msgid ""
+"Disabling history will permanently delete all recorded gifts for this group. "
+"Are you sure?"
+msgstr "Désactiver l'historique supprimera définitivement tous les cadeaux enregistrés pour ce groupe. Êtes-vous sûr ?"
+
+#: gifts/templates/groups/includes/_group_modals.html:80
 msgid "Leave group?"
 msgstr "Quitter ce groupe ?"
 
-#: gifts/templates/groups/includes/_group_modals.html:59
+#: gifts/templates/groups/includes/_group_modals.html:85
 msgid ""
 "Are you sure you want to leave this group? You won't be able to see the "
 "shared lists anymore."
 msgstr ""
 "Êtes-vous sûr de vouloir quitter ce groupe ? Vous ne pourrez plus voir les "
 "listes partagées"
-
-#: gifts/templates/groups/includes/_group_modals.html:69
-msgid "Confirm"
-msgstr "Confirmer"
 
 #: gifts/templates/registration/change_password.html:4
 msgid "Security"
@@ -1029,33 +1225,87 @@ msgstr "Déjà inscrit ?"
 msgid "Log in here"
 msgstr "Se connecter"
 
-#: gifts/views.py:153
+#: gifts/views.py:155
 msgid "You cannot subscribe to yourself"
 msgstr "Vous ne pouvez pas vous abonner à vous-même"
 
-#: gifts/views.py:160 gifts/views.py:177
+#: gifts/views.py:162 gifts/views.py:179
 #, python-format
 msgid "You are no longer subscribed to %(name)s's list"
 msgstr "Vous n'êtes plus abonné à la liste de %(name)s"
 
-#: gifts/views.py:163
+#: gifts/views.py:165
 #, python-format
 msgid "You are now subscribed to %(name)s's list"
 msgstr "Vous êtes maintenant abonné à la liste de %(name)s"
 
-#: gifts/views.py:182
+#: gifts/views.py:184
 msgid "The unsubscription link is invalid"
 msgstr "Le lien de désabonnement est invalide"
 
-#: gifts/views.py:236
+#: gifts/views.py:238
 #, python-format
 msgid "New gift on %(name)s's list!"
 msgstr "Nouveau cadeau sur la liste de %(name)s !"
 
-#: gifts/views.py:309
+#: gifts/views.py:311
 msgid "Estimated price updated!"
 msgstr "Prix estimé mis à jour!"
 
-#: gifts/views.py:311
+#: gifts/views.py:313
 msgid "Invalid price format."
 msgstr "Format du prix invalide"
+
+#: gifts/views.py:500
+msgid "Only reservers can mark a gift as offered"
+msgstr ""
+"Seules les personnes ayant réservé peuvent marquer un cadeau comme offert"
+
+#: gifts/views.py:603 gifts/views.py:622 gifts/views.py:643
+msgid "You don't have permission to do this"
+msgstr "Vous n'avez pas la permission de faire cela"
+
+#: gifts/views.py:609
+msgid "Gift put back in the list."
+msgstr "Cadeau remis dans la liste."
+
+#: gifts/views.py:625
+msgid "Gift deleted."
+msgstr "Cadeau supprimé."
+
+#: gifts/views.py:680
+msgid "Only the gift owner can mark it as received"
+msgstr "Seul le propriétaire du cadeau peut le marquer comme reçu"
+
+#~ msgid "No group with history enabled."
+#~ msgstr "Aucun groupe avec l'historique activé."
+
+#~ msgid "Select a group to view its history."
+#~ msgstr "Sélectionnez un groupe pour voir son historique."
+
+#~ msgid "Gifts I gave"
+#~ msgstr "Cadeaux offerts"
+
+#~ msgid "All"
+#~ msgstr "Tout"
+
+#~ msgid "Received"
+#~ msgstr "Reçus"
+
+#~ msgid "Given"
+#~ msgstr "Offerts"
+
+#~ msgid "Gifts given"
+#~ msgstr "Cadeaux offerts"
+
+#~ msgid "Your gift history is empty."
+#~ msgstr "Votre historique de cadeaux est vide."
+
+#~ msgid "In my groups"
+#~ msgstr "Dans mes groupes"
+
+#~ msgid "No group activity yet."
+#~ msgstr "Pas encore d'activité dans vos groupes."
+
+#~ msgid "No group members found."
+#~ msgstr "Aucun membre de groupe trouvé."

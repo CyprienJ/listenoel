@@ -1,0 +1,60 @@
+{% load i18n %}
+<div class="modal-header border-0 p-4 pb-0">
+    <h5 class="modal-title fw-bold"><i class="bi bi-check2-circle me-2 {% if history_disabled %}text-danger{% else %}text-success{% endif %}"></i>{% trans "Mark as received" %}</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<div class="modal-body p-4">
+    {% if history_disabled %}
+        <div class="alert alert-warning rounded-4 border-0 mb-3">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {% trans "History is disabled for this group." %}
+        </div>
+        <p>{% blocktrans with title=gift.title %}Mark "<strong>{{ title }}</strong>" as received?{% endblocktrans %}</p>
+        <p class="text-muted small mb-0">{% trans "Since history is disabled, the gift will be permanently deleted from the list." %}</p>
+    {% elif reservations %}
+        <p>{% blocktrans with title=gift.title %}Confirm that you received "<strong>{{ title }}</strong>"?{% endblocktrans %}</p>
+        <p class="text-muted small">{% trans "Offered by:" %}</p>
+        <div class="d-flex flex-wrap gap-2 mb-2">
+            {% for res in reservations %}
+                <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">
+                    <i class="bi bi-person-heart me-1"></i>{{ res.reserver.nickname }}
+                </span>
+            {% endfor %}
+        </div>
+        <p class="text-muted small mt-3">{% trans "The gift will be removed from your list and saved in history." %}</p>
+    {% else %}
+        <p>{% blocktrans with title=gift.title %}Mark "<strong>{{ title }}</strong>" as received?{% endblocktrans %}</p>
+        <p class="text-muted small">{% trans "The gift will be removed from your list and saved in history." %}</p>
+
+        {% if possible_givers %}
+            <p class="fw-medium mt-3 mb-2">{% trans "Who gave it to you?" %} <span class="text-muted fw-normal small">({% trans "optional" %})</span></p>
+            <div class="d-grid gap-2">
+                {% for giver in possible_givers %}
+                    <label class="d-flex align-items-center gap-3 p-3 rounded-4 border hover-lift"
+                           style="cursor:pointer">
+                        <input type="checkbox" class="form-check-input giver-checkbox flex-shrink-0"
+                               value="{{ giver.id }}">
+                        <span class="fw-medium">{{ giver.nickname|capfirst }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+
+<div class="modal-footer border-0 p-4 pt-0 flex-column gap-2">
+    {% if history_disabled %}
+        <button type="button" class="btn btn-danger rounded-pill px-4 w-100"
+                onclick="confirmMarkReceived('{% url 'mark_received' gift_id=gift.id %}', {{ group_id|default:'null' }})">
+            <i class="bi bi-trash3 me-1"></i>{% trans "Delete gift" %}
+        </button>
+    {% else %}
+        <button type="button" class="btn btn-success rounded-pill px-4 w-100"
+                onclick="confirmMarkReceived('{% url 'mark_received' gift_id=gift.id %}', {{ group_id|default:'null' }})">
+            <i class="bi bi-check2-circle me-1"></i>{% trans "Confirm" %}
+        </button>
+    {% endif %}
+    <button type="button" class="btn btn-link text-muted w-100"
+            data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+</div>
