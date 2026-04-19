@@ -30,7 +30,8 @@ class Group(models.Model):
     image = ResizedImageField(
         size=[800, 600], crop=["middle", "center"], upload_to=get_group_image_path, quality=75, blank=True, null=True
     )
-    show_history = models.BooleanField(default=True)
+    show_history = models.BooleanField(default=False)
+    show_balance = models.BooleanField(default=False)
 
     @property
     def has_offered_gifts(self):
@@ -81,6 +82,8 @@ class Gift(models.Model):
     price = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
     offered = models.BooleanField(default=False)
     offered_at = models.DateTimeField(null=True, blank=True)
+    actual_cost = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    expense_split = models.ManyToManyField("User", related_name="split_gifts", blank=True)
     group_reserved_on = models.ForeignKey(
         Group, blank=True, null=True, on_delete=models.SET_NULL, related_name="reservations_group"
     )
@@ -103,3 +106,11 @@ class Reservation(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     exclusivity = models.BooleanField(default=False)
     amount_paid = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
+
+
+class BalanceSettlement(models.Model):
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="balance_settlements")
+    payer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="settlements_made")
+    payee = models.ForeignKey(User, on_delete=models.CASCADE, related_name="settlements_received")
+    amount = models.DecimalField(max_digits=8, decimal_places=2)
+    created_at = models.DateTimeField(default=timezone.now)

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext as _
 
-from .models import Gift, Group, Reservation, User
+from .models import BalanceSettlement, Gift, Group, Reservation, User
 
 
 @admin.register(User)
@@ -36,3 +36,10 @@ class GiftAdmin(admin.ModelAdmin):
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):
     list_display = ("gift", "created_at", "reserver")
+
+
+@admin.register(BalanceSettlement)
+class BalanceSettlementAdmin(admin.ModelAdmin):
+    list_display = ("group", "payer", "payee", "amount", "created_at")
+    list_filter = ("group",)
+    search_fields = ("payer__nickname", "payee__nickname")
