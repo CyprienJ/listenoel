@@ -26,20 +26,6 @@
     {% else %}
         <p>{% blocktrans with title=gift.title %}Mark "<strong>{{ title }}</strong>" as received?{% endblocktrans %}</p>
         <p class="text-muted small">{% trans "The gift will be removed from your list and saved in history." %}</p>
-
-        {% if possible_givers %}
-            <p class="fw-medium mt-3 mb-2">{% trans "Who gave it to you?" %} <span class="text-muted fw-normal small">({% trans "optional" %})</span></p>
-            <div class="d-grid gap-2">
-                {% for giver in possible_givers %}
-                    <label class="d-flex align-items-center gap-3 p-3 rounded-4 border hover-lift"
-                           style="cursor:pointer">
-                        <input type="checkbox" class="form-check-input giver-checkbox flex-shrink-0"
-                               value="{{ giver.id }}">
-                        <span class="fw-medium">{{ giver.nickname|capfirst }}</span>
-                    </label>
-                {% endfor %}
-            </div>
-        {% endif %}
     {% endif %}
 </div>
 
