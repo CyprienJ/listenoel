@@ -122,6 +122,7 @@ def edit_group(request, group_id):
 
             Gift.objects.filter(group_reserved_on=group, offered=True).delete()
         group.show_history = new_show_history
+        group.show_balance = request.POST.get("show_balance") == "on"
 
         group.save()
 

@@ -1,8 +1,10 @@
 import io
+import json
 import os
 import shutil
 import tempfile
 from datetime import timedelta
+from decimal import Decimal
 
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -12,9 +14,12 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+from django.utils.translation import activate, deactivate
+from django.utils.translation import gettext as _
 from PIL import Image
 
-from .models import Gift, Group, User
+from .models import BalanceSettlement, Gift, Group, Reservation, User
+from .views import compute_group_balances
 
 
 def make_image(name="test.jpg", width=200, height=200):
@@ -607,3 +612,522 @@ class AvatarUploadTest(TestCase):
 
             with PILImage.open(self.user.avatar.path) as img:
                 self.assertEqual(img.size, (200, 200))
+
+
+class OfferGiftTest(TestCase):
+    """Tests for the offer_gift view — covers Bug 1 (modal not opening) and Bug 2 (no real-time split)."""
+
+    def setUp(self):
+        self.user1, self.user2, self.user3 = create_users()
+        self.group = Group.objects.create(name="Test Group", show_history=True)
+        self.group.members.add(self.user1, self.user2, self.user3)
+        self.gift = Gift.objects.create(owner=self.user1, created_by=self.user1, title="My Gift")
+
+    def _post_offer(self, user, data):
+        self.client.force_login(user)
+        return self.client.post(
+            reverse("offer_gift", args=[self.gift.id]),
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+
+    def test_offer_modal_returned_for_non_owner(self):
+        """Bug 1: POST to offer_gift (as JS offerFromList does) returns 200 with HTML modal."""
+        response = self._post_offer(self.user2, {"group_id": self.group.id})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "offerTotalCost")
+
+    def test_offer_modal_has_givers_when_group_provided(self):
+        """Bug 2: When group_id is sent, modal renders split checkboxes and per-person span."""
+        response = self._post_offer(self.user2, {"group_id": self.group.id})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "split-checkbox")
+        self.assertContains(response, "offerSharePerPerson")
+
+    def test_offer_modal_no_givers_without_group(self):
+        """Bug 2: Without group_id, givers list is empty so split section is absent."""
+        response = self._post_offer(self.user2, {})
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "split-checkbox")
+        self.assertNotContains(response, "offerSharePerPerson")
+
+    def test_owner_cannot_offer_own_gift(self):
+        response = self._post_offer(self.user1, {"group_id": self.group.id})
+        self.assertEqual(response.status_code, 403)
+
+    def test_offer_confirm_marks_gift_offered_with_cost_and_split(self):
+        """Confirming offer marks gift offered, records actual_cost, payers, and expense_split."""
+        response = self._post_offer(
+            self.user2,
+            {
+                "confirm": True,
+                "group_id": self.group.id,
+                "actual_cost": "60.00",
+                "payers": {str(self.user2.id): "60.00"},
+                "split_participants": [self.user2.id, self.user3.id],
+            },
+        )
+        data = json.loads(response.content)
+        self.assertTrue(data["success"])
+        self.gift.refresh_from_db()
+        self.assertTrue(self.gift.offered)
+        self.assertEqual(self.gift.actual_cost, Decimal("60.00"))
+        split_ids = set(self.gift.expense_split.values_list("id", flat=True))
+        self.assertIn(self.user2.id, split_ids)
+        self.assertIn(self.user3.id, split_ids)
+        reservation = Reservation.objects.get(gift=self.gift, reserver=self.user2)
+        self.assertEqual(reservation.amount_paid, Decimal("60.00"))
+
+    def test_offer_confirm_history_disabled_deletes_gift(self):
+        """When history is disabled for the group, confirming offer deletes the gift permanently."""
+        self.group.show_history = False
+        self.group.save()
+        self.gift.group_reserved_on = self.group
+        self.gift.save()
+
+        response = self._post_offer(self.user2, {"confirm": True, "group_id": self.group.id})
+        data = json.loads(response.content)
+        self.assertTrue(data["success"])
+        self.assertFalse(Gift.objects.filter(id=self.gift.id).exists())
+
+    def test_offer_confirm_skip_split_marks_offered_without_cost(self):
+        """Skip-split variant (no payers/split) marks gift offered with no cost tracking."""
+        response = self._post_offer(self.user2, {"confirm": True, "group_id": self.group.id})
+        data = json.loads(response.content)
+        self.assertTrue(data["success"])
+        self.gift.refresh_from_db()
+        self.assertTrue(self.gift.offered)
+        self.assertIsNone(self.gift.actual_cost)
+
+    def test_offer_confirm_excludes_owner_from_split(self):
+        """Gift owner is excluded from expense_split even if included in split_participants."""
+        response = self._post_offer(
+            self.user2,
+            {
+                "confirm": True,
+                "group_id": self.group.id,
+                "actual_cost": "30.00",
+                "payers": {str(self.user2.id): "30.00"},
+                "split_participants": [self.user1.id, self.user2.id],  # user1 is the owner
+            },
+        )
+        self.assertTrue(json.loads(response.content)["success"])
+        self.gift.refresh_from_db()
+        split_ids = set(self.gift.expense_split.values_list("id", flat=True))
+        self.assertNotIn(self.user1.id, split_ids)  # owner excluded
+        self.assertIn(self.user2.id, split_ids)
+
+
+class ViewListJsTranslationTest(TestCase):
+    """Bug: {% trans %} strings with apostrophes inside JS single-quoted literals
+    break the entire <script> block in French, making offerFromList undefined."""
+
+    def setUp(self):
+        self.user1, self.user2, _ = create_users()
+        self.group = Group.objects.create(name="Test Group")
+        self.group.members.add(self.user1, self.user2)
+
+    def test_offer_from_list_js_not_broken_in_french(self):
+        activate("fr")
+        try:
+            french_err = _("An error occurred.")
+            self.client.force_login(self.user2)
+            response = self.client.get(
+                reverse("view_list", args=[self.user1.id]),
+                {"from_group": str(self.group.id)},
+            )
+        finally:
+            deactivate()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("'", french_err, "precondition: French translation must contain an apostrophe")
+        content = response.content.decode()
+        # The raw French string must NOT appear inside a JS single-quoted string literal.
+        # If it does, the whole <script> block fails to parse and offerFromList is never defined.
+        self.assertNotIn(f"|| '{french_err}'", content)
+
+
+class HistoryViewTest(TestCase):
+    def setUp(self):
+        self.user1, self.user2, self.outsider = create_users()
+        self.group = Group.objects.create(name="History Group", show_history=True)
+        self.group.members.add(self.user1, self.user2)
+
+    def test_non_member_access_denied(self):
+        self.client.force_login(self.outsider)
+        response = self.client.get(reverse("history_group", args=[self.group.id]))
+        self.assertEqual(response.status_code, 403)
+
+    def test_no_group_id_redirects_to_dashboard(self):
+        self.client.force_login(self.user1)
+        response = self.client.get(reverse("history"))
+        self.assertRedirects(response, reverse("dashboard"))
+
+    def test_history_disabled_shows_empty_list_and_flag(self):
+        self.group.show_history = False
+        self.group.save()
+        self.client.force_login(self.user1)
+        response = self.client.get(reverse("history_group", args=[self.group.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["history_disabled"])
+        self.assertEqual(response.context["gifts"], [])
+
+    def test_history_enabled_shows_offered_gifts(self):
+        gift = Gift.objects.create(
+            owner=self.user1,
+            created_by=self.user2,
+            title="Offered Gift",
+            offered=True,
+            offered_at=timezone.now(),
+            group_reserved_on=self.group,
+        )
+        self.client.force_login(self.user1)
+        response = self.client.get(reverse("history_group", args=[self.group.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(gift, response.context["gifts"])
+
+    def test_history_does_not_show_non_offered_gifts(self):
+        Gift.objects.create(owner=self.user1, created_by=self.user1, title="Still Wanted")
+        self.client.force_login(self.user1)
+        response = self.client.get(reverse("history_group", args=[self.group.id]))
+        self.assertEqual(len(response.context["gifts"]), 0)
+
+    def test_history_marks_current_user_reserved_gifts(self):
+        gift = Gift.objects.create(
+            owner=self.user1,
+            created_by=self.user2,
+            title="Reserved Gift",
+            offered=True,
+            offered_at=timezone.now(),
+            group_reserved_on=self.group,
+        )
+        Reservation.objects.create(gift=gift, reserver=self.user2)
+        self.client.force_login(self.user2)
+        response = self.client.get(reverse("history_group", args=[self.group.id]))
+        self.assertIn(gift.id, response.context["user_reserved_ids"])
+
+    def test_history_does_not_mark_other_users_reservations(self):
+        gift = Gift.objects.create(
+            owner=self.user1,
+            created_by=self.user2,
+            title="Reserved by Other",
+            offered=True,
+            offered_at=timezone.now(),
+            group_reserved_on=self.group,
+        )
+        Reservation.objects.create(gift=gift, reserver=self.user2)
+        self.client.force_login(self.user1)  # user1 did not reserve
+        response = self.client.get(reverse("history_group", args=[self.group.id]))
+        self.assertNotIn(gift.id, response.context["user_reserved_ids"])
+
+
+class ComputeGroupBalancesTest(TestCase):
+    """Unit tests for the compute_group_balances pure function."""
+
+    def setUp(self):
+        self.user1, self.user2, self.user3 = create_users()
+        self.group = Group.objects.create(name="Balance Group", show_history=True, show_balance=True)
+        self.group.members.add(self.user1, self.user2, self.user3)
+
+    def test_empty_group_returns_empty(self):
+        balances, transactions, members = compute_group_balances(self.group)
+        self.assertEqual(balances, {})
+        self.assertEqual(transactions, [])
+
+    def test_single_gift_equal_split_two_members(self):
+        """user2 pays 60 for a gift split equally with user3 → each owes 30, user2 net +30."""
+        gift = Gift.objects.create(
+            owner=self.user1,
+            created_by=self.user2,
+            title="Gift",
+            offered=True,
+            offered_at=timezone.now(),
+            group_reserved_on=self.group,
+            actual_cost=Decimal("60.00"),
+        )
+        gift.expense_split.set([self.user2, self.user3])
+        Reservation.objects.create(gift=gift, reserver=self.user2, amount_paid=Decimal("60.00"))
+
+        balances, transactions, members = compute_group_balances(self.group)
+        self.assertEqual(balances[self.user2], Decimal("30.00"))
+        self.assertEqual(balances[self.user3], Decimal("-30.00"))
+        self.assertEqual(len(transactions), 1)
+        debtor, creditor, amount = transactions[0]
+        self.assertEqual(debtor, self.user3)
+        self.assertEqual(creditor, self.user2)
+        self.assertEqual(amount, Decimal("30.00"))
+
+    def test_settlement_clears_debt(self):
+        """After recording a settlement, the transaction disappears."""
+        gift = Gift.objects.create(
+            owner=self.user1,
+            created_by=self.user2,
+            title="Gift",
+            offered=True,
+            offered_at=timezone.now(),
+            group_reserved_on=self.group,
+            actual_cost=Decimal("60.00"),
+        )
+        gift.expense_split.set([self.user2, self.user3])
+        Reservation.objects.create(gift=gift, reserver=self.user2, amount_paid=Decimal("60.00"))
+        BalanceSettlement.objects.create(group=self.group, payer=self.user3, payee=self.user2, amount=Decimal("30.00"))
+
+        _, transactions, _ = compute_group_balances(self.group)
+        self.assertEqual(transactions, [])
+
+    def test_gift_without_expense_split_is_ignored(self):
+        """Gifts with no expense_split entries do not affect balances."""
+        gift = Gift.objects.create(
+            owner=self.user1,
+            created_by=self.user2,
+            title="No Split Gift",
+            offered=True,
+            offered_at=timezone.now(),
+            group_reserved_on=self.group,
+            actual_cost=Decimal("50.00"),
+        )
+        Reservation.objects.create(gift=gift, reserver=self.user2, amount_paid=Decimal("50.00"))
+        # expense_split intentionally left empty
+
+        balances, transactions, _ = compute_group_balances(self.group)
+        self.assertEqual(balances, {})
+        self.assertEqual(transactions, [])
+
+    def test_gift_with_zero_cost_is_ignored(self):
+        gift = Gift.objects.create(
+            owner=self.user1,
+            created_by=self.user2,
+            title="Free Gift",
+            offered=True,
+            offered_at=timezone.now(),
+            group_reserved_on=self.group,
+            actual_cost=Decimal("0.00"),
+        )
+        gift.expense_split.set([self.user2, self.user3])
+
+        balances, transactions, _ = compute_group_balances(self.group)
+        self.assertEqual(balances, {})
+
+
+class BalanceViewTest(TestCase):
+    def setUp(self):
+        self.user1, self.user2, self.outsider = create_users()
+        self.group = Group.objects.create(name="Balance Group", show_balance=True)
+        self.group.members.add(self.user1, self.user2)
+
+    def test_non_member_access_denied(self):
+        self.client.force_login(self.outsider)
+        response = self.client.get(reverse("balance_group", args=[self.group.id]))
+        self.assertEqual(response.status_code, 403)
+
+    def test_balance_disabled_shows_flag(self):
+        self.group.show_balance = False
+        self.group.save()
+        self.client.force_login(self.user1)
+        response = self.client.get(reverse("balance_group", args=[self.group.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["balance_disabled"])
+
+    def test_balance_enabled_shows_transactions(self):
+        """user2 pays 40 for a gift split with user1 → user1 owes user2 20."""
+        gift = Gift.objects.create(
+            owner=self.outsider,
+            created_by=self.user2,
+            title="Gift",
+            offered=True,
+            offered_at=timezone.now(),
+            group_reserved_on=self.group,
+            actual_cost=Decimal("40.00"),
+        )
+        gift.expense_split.set([self.user1, self.user2])
+        Reservation.objects.create(gift=gift, reserver=self.user2, amount_paid=Decimal("40.00"))
+
+        self.client.force_login(self.user1)
+        response = self.client.get(reverse("balance_group", args=[self.group.id]))
+        self.assertEqual(response.status_code, 200)
+        transactions = response.context["transactions"]
+        self.assertEqual(len(transactions), 1)
+        debtor, creditor, amount = transactions[0]
+        self.assertEqual(debtor, self.user1)
+        self.assertEqual(creditor, self.user2)
+        self.assertEqual(amount, Decimal("20.00"))
+
+    def test_add_settlement_creates_record(self):
+        self.client.force_login(self.user1)
+        response = self.client.post(
+            reverse("add_settlement", args=[self.group.id]),
+            {"payee_id": self.user2.id, "amount": "25.00"},
+        )
+        self.assertRedirects(response, reverse("balance_group", args=[self.group.id]))
+        self.assertTrue(
+            BalanceSettlement.objects.filter(
+                group=self.group, payer=self.user1, payee=self.user2, amount=Decimal("25.00")
+            ).exists()
+        )
+
+    def test_add_settlement_negative_amount_rejected(self):
+        self.client.force_login(self.user1)
+        self.client.post(
+            reverse("add_settlement", args=[self.group.id]),
+            {"payee_id": self.user2.id, "amount": "-10.00"},
+        )
+        self.assertFalse(BalanceSettlement.objects.filter(group=self.group).exists())
+
+    def test_add_settlement_non_member_forbidden(self):
+        self.client.force_login(self.outsider)
+        response = self.client.post(
+            reverse("add_settlement", args=[self.group.id]),
+            {"payee_id": self.user2.id, "amount": "10.00"},
+        )
+        self.assertEqual(response.status_code, 403)
+
+
+class EditOfferedAmountsTest(TestCase):
+    def setUp(self):
+        self.user1, self.user2, self.user3 = create_users()
+        self.group = Group.objects.create(name="Group", show_history=True)
+        self.group.members.add(self.user1, self.user2, self.user3)
+        self.gift = Gift.objects.create(
+            owner=self.user1,
+            created_by=self.user2,
+            title="Offered Gift",
+            offered=True,
+            offered_at=timezone.now(),
+            group_reserved_on=self.group,
+            actual_cost=Decimal("30.00"),
+        )
+        Reservation.objects.create(gift=self.gift, reserver=self.user2, amount_paid=Decimal("30.00"))
+
+    def _post(self, user, data):
+        self.client.force_login(user)
+        return self.client.post(
+            reverse("edit_offered_amounts", args=[self.gift.id]),
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+
+    def test_get_modal_returns_html_with_cost_field(self):
+        response = self._post(self.user2, {})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "editTotalCost")
+
+    def test_get_modal_includes_split_fields_for_group_gift(self):
+        """Bug 2 equivalent for edit modal: split section present when gift has a group."""
+        response = self._post(self.user2, {})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "edit-split-checkbox")
+        self.assertContains(response, "editSharePerPerson")
+
+    def test_save_updates_actual_cost_and_split(self):
+        response = self._post(
+            self.user2,
+            {
+                "save": True,
+                "actual_cost": "55.00",
+                "payers": {str(self.user2.id): "55.00"},
+                "split_participants": [self.user2.id, self.user3.id],
+            },
+        )
+        self.assertTrue(json.loads(response.content)["success"])
+        self.gift.refresh_from_db()
+        self.assertEqual(self.gift.actual_cost, Decimal("55.00"))
+        split_ids = set(self.gift.expense_split.values_list("id", flat=True))
+        self.assertIn(self.user2.id, split_ids)
+        self.assertIn(self.user3.id, split_ids)
+
+    def test_save_empty_cost_clears_actual_cost(self):
+        response = self._post(
+            self.user2,
+            {
+                "save": True,
+                "actual_cost": "",
+                "payers": {},
+                "split_participants": [],
+            },
+        )
+        self.assertTrue(json.loads(response.content)["success"])
+        self.gift.refresh_from_db()
+        self.assertIsNone(self.gift.actual_cost)
+        self.assertEqual(self.gift.expense_split.count(), 0)
+
+    def test_non_reserver_non_owner_forbidden(self):
+        """user3 is a group member but not owner or reserver → 403."""
+        response = self._post(self.user3, {})
+        self.assertEqual(response.status_code, 403)
+
+    def test_owner_can_get_modal(self):
+        response = self._post(self.user1, {})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "editTotalCost")
+
+
+class UnOfferDeleteGiftTest(TestCase):
+    def setUp(self):
+        self.user1, self.user2, self.user3 = create_users()
+        self.group = Group.objects.create(name="Group", show_history=True)
+        self.group.members.add(self.user1, self.user2, self.user3)
+        self.gift = Gift.objects.create(
+            owner=self.user1,
+            created_by=self.user2,
+            title="Offered Gift",
+            offered=True,
+            offered_at=timezone.now(),
+            group_reserved_on=self.group,
+            actual_cost=Decimal("30.00"),
+        )
+        Reservation.objects.create(gift=self.gift, reserver=self.user2, amount_paid=Decimal("30.00"))
+        self.gift.expense_split.set([self.user2])
+
+    def test_reserver_can_un_offer(self):
+        """Reserver can put the gift back in the list, resetting all financial data."""
+        self.client.force_login(self.user2)
+        response = self.client.post(reverse("un_offer_gift", args=[self.gift.id]))
+        self.assertRedirects(response, reverse("history_group", args=[self.group.id]))
+        self.gift.refresh_from_db()
+        self.assertFalse(self.gift.offered)
+        self.assertIsNone(self.gift.actual_cost)
+        self.assertIsNone(self.gift.offered_at)
+        self.assertEqual(self.gift.expense_split.count(), 0)
+        res = Reservation.objects.get(gift=self.gift, reserver=self.user2)
+        self.assertIsNone(res.amount_paid)
+
+    def test_owner_can_un_offer(self):
+        self.client.force_login(self.user1)
+        self.client.post(reverse("un_offer_gift", args=[self.gift.id]))
+        self.gift.refresh_from_db()
+        self.assertFalse(self.gift.offered)
+
+    def test_group_member_can_un_offer(self):
+        """A plain group member (not owner or reserver) can also un-offer."""
+        self.client.force_login(self.user3)
+        response = self.client.post(reverse("un_offer_gift", args=[self.gift.id]))
+        self.assertIn(response.status_code, [302])
+        self.gift.refresh_from_db()
+        self.assertFalse(self.gift.offered)
+
+    def test_outsider_cannot_un_offer(self):
+        """A user with no relation to the gift/group cannot un-offer it."""
+        self.group.members.remove(self.user3)
+        self.client.force_login(self.user3)
+        response = self.client.post(reverse("un_offer_gift", args=[self.gift.id]))
+        self.assertEqual(response.status_code, 403)
+        self.gift.refresh_from_db()
+        self.assertTrue(self.gift.offered)
+
+    def test_reserver_can_delete_offered_gift(self):
+        self.client.force_login(self.user2)
+        response = self.client.post(reverse("delete_offered_gift", args=[self.gift.id]))
+        self.assertRedirects(response, reverse("history_group", args=[self.group.id]))
+        self.assertFalse(Gift.objects.filter(id=self.gift.id).exists())
+
+    def test_owner_can_delete_offered_gift(self):
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse("delete_offered_gift", args=[self.gift.id]))
+        self.assertRedirects(response, reverse("history_group", args=[self.group.id]))
+        self.assertFalse(Gift.objects.filter(id=self.gift.id).exists())
+
+    def test_non_owner_non_reserver_cannot_delete(self):
+        self.client.force_login(self.user3)
+        response = self.client.post(reverse("delete_offered_gift", args=[self.gift.id]))
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(Gift.objects.filter(id=self.gift.id).exists())

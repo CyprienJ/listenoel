@@ -79,6 +79,8 @@ urlpatterns = [
     path("history/", views.history_view, name="history"),
     path("history/<int:group_id>/", views.history_view, name="history_group"),
     path("gift/<int:gift_id>/mark-received/", views.mark_received, name="mark_received"),
+    path("balance/<int:group_id>/", views.balance_view, name="balance_group"),
+    path("group/<int:group_id>/add-settlement/", views.add_settlement, name="add_settlement"),
     # Notification
     path("subscribe/<int:user_id>/", views.toggle_subscription, name="toggle_subscription"),
     path("unsubscribe/<uidb64>/<token>/", views.unsubscribe_token, name="unsubscribe_token"),

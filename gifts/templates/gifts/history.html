@@ -61,15 +61,13 @@
                                             <i class="bi bi-three-dots-vertical"></i>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2">
-                                            {% if gift.reservation.all|length > 1 %}
-                                                <li>
-                                                    <button class="dropdown-item rounded-3 py-2"
-                                                            onclick="editOfferAmounts('{% url 'edit_offered_amounts' gift.id %}')">
-                                                        <i class="bi bi-pencil me-2"></i>{% trans "Modify amounts" %}
-                                                    </button>
-                                                </li>
-                                                <li><hr class="dropdown-divider"></li>
-                                            {% endif %}
+                                            <li>
+                                                <button class="dropdown-item rounded-3 py-2"
+                                                        onclick="editOfferAmounts('{% url 'edit_offered_amounts' gift.id %}')">
+                                                    <i class="bi bi-pencil me-2"></i>{% trans "Modify amounts" %}
+                                                </button>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
                                             <li>
                                                 <form method="post" action="{% url 'delete_offered_gift' gift.id %}">
                                                     {% csrf_token %}
@@ -102,17 +100,28 @@
 {% block extra_body %}
 {{ block.super }}
 <script>
-    function setupEditSplitTotal() {
-        const inputs = document.querySelectorAll('#editOfferModalContent .edit-split-amount');
-        if (!inputs.length) return;
-        function updateTotal() {
-            let total = 0;
-            inputs.forEach(function (i) { total += Number.parseFloat(i.value || 0); });
-            const el = document.getElementById('editSplitTotal');
-            if (el) el.textContent = total.toFixed(2) + ' €';
+    function setupEditOfferModal() {
+        const container = document.getElementById('editOfferModalContent');
+        if (!container) return;
+
+        container.querySelector('#editTotalCost')?.addEventListener('input', updateEditTotals);
+        container.querySelectorAll('.edit-split-checkbox').forEach(function (cb) {
+            cb.addEventListener('change', updateEditTotals);
+        });
+        updateEditTotals();
+    }
+
+    function updateEditTotals() {
+        const container = document.getElementById('editOfferModalContent');
+        if (!container) return;
+        const totalCost = Number.parseFloat(container.querySelector('#editTotalCost')?.value || 0);
+        const splitCount = container.querySelectorAll('.edit-split-checkbox:checked').length;
+        const shareEl = container.querySelector('#editSharePerPerson');
+        if (shareEl) {
+            shareEl.textContent = (totalCost > 0 && splitCount > 0)
+                ? (totalCost / splitCount).toFixed(2) + ' €'
+                : '—';
         }
-        inputs.forEach(function (input) { input.addEventListener('input', updateTotal); });
-        updateTotal();
     }
 
     async function editOfferAmounts(url) {
@@ -123,27 +132,35 @@
         });
         if (response.ok) {
             document.getElementById('editOfferModalContent').innerHTML = await response.text();
-            setupEditSplitTotal();
+            setupEditOfferModal();
             bootstrap.Modal.getOrCreateInstance(document.getElementById('editOfferModal')).show();
         }
     }
 
     async function saveOfferAmounts(url) {
-        const amounts = {};
-        document.querySelectorAll('#editOfferModalContent [data-reserver-id]').forEach(function (input) {
-            amounts[input.dataset.reserverId] = input.value;
+        const container = document.getElementById('editOfferModalContent');
+        const body = {save: true};
+        const totalCost = container.querySelector('#editTotalCost')?.value || '';
+        body.actual_cost = totalCost;
+        body.payers = {};
+        const payerId = container.querySelector('#editPayerSelect')?.value;
+        if (payerId) body.payers[payerId] = totalCost;
+        body.split_participants = [];
+        container.querySelectorAll('.edit-split-checkbox:checked').forEach(function (cb) {
+            body.split_participants.push(Number.parseInt(cb.value));
         });
         const response = await fetch(url, {
             method: 'POST',
             headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
-            body: JSON.stringify({save: true, amounts: amounts})
+            body: JSON.stringify(body)
         });
         const data = await response.json();
         if (data.success) {
             bootstrap.Modal.getOrCreateInstance(document.getElementById('editOfferModal')).hide();
+            globalThis.location.reload();
         } else {
-            const body = document.querySelector('#editOfferModalContent .modal-body');
-            if (body) body.innerHTML = '<div class="alert alert-danger rounded-4 border-0 m-0">' + (data.error || '{% trans "An error occurred." %}') + '</div>';
+            const modalBody = container.querySelector('.modal-body');
+            if (modalBody) modalBody.innerHTML = '<div class="alert alert-danger rounded-4 border-0 m-0">' + (data.error || '{% trans "An error occurred." %}') + '</div>';
         }
     }
 </script>
