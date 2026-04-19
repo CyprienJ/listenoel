@@ -497,8 +497,8 @@ def delete_reservation(request, gift_id):
 def offer_gift(request, gift_id):
     gift = get_object_or_404(Gift, id=gift_id)
 
-    if not Reservation.objects.filter(gift=gift, reserver=request.user).exists():
-        return HttpResponseForbidden(_("Only reservers can mark a gift as offered"))
+    if gift.owner == request.user:
+        return HttpResponseForbidden(_("You cannot mark your own gift as offered"))
 
     try:
         data = json.loads(request.body)
@@ -609,14 +609,14 @@ def history_view(request, group_id=None):
 @require_POST
 def un_offer_gift(request, gift_id):
     gift = get_object_or_404(Gift, id=gift_id, offered=True)
+    group = gift.group_reserved_on
 
     is_owner = gift.owner == request.user
     is_reserver = Reservation.objects.filter(gift=gift, reserver=request.user).exists()
+    is_group_member = group is not None and group.members.filter(id=request.user.id).exists()
 
-    if not (is_owner or is_reserver):
+    if not (is_owner or is_reserver or is_group_member):
         return HttpResponseForbidden(_(PERMISSION_DENIED))
-
-    group = gift.group_reserved_on
     Reservation.objects.filter(gift=gift).update(amount_paid=None)
     gift.offered = False
     gift.offered_at = None
@@ -667,6 +667,10 @@ def edit_offered_amounts(request, gift_id):
         return JsonResponse({"success": False, "error": VALUE_ERROR_MSG}, status=400)
 
     reservations = list(Reservation.objects.filter(gift=gift).select_related("reserver").order_by("id"))
+
+    if len(reservations) <= 1:
+        return HttpResponseForbidden(_("Cannot modify amounts for a gift given by a single person."))
+
     save = data.get("save", False)
 
     if not save:
@@ -717,54 +721,17 @@ def mark_received(request, gift_id):
     history_disabled = receive_group is not None and not receive_group.show_history
 
     if not confirm:
-        if history_disabled:
-            context = {
-                "gift": gift,
-                "group_id": group_id,
-                "history_disabled": True,
-                "reservations": reservations,
-                "possible_givers": [],
-            }
-            return render(request, "gifts/includes/_mark_received_content.html", context)
-
-        if group_id:
-            try:
-                givers_group = Group.objects.get(id=int(group_id))
-                possible_givers = givers_group.members.exclude(id=request.user.id)
-            except (Group.DoesNotExist, ValueError, TypeError):
-                possible_givers = User.objects.none()
-        elif gift.visible_in.exists():
-            possible_givers = (
-                User.objects.filter(gift_groups__visible_gifts=gift).exclude(id=request.user.id).distinct()
-            )
-        else:
-            possible_givers = (
-                User.objects.filter(gift_groups__members=request.user).exclude(id=request.user.id).distinct()
-            )
         context = {
             "gift": gift,
             "reservations": reservations,
-            "possible_givers": possible_givers,
             "group_id": group_id,
+            "history_disabled": history_disabled,
         }
         return render(request, "gifts/includes/_mark_received_content.html", context)
 
     if history_disabled:
         gift.delete()
         return JsonResponse({"success": True})
-
-    if not reservations:
-        giver_ids = data.get("giver_ids", [])
-        valid_giver_ids = set(
-            User.objects.filter(gift_groups__members=request.user)
-            .exclude(id=request.user.id)
-            .values_list("id", flat=True)
-        )
-        exclusive = len(giver_ids) == 1
-        for giver_id in giver_ids:
-            if giver_id in valid_giver_ids:
-                giver = User.objects.get(id=giver_id)
-                Reservation.objects.get_or_create(gift=gift, reserver=giver, defaults={"exclusivity": exclusive})
 
     if group_id and not gift.group_reserved_on_id:
         try:

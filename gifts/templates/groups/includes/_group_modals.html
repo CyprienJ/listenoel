@@ -64,14 +64,40 @@
     const toggle = document.getElementById('showHistory');
     if (!toggle) return;
     const wasEnabled = toggle.checked;
-    document.getElementById('editGroupModal').querySelector('form').addEventListener('submit', function (e) {
-        if (wasEnabled && !toggle.checked) {
-            const ok = globalThis.confirm('{% trans "Disabling history will permanently delete all recorded gifts for this group. Are you sure?" %}');
-            if (!ok) e.preventDefault();
+    const hasHistory = {{ group.has_offered_gifts|yesno:"true,false" }};
+    const editForm = document.getElementById('editGroupModal').querySelector('form');
+
+    editForm.addEventListener('submit', function (e) {
+        if (wasEnabled && !toggle.checked && hasHistory) {
+            e.preventDefault();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('disableHistoryModal')).show();
         }
+    });
+
+    document.getElementById('confirmDisableHistory').addEventListener('click', function () {
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('disableHistoryModal')).hide();
+        editForm.submit();
     });
 })();
 </script>
+
+<div class="modal fade" id="disableHistoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-5 shadow-lg">
+            <div class="modal-header border-0 p-4 pb-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i>{% trans "Disable history?" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted mb-0">{% trans "Disabling history will permanently delete all recorded gifts for this group. This cannot be undone." %}</p>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <button type="button" id="confirmDisableHistory" class="btn btn-danger rounded-pill px-4">{% trans "Delete and disable" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="leaveGroupModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">

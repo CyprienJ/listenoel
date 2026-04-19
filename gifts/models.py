@@ -32,6 +32,10 @@ class Group(models.Model):
     )
     show_history = models.BooleanField(default=True)
 
+    @property
+    def has_offered_gifts(self):
+        return self.reservations_group.filter(offered=True).exists()
+
     def __str__(self):
         return self.name
 

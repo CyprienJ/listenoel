@@ -44,56 +44,45 @@
                                         <span class="ms-2"><i class="bi bi-calendar3 me-1"></i>{{ gift.offered_at|date:"d M Y" }}</span>
                                     {% endif %}
                                 </p>
-                                <div class="d-flex flex-wrap gap-1 mt-1">
-                                    {% for res in gift.reservation.all %}
-                                        <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1">
-                                            <i class="bi bi-person-heart me-1"></i>{{ res.reserver.nickname }}
-                                        </span>
-                                    {% empty %}
-                                        <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2 py-1">
-                                            {% trans "Anonymous" %}
-                                        </span>
-                                    {% endfor %}
-                                </div>
                             </div>
 
-                            {% if gift.owner == request.user or gift.id in user_reserved_ids %}
-                                <div class="dropdown flex-shrink-0">
-                                    <button class="btn btn-sm rounded-circle" type="button"
-                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="bi bi-three-dots-vertical"></i>
+                            <div class="d-flex gap-2 flex-shrink-0">
+                                <form method="post" action="{% url 'un_offer_gift' gift.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary rounded-pill px-3"
+                                            title="{% trans 'Put back in list' %}">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2">
-                                        {% if gift.reservation.all %}
+                                </form>
+                                {% if gift.owner == request.user or gift.id in user_reserved_ids %}
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm rounded-circle" type="button"
+                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2">
+                                            {% if gift.reservation.all|length > 1 %}
+                                                <li>
+                                                    <button class="dropdown-item rounded-3 py-2"
+                                                            onclick="editOfferAmounts('{% url 'edit_offered_amounts' gift.id %}')">
+                                                        <i class="bi bi-pencil me-2"></i>{% trans "Modify amounts" %}
+                                                    </button>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                            {% endif %}
                                             <li>
-                                                <button class="dropdown-item rounded-3 py-2"
-                                                        onclick="editOfferAmounts('{% url 'edit_offered_amounts' gift.id %}')">
-                                                    <i class="bi bi-pencil me-2"></i>{% trans "Modify amounts" %}
-                                                </button>
+                                                <form method="post" action="{% url 'delete_offered_gift' gift.id %}">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="dropdown-item rounded-3 text-danger py-2 btn-delete"
+                                                            data-confirm-msg="{% trans 'Delete this gift from history?' %}">
+                                                        <i class="bi bi-trash3 me-2"></i>{% trans "Delete" %}
+                                                    </button>
+                                                </form>
                                             </li>
-                                            <li><hr class="dropdown-divider"></li>
-                                        {% endif %}
-                                        <li>
-                                            <form method="post" action="{% url 'un_offer_gift' gift.id %}">
-                                                {% csrf_token %}
-                                                <button type="submit" class="dropdown-item rounded-3 py-2">
-                                                    <i class="bi bi-arrow-counterclockwise me-2"></i>{% trans "Put back in list" %}
-                                                </button>
-                                            </form>
-                                        </li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li>
-                                            <form method="post" action="{% url 'delete_offered_gift' gift.id %}">
-                                                {% csrf_token %}
-                                                <button type="submit" class="dropdown-item rounded-3 text-danger py-2 btn-delete"
-                                                        data-confirm-msg="{% trans 'Delete this gift from history?' %}">
-                                                    <i class="bi bi-trash3 me-2"></i>{% trans "Delete" %}
-                                                </button>
-                                            </form>
-                                        </li>
-                                    </ul>
-                                </div>
-                            {% endif %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
