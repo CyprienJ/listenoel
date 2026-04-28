@@ -4,247 +4,435 @@
 {% block title %}{% trans "Balance" %} — {{ group.name }}{% endblock %}
 
 {% block group_main_content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="h4 fw-bold text-primary mb-0">
-        <i class="bi bi-calculator me-2"></i>{% trans "Financial balance" %}
-    </h2>
-</div>
 
 {% if balance_disabled %}
-    <div class="text-center py-5 bg-body-tertiary rounded-5 border">
-        <i class="bi bi-calculator fs-1 opacity-25 d-block mb-3"></i>
-        <p class="fw-bold mb-1">{% trans "Financial balance is disabled for this group." %}</p>
-        <p class="text-muted small mb-4">{% trans "Enable it in the group settings to track contributions." %}</p>
-        <button class="btn btn-primary rounded-pill px-4"
-                data-bs-toggle="modal" data-bs-target="#editGroupModal">
+<div class="nc-section-card">
+    <div style="text-align:center; padding: 48px 24px">
+        <div style="width:44px;height:44px;border-radius:50%;background:var(--nc-bg-sub);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+            <i class="bi bi-calculator" style="color:var(--nc-text-muted);font-size:18px"></i>
+        </div>
+        <p class="fw-bold mb-1" style="color:var(--nc-text)">{% trans "Financial balance is disabled for this group." %}</p>
+        <p class="mb-4" style="color:var(--nc-text-muted);font-size:13px">{% trans "Enable it in the group settings to track contributions." %}</p>
+        <button class="nc-btn nc-btn--primary" data-bs-toggle="modal" data-bs-target="#editGroupModal">
             <i class="bi bi-gear me-2"></i>{% trans "Group settings" %}
         </button>
     </div>
+</div>
 
 {% else %}
 
-    <div id="balanceContent">
-
-        <!-- Résumé des balances -->
+<!-- Page header -->
+<div class="nc-balance-header">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div>
+            <div class="nc-balance-page-sup">{{ group.name }}</div>
+            <h1 class="nc-balance-page-title">{% trans "Financial balance" %}</h1>
+        </div>
+        <!-- Personal balance chip -->
         {% if balances %}
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-body p-4">
-                <h3 class="h6 fw-bold text-muted mb-3">
-                    <i class="bi bi-bar-chart-fill me-2"></i>{% trans "Balances" %}
-                </h3>
-                <div class="d-grid gap-2">
-                    {% for member, balance in balances.items %}
-                    <div class="d-flex justify-content-between align-items-center p-2 rounded-3 bg-body-secondary">
-                        <span class="small fw-medium">{{ member.nickname|capfirst }}</span>
-                        <span class="fw-bold small {% if balance > 0 %}text-success{% elif balance < 0 %}text-danger{% else %}text-muted{% endif %}">
-                            {% if balance > 0 %}+{% endif %}{{ balance }} €
-                        </span>
-                    </div>
-                    {% endfor %}
-                </div>
+        <div style="padding-bottom:4px">
+            {% if my_balance > 0 %}
+            <div style="background:var(--nc-sage-light);border:1px solid oklch(82% 0.07 150);border-radius:10px;padding:10px 16px;text-align:center;min-width:120px">
+                <div style="font-size:10px;color:var(--nc-sage);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:2px">{% trans "My balance" %}</div>
+                <div style="font-size:17px;font-weight:700;color:var(--nc-sage)">+{{ my_balance|floatformat:2 }} €</div>
             </div>
+            {% elif my_balance < 0 %}
+            <div style="background:oklch(95% 0.04 25);border:1px solid oklch(85% 0.08 25);border-radius:10px;padding:10px 16px;text-align:center;min-width:120px">
+                <div style="font-size:10px;color:oklch(55% 0.16 25);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:2px">{% trans "My balance" %}</div>
+                <div style="font-size:17px;font-weight:700;color:oklch(55% 0.16 25)">{{ my_balance|floatformat:2 }} €</div>
+            </div>
+            {% else %}
+            <div style="background:var(--nc-bg-sub);border:1px solid var(--nc-border);border-radius:10px;padding:10px 16px;text-align:center;min-width:120px">
+                <div style="font-size:10px;color:var(--nc-text-muted);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:2px">{% trans "My balance" %}</div>
+                <div style="font-size:17px;font-weight:700;color:var(--nc-text-muted)">0.00 €</div>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
+    </div>
+</div>
 
-        <!-- Transactions à effectuer -->
-        {% if transactions %}
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-body p-4">
-                <h3 class="h6 fw-bold text-muted mb-3">
-                    <i class="bi bi-arrow-left-right me-2"></i>{% trans "Who owes whom" %}
-                </h3>
-                <div class="d-grid gap-3">
-                    {% for debtor, creditor, amount in transactions %}
-                    <div class="d-flex align-items-center gap-3 p-3 rounded-4 bg-body-secondary">
-                        <div class="flex-grow-1">
-                            <span class="fw-bold">{{ debtor.nickname|capfirst }}</span>
-                            <span class="text-muted small mx-2">→</span>
-                            <span class="fw-bold">{{ creditor.nickname|capfirst }}</span>
-                            <span class="ms-2 badge bg-danger-subtle text-danger rounded-pill">{{ amount }} €</span>
-                        </div>
-                        {% if debtor == request.user %}
-                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3"
-                                onclick="prefillSettlement('{{ creditor.id }}', '{{ amount }}')">
-                            <i class="bi bi-check2 me-1"></i>{% trans "I paid" %}
-                        </button>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
+<!-- ── SECTION 1: Soldes ──────────────────────────────────────────── -->
+<div class="nc-section-card">
+    <div class="nc-section-card__header">
+        <div class="nc-section-card__title-group">
+            <div class="nc-section-card__icon">
+                <i class="bi bi-calculator"></i>
+            </div>
+            <div>
+                <div class="nc-section-card__title">{% trans "Balances" %}</div>
+                <div class="nc-section-card__subtitle">{% trans "Net balance per member" %}</div>
             </div>
         </div>
-        {% elif not balances %}
-        <div class="text-center py-5 text-muted bg-body-tertiary rounded-5 border border-dashed mb-4">
-            <i class="bi bi-check2-circle fs-1 opacity-25 d-block mb-2"></i>
-            {% trans "No expenses recorded yet. Offer gifts with amounts to start tracking." %}
-        </div>
+    </div>
+    <div class="nc-section-card__body" id="balanceBars">
+        {% if balances %}
+            {% for member, balance in balances.items %}
+            {% cycle "nc-color-m1" "nc-color-m2" "nc-color-m3" "nc-color-m4" "nc-color-m5" "nc-color-m6" "nc-color-m7" "nc-color-m8" as bal_color silent %}
+            <div class="nc-balance-row" data-amount="{{ balance }}">
+                {% if member.avatar %}
+                    <div style="width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0">
+                        <img src="{{ member.avatar.url }}" alt="{{ member.nickname }}" style="width:100%;height:100%;object-fit:cover">
+                    </div>
+                {% else %}
+                    <div class="nc-member-avatar {{ bal_color }}" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:white">
+                        {{ member.nickname|first|upper }}
+                    </div>
+                {% endif %}
+                <div class="nc-balance-info">
+                    <div class="nc-balance-name-row">
+                        <span class="nc-balance-name">{{ member.nickname|capfirst }}</span>
+                        <span class="nc-balance-amount {% if balance > 0 %}nc-balance-amount--pos{% elif balance < 0 %}nc-balance-amount--neg{% else %}nc-balance-amount--zero{% endif %}">
+                            {% if balance > 0 %}+{% endif %}{{ balance|floatformat:2 }} €
+                        </span>
+                    </div>
+                    <div class="nc-bar-track">
+                        <div class="nc-bar-fill {% if balance >= 0 %}nc-bar-fill--pos{% else %}nc-bar-fill--neg{% endif %}" style="width:0%"></div>
+                        <div class="nc-bar-center"></div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         {% else %}
-        <div class="text-center py-4 text-muted bg-body-tertiary rounded-5 border mb-4">
-            <i class="bi bi-check2-circle fs-1 opacity-25 d-block mb-2 text-success"></i>
-            <p class="fw-bold mb-0">{% trans "All settled up!" %}</p>
-        </div>
+            <div class="nc-balance-empty">{% trans "No expenses recorded yet. Offer gifts with amounts to start tracking." %}</div>
         {% endif %}
+    </div>
+</div>
 
-        <!-- Enregistrer un remboursement -->
-        {% if other_members %}
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-body p-4">
-                <h3 class="h6 fw-bold text-muted mb-3">
-                    <i class="bi bi-send me-2"></i>{% trans "Record a payment" %}
-                </h3>
-                <form method="post" action="{% url 'add_settlement' group.id %}" class="d-flex flex-wrap gap-3 align-items-end">
-                    {% csrf_token %}
-                    <div class="flex-grow-1">
-                        <label for="settlementPayee" class="form-label small text-muted">{% trans "I paid to" %}</label>
-                        <select name="payee_id" id="settlementPayee" class="form-select rounded-4 border-0 bg-body-secondary" required>
-                            <option value="">— {% trans "Select a member" %} —</option>
-                            {% for member in other_members %}
-                            <option value="{{ member.id }}">{{ member.nickname|capfirst }}</option>
-                            {% endfor %}
-                        </select>
+<!-- ── SECTION 2: Qui doit quoi à qui ────────────────────────────── -->
+<div class="nc-section-card">
+    <div class="nc-section-card__header">
+        <div class="nc-section-card__title-group">
+            <div class="nc-section-card__icon">
+                <i class="bi bi-arrow-left-right"></i>
+            </div>
+            <div>
+                <div class="nc-section-card__title">{% trans "Who owes whom" %}</div>
+                <div class="nc-section-card__subtitle">
+                    {% if transactions %}
+                        {% blocktrans count n=transactions|length %}{{ n }} debt in progress{% plural %}{{ n }} debts in progress{% endblocktrans %}
+                    {% elif balances %}
+                        {% trans "Everyone is even ✦" %}
+                    {% else %}
+                        {% trans "No data yet" %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% if transactions %}
+        <span style="font-size:11px;color:var(--nc-text-muted)">{% trans "Click «Settle» to prefill the form" %}</span>
+        {% endif %}
+    </div>
+    <div class="nc-section-card__body">
+        {% if not transactions %}
+            {% if balances %}
+                <div class="nc-balance-settled">✦ {% trans "All accounts settled" %}</div>
+            {% else %}
+                <div class="nc-balance-empty">{% trans "No expenses recorded yet." %}</div>
+            {% endif %}
+        {% else %}
+            {% for debtor, creditor, amount in transactions %}
+                {% if not forloop.first %}<div class="nc-section-divider"></div>{% endif %}
+                <div class="nc-debt-row">
+                    <!-- From -->
+                    <div class="nc-debt-party">
+                        <div class="nc-member-avatar" style="width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:white;background:oklch(55% 0.16 25)">
+                            {{ debtor.nickname|first|upper }}
+                        </div>
+                        <span class="nc-debt-party-name">{{ debtor.nickname|capfirst }}</span>
                     </div>
-                    <div>
-                        <label for="settlementAmount" class="form-label small text-muted">{% trans "Amount" %}</label>
-                        <div class="input-group rounded-pill overflow-hidden border">
-                            <input type="number" step="0.01" min="0.01" name="amount" id="settlementAmount"
-                                   class="form-control border-0 px-3" placeholder="0.00" required>
-                            <span class="input-group-text bg-transparent border-0 pe-3">€</span>
+                    <!-- Arrow + amount chip -->
+                    <div class="nc-debt-arrow-wrap">
+                        <div class="nc-debt-line"></div>
+                        <div class="nc-debt-amount-chip">{{ amount|floatformat:2 }} €</div>
+                        <i class="bi bi-arrow-right" style="color:var(--nc-border);font-size:12px;flex-shrink:0"></i>
+                    </div>
+                    <!-- To -->
+                    <div class="nc-debt-party nc-debt-party--right">
+                        <span class="nc-debt-party-name">{{ creditor.nickname|capfirst }}</span>
+                        <div class="nc-member-avatar" style="width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:white;background:var(--nc-sage)">
+                            {{ creditor.nickname|first|upper }}
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4">
-                        <i class="bi bi-check2 me-1"></i>{% trans "Record" %}
+                    <!-- Settle button — always shown; prefills form when I'm the debtor -->
+                    <button type="button" class="nc-settle-btn {% if debtor != request.user %}nc-settle-btn--muted{% endif %}"
+                            onclick="prefillSettlement('{{ debtor.id }}', '{{ creditor.id }}', '{{ amount }}')">
+                        <i class="bi bi-check2" style="font-size:11px"></i>{% trans "Settle" %}
                     </button>
-                </form>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- ── SECTION 3: Enregistrer un remboursement ────────────────────── -->
+{% if other_members %}
+<div class="nc-section-card">
+    <div class="nc-section-card__header">
+        <div class="nc-section-card__title-group">
+            <div class="nc-section-card__icon">
+                <i class="bi bi-send"></i>
+            </div>
+            <div>
+                <div class="nc-section-card__title">{% trans "Record a payment" %}</div>
+                <div class="nc-section-card__subtitle">{% trans "I reimbursed a member" %}</div>
             </div>
         </div>
-        {% endif %}
-
-        <!-- Historique détaillé -->
-        {% if gift_history or settlements %}
-        <div id="historyGate" class="text-center py-4 bg-body-tertiary rounded-5 border">
-            <i class="bi bi-eye-slash fs-1 opacity-25 d-block mb-3"></i>
-            <p class="fw-bold mb-1">{% trans "Detailed history is hidden" %}</p>
-            <p class="text-muted small mb-4">{% trans "Displaying it reveals the prices of all gifts offered in this group." %}</p>
-            <button class="btn btn-primary rounded-pill px-4"
-                    data-bs-toggle="modal" data-bs-target="#confirmBalanceModal">
-                <i class="bi bi-eye me-2"></i>{% trans "Show history" %}
-            </button>
-        </div>
-        <div id="historyContent" class="card border-0 shadow-sm rounded-4 d-none">
-            <div class="card-body p-4">
-                <h3 class="h6 fw-bold text-muted mb-3">
-                    <i class="bi bi-clock-history me-2"></i>{% trans "Detailed history" %}
-                </h3>
-
-                {% for gift in gift_history %}
-                {% with payer=gift.reservation.all|first split=gift.expense_split.all %}
-                <div class="d-flex align-items-start gap-3 p-3 rounded-4 bg-body-secondary mb-2">
-                    <div class="flex-shrink-0 mt-1">
-                        <span class="badge bg-primary-subtle text-primary rounded-pill">
-                            <i class="bi bi-gift me-1"></i>{% trans "Gift" %}
-                        </span>
-                    </div>
-                    <div class="flex-grow-1 min-width-0" style="min-width:0">
-                        <div class="fw-bold small text-truncate">{{ gift.title }}</div>
-                        {% if gift.offered_at %}
-                        <div class="text-muted small">
-                            <i class="bi bi-calendar3 me-1"></i>{{ gift.offered_at|date:"d M Y" }}
-                        </div>
-                        {% endif %}
-                        {% if gift.actual_cost %}
-                        <div class="text-muted small mt-1">
-                            {% if payer %}
-                                <i class="bi bi-credit-card me-1"></i>
-                                {% blocktrans with name=payer.reserver.nickname|capfirst cost=gift.actual_cost %}Paid by <strong>{{ name }}</strong> — {{ cost }} €{% endblocktrans %}
-                            {% else %}
-                                <i class="bi bi-cash-coin me-1"></i>{{ gift.actual_cost }} €
-                            {% endif %}
-                            {% if split %}
-                                <span class="ms-2">
-                                    <i class="bi bi-people me-1"></i>{% trans "Split:" %}
-                                    {% for u in split %}{{ u.nickname|capfirst }}{% if not forloop.last %}, {% endif %}{% endfor %}
-                                </span>
-                            {% endif %}
-                        </div>
-                        {% endif %}
-                    </div>
+    </div>
+    <div class="nc-section-card__body nc-repay-form">
+        <form method="post" action="{% url 'add_settlement' group.id %}" id="settlementForm">
+            {% csrf_token %}
+            <!-- De → À -->
+            <div class="nc-form-grid-de-a">
+                <div>
+                    <label for="settlementPayer" class="nc-form-label">{% trans "From" %}</label>
+                    <select name="payer_id" id="settlementPayer" class="nc-form-input" required
+                            onchange="checkSettlementReady()">
+                        <option value="">{% trans "Choose…" %}</option>
+                        {% for member in all_members %}
+                        <option value="{{ member.id }}" {% if member.id == request.user.id %}selected{% endif %}>
+                            {{ member.nickname|capfirst }}
+                        </option>
+                        {% endfor %}
+                    </select>
                 </div>
-                {% endwith %}
-                {% endfor %}
-
-                {% for s in settlements %}
-                <div class="d-flex align-items-start gap-3 p-3 rounded-4 bg-body-secondary mb-2">
-                    <div class="flex-shrink-0 mt-1">
-                        <span class="badge bg-success-subtle text-success rounded-pill">
-                            <i class="bi bi-arrow-return-right me-1"></i>{% trans "Repayment" %}
-                        </span>
-                    </div>
-                    <div class="flex-grow-1">
-                        <div class="small">
-                            <span class="fw-medium">{{ s.payer.nickname|capfirst }}</span>
-                            <span class="text-muted mx-1">→</span>
-                            <span class="fw-medium">{{ s.payee.nickname|capfirst }}</span>
-                            <span class="ms-2 fw-bold text-success">{{ s.amount }} €</span>
-                        </div>
-                        <div class="text-muted small">
-                            <i class="bi bi-calendar3 me-1"></i>{{ s.created_at|date:"d M Y" }}
-                        </div>
-                    </div>
+                <div class="nc-form-arrow-center">
+                    <i class="bi bi-arrow-right"></i>
                 </div>
-                {% endfor %}
-
+                <div>
+                    <label for="settlementPayee" class="nc-form-label">{% trans "To" %}</label>
+                    <select name="payee_id" id="settlementPayee" class="nc-form-input" required
+                            onchange="checkSettlementReady()">
+                        <option value="">{% trans "Choose…" %}</option>
+                        {% for member in all_members %}
+                        <option value="{{ member.id }}">{{ member.nickname|capfirst }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
-        </div>
-        </div>{# /historyContent #}
-        {% endif %}
-
-    </div>{# /balanceContent #}
-
+            <!-- Amount -->
+            <div class="nc-form-grid-amount">
+                <div>
+                    <label for="settlementAmount" class="nc-form-label">{% trans "Amount" %}</label>
+                    <div class="nc-form-amount-wrap">
+                        <input type="number" step="0.01" min="0.01" name="amount" id="settlementAmount"
+                               class="nc-form-input" placeholder="0.00" required
+                               oninput="checkSettlementReady()">
+                        <span class="nc-form-currency">€</span>
+                    </div>
+                </div>
+            </div>
+            <div class="nc-form-submit-row">
+                <button type="submit" class="nc-btn nc-btn--primary" id="settlementSubmit"
+                        style="opacity:0.45;cursor:not-allowed" disabled>
+                    <i class="bi bi-check2 me-1"></i>{% trans "Record" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endif %}
 
-<!-- Modale de confirmation -->
+<!-- ── SECTION 4: Historique (always shown) ───────────────────────── -->
+<div class="nc-section-card">
+    <div class="nc-section-card__header">
+        <div class="nc-section-card__title-group">
+            <div class="nc-section-card__icon">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div>
+                <div class="nc-section-card__title">{% trans "Payment history" %}</div>
+                <div class="nc-section-card__subtitle" id="histSubtitle">{% trans "Showing reveals gift amounts" %}</div>
+            </div>
+        </div>
+        {% if gift_history or settlements %}
+        <button type="button" class="nc-section-action-btn" id="histToggleBtn"
+                data-bs-toggle="modal" data-bs-target="#confirmBalanceModal">
+            <i class="bi bi-eye-slash" id="histToggleIcon" style="font-size:12px"></i>
+            <span id="histToggleLabel">{% trans "Show" %}</span>
+        </button>
+        {% endif %}
+    </div>
+    <div class="nc-section-card__body">
+        <!-- Hidden placeholder / empty state -->
+        <div id="historyGate">
+            {% if gift_history or settlements %}
+            <div class="nc-history-hidden">
+                <div class="nc-history-icon-wrap">
+                    <i class="bi bi-eye-slash" style="color:var(--nc-text-muted);font-size:18px"></i>
+                </div>
+                <div class="nc-history-revealed-title">{% trans "History is hidden" %}</div>
+                <div class="nc-history-revealed-desc">{% trans "Displaying history reveals gift prices in this group." %}</div>
+            </div>
+            {% else %}
+            <div class="nc-balance-empty">{% trans "No payment history yet." %}</div>
+            {% endif %}
+        </div>
+        <!-- Revealed content -->
+        <div id="historyContent" style="display:none">
+            {% for gift in gift_history %}
+            {% with payer=gift.reservation.all|first %}
+            {% if not forloop.first %}<div class="nc-section-divider"></div>{% endif %}
+            <div class="nc-history-row">
+                <div class="nc-history-row-icon">
+                    <i class="bi bi-gift" style="font-size:13px"></i>
+                </div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-size:13px;font-weight:500;color:var(--nc-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                        {{ gift.title }}
+                    </div>
+                    <div style="font-size:11px;color:var(--nc-text-muted);margin-top:1px">
+                        {% if gift.offered_at %}{{ gift.offered_at|date:"d M Y" }}{% if gift.actual_cost %} · {% endif %}{% endif %}
+                        {% if gift.actual_cost %}
+                            {% if payer %}
+                                {% blocktrans with name=payer.reserver.nickname|capfirst cost=gift.actual_cost %}Paid by {{ name }} — {{ cost }} €{% endblocktrans %}
+                            {% else %}
+                                {{ gift.actual_cost }} €
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% if gift.actual_cost %}
+                <span style="font-size:13px;font-weight:600;color:var(--nc-sage);flex-shrink:0">{{ gift.actual_cost }} €</span>
+                {% endif %}
+            </div>
+            {% endwith %}
+            {% endfor %}
+
+            {% for s in settlements %}
+            {% if gift_history or not forloop.first %}<div class="nc-section-divider"></div>{% endif %}
+            <div class="nc-history-row">
+                <div class="nc-history-row-icon">
+                    <i class="bi bi-arrow-return-right" style="font-size:13px"></i>
+                </div>
+                <div style="flex:1">
+                    <div style="font-size:13px;font-weight:500;color:var(--nc-text)">
+                        {{ s.payer.nickname|capfirst }}
+                        <span style="color:var(--nc-text-muted);margin:0 4px">→</span>
+                        {{ s.payee.nickname|capfirst }}
+                    </div>
+                    <div style="font-size:11px;color:var(--nc-text-muted);margin-top:1px">
+                        {{ s.created_at|date:"d M Y" }}
+                    </div>
+                </div>
+                <span style="font-size:13px;font-weight:600;color:var(--nc-sage);flex-shrink:0">{{ s.amount }} €</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endif %}{# /balance_disabled #}
+
+<!-- History confirmation modal -->
 <div class="modal fade" id="confirmBalanceModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 rounded-5 shadow-lg">
             <div class="modal-header border-0 p-4 pb-0">
                 <h5 class="modal-title fw-bold">
-                    <i class="bi bi-eye me-2 text-warning"></i>{% trans "Show balance?" %}
+                    <i class="bi bi-eye me-2" style="color:var(--nc-accent)"></i>{% trans "Show history?" %}
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
-                <p class="text-muted mb-0">
+                <p style="color:var(--nc-text-muted)" class="mb-0">
                     {% trans "This will reveal the prices of all gifts offered in this group, including gifts intended as surprises." %}
                 </p>
             </div>
             <div class="modal-footer border-0 p-4 pt-0">
-                <button type="button" class="btn btn-outline-secondary rounded-pill px-4"
-                        data-bs-dismiss="modal">{% trans "Cancel" %}</button>
-                <button type="button" class="btn btn-primary rounded-pill px-4"
-                        id="confirmShowBalance">
+                <button type="button" class="nc-btn nc-btn--ghost" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <button type="button" class="nc-btn nc-btn--primary" id="confirmShowBalance">
                     <i class="bi bi-eye me-1"></i>{% trans "Show anyway" %}
                 </button>
             </div>
         </div>
     </div>
 </div>
+
 {% endblock %}
 
 {% block extra_body %}
 {{ block.super }}
 <script>
+/* Balance bars — compute max and animate widths */
+(function () {
+    const rows = document.querySelectorAll('#balanceBars .nc-balance-row');
+    if (!rows.length) return;
+    const amounts = Array.from(rows).map(r => Number.parseFloat(r.dataset.amount || '0'));
+    const maxAbs = Math.max(...amounts.map(Math.abs), 1);
+    requestAnimationFrame(() => {
+        rows.forEach((row, i) => {
+            const fill = row.querySelector('.nc-bar-fill');
+            if (!fill) return;
+            const pct = (Math.abs(amounts[i]) / maxAbs) * 50;
+            fill.style.width = pct + '%';
+        });
+    });
+})();
+
+/* Settle shortcut — prefill form and scroll */
+function prefillSettlement(payerId, payeeId, amount) {
+    const payerSel = document.getElementById('settlementPayer');
+    const payeeSel = document.getElementById('settlementPayee');
+    const amtInput = document.getElementById('settlementAmount');
+    if (payerSel) { payerSel.value = payerId; }
+    if (payeeSel) { payeeSel.value = payeeId; }
+    if (amtInput) { amtInput.value = amount; }
+    checkSettlementReady();
+    document.getElementById('settlementForm')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+/* Enable submit when form is valid */
+function checkSettlementReady() {
+    const payer = document.getElementById('settlementPayer');
+    const payee = document.getElementById('settlementPayee');
+    const amt   = document.getElementById('settlementAmount');
+    const btn   = document.getElementById('settlementSubmit');
+    if (!payer || !payee || !amt || !btn) return;
+    const ready = payer.value && payee.value && payer.value !== payee.value && Number.parseFloat(amt.value) > 0;
+    btn.disabled = !ready;
+    btn.style.opacity = ready ? '1' : '0.45';
+    btn.style.cursor  = ready ? 'pointer' : 'not-allowed';
+}
+
+/* History reveal / hide */
 document.getElementById('confirmShowBalance')?.addEventListener('click', function () {
     bootstrap.Modal.getOrCreateInstance(document.getElementById('confirmBalanceModal')).hide();
-    document.getElementById('historyGate').classList.add('d-none');
-    document.getElementById('historyContent').classList.remove('d-none');
+    showHistory();
 });
 
-function prefillSettlement(payeeId, amount) {
-    const sel = document.getElementById('settlementPayee');
-    const amtInput = document.getElementById('settlementAmount');
-    if (sel) sel.value = payeeId;
-    if (amtInput) amtInput.value = amount;
-    sel?.scrollIntoView({behavior: 'smooth', block: 'center'});
+function showHistory() {
+    document.getElementById('historyGate').style.display = 'none';
+    document.getElementById('historyContent').style.display = '';
+
+    const btn   = document.getElementById('histToggleBtn');
+    const icon  = document.getElementById('histToggleIcon');
+    const label = document.getElementById('histToggleLabel');
+
+    btn?.classList.add('nc-section-action-btn--active');
+    btn?.removeAttribute('data-bs-toggle');
+    btn?.removeAttribute('data-bs-target');
+    if (icon)  { icon.classList.replace('bi-eye-slash', 'bi-eye'); }
+    if (label) { label.textContent = "{% trans 'Hide' %}"; }
+
+    btn?.addEventListener('click', hideHistory);
+}
+
+function hideHistory() {
+    document.getElementById('historyGate').style.display = '';
+    document.getElementById('historyContent').style.display = 'none';
+
+    const btn   = document.getElementById('histToggleBtn');
+    const icon  = document.getElementById('histToggleIcon');
+    const label = document.getElementById('histToggleLabel');
+
+    btn?.classList.remove('nc-section-action-btn--active');
+    btn?.setAttribute('data-bs-toggle', 'modal');
+    btn?.setAttribute('data-bs-target', '#confirmBalanceModal');
+    if (icon)  { icon.classList.replace('bi-eye', 'bi-eye-slash'); }
+    if (label) { label.textContent = "{% trans 'Show' %}"; }
+
+    btn?.removeEventListener('click', hideHistory);
 }
 </script>
 {% endblock %}

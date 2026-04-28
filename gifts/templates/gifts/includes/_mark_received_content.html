@@ -27,6 +27,22 @@
         <p>{% blocktrans with title=gift.title %}Mark "<strong>{{ title }}</strong>" as received?{% endblocktrans %}</p>
         <p class="text-muted small">{% trans "The gift will be removed from your list and saved in history." %}</p>
     {% endif %}
+    {% if gift_groups %}
+        <div class="mt-3">
+            <label for="markReceivedGroupSelect" class="form-label small fw-semibold" style="color:var(--nc-text-sub)">
+                <i class="bi bi-people me-1"></i>{% trans "Save in which group's history?" %}
+            </label>
+            <select id="markReceivedGroupSelect" class="nc-form-input">
+                {% if not current_group_id %}
+                    <option value="" disabled selected>{% trans "Choose a group…" %}</option>
+                    <option value="none">{% trans "Don't save in history" %}</option>
+                {% endif %}
+                {% for g in gift_groups %}
+                    <option value="{{ g.id }}" {% if g.id == current_group_id %}selected{% endif %}>{{ g.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    {% endif %}
 </div>
 
 <div class="modal-footer border-0 p-4 pt-0 flex-column gap-2">

@@ -1,0 +1,141 @@
+{% load i18n %}
+{# Params: icon_class (accent|gold), is_surprise (1 or omit), edit_modal_id #}
+<div class="nc-wish-row">
+
+    {# Icon #}
+    <div class="nc-wish-icon {% if item.user_reservation %}nc-wish-icon--sage{% else %}nc-wish-icon--{{ icon_class }}{% endif %}">
+        <i class="bi bi-gift"></i>
+    </div>
+
+    {# Name + description #}
+    <div class="nc-wish-name-col"
+         data-bs-toggle="modal"
+         data-bs-target="#viewGiftModal{{ item.gift.id }}">
+        <div class="nc-wish-name">{{ item.gift.title }}</div>
+        <div class="nc-wish-desc {% if not item.gift.description %}nc-wish-desc--empty{% endif %}">
+            {{ item.gift.description|default:_("No description") }}
+        </div>
+    </div>
+
+    {# Meta chips #}
+    <div class="nc-wish-meta">
+        {% if item.gift.url %}
+            <a href="{{ item.gift.url }}" target="_blank" class="nc-wish-meta-chip nc-wish-meta-chip--link">
+                <i class="bi bi-link-45deg"></i> {% trans "See link" %}
+            </a>
+        {% endif %}
+        <span class="nc-wish-meta-chip">
+            <i class="bi bi-calendar3"></i> {{ item.gift.created_at|date:"d M Y" }}
+        </span>
+        {% if is_surprise %}
+            {% if item.gift.created_by %}
+                <span class="nc-wish-meta-chip">
+                    <i class="bi bi-person-circle"></i> {{ item.gift.created_by.nickname|capfirst }}
+                </span>
+            {% endif %}
+        {% elif is_owner %}
+            {% with visible_count=item.gift.visible_in.count %}
+                {% if visible_count == 0 or visible_count == user_groups.count %}
+                    <span class="nc-wish-meta-chip nc-wish-meta-chip--sage">
+                        <i class="bi bi-globe"></i> {% trans "All groups" %}
+                    </span>
+                {% elif visible_count == 1 %}
+                    <span class="nc-wish-meta-chip"
+                          title="{% trans 'Exclusive to one group' %}: {% for g in item.gift.visible_in.all %}{{ g.name }}{% endfor %}">
+                        <i class="bi bi-star-fill"></i> {% trans "Exclusive" %}
+                    </span>
+                {% else %}
+                    <span class="nc-wish-meta-chip"
+                          title="{% for g in item.gift.visible_in.all %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                        <i class="bi bi-eye-fill"></i> {{ visible_count }} {% trans "groups" %}
+                    </span>
+                {% endif %}
+            {% endwith %}
+        {% else %}
+            {% with visible_count=item.gift.visible_in.count %}
+                {% if visible_count == 0 %}
+                    <span class="nc-wish-meta-chip nc-wish-meta-chip--sage">
+                        <i class="bi bi-globe"></i> {% trans "Public" %}
+                    </span>
+                {% elif visible_count == 1 %}
+                    <span class="nc-wish-meta-chip" title="{% trans 'Exclusive to this group' %}">
+                        <i class="bi bi-star-half"></i> {% trans "Exclusive" %}
+                    </span>
+                {% else %}
+                    <span class="nc-wish-meta-chip"
+                          title="{% blocktrans with name=user.nickname|capfirst %}Not visible on all of {{ name }}'s groups{% endblocktrans %}">
+                        <i class="bi bi-globe"></i> {% trans "Private" %}
+                    </span>
+                {% endif %}
+            {% endwith %}
+        {% endif %}
+        {% if item.user_reservation %}
+            <span class="nc-wish-meta-chip nc-wish-meta-chip--reserved">
+                <i class="bi bi-check2"></i> {% trans "Reserved by you" %}
+            </span>
+        {% endif %}
+    </div>
+
+    {# Actions #}
+    <div class="nc-wish-actions">
+        {% if is_surprise or not is_owner %}
+            {% if not item.user_reservation or item.gift.group_reserved_on.id|stringformat:"s" == from_group_id %}
+                <button class="nc-wish-reserve-btn {% if item.user_reservation %}nc-wish-reserve-btn--reserved{% endif %}"
+                        data-bs-toggle="modal"
+                        data-bs-target="#reserveModal{{ item.gift.id }}">
+                    {% if item.user_reservation %}
+                        <i class="bi bi-check2"></i> {% trans "Reserved" %}
+                    {% else %}
+                        <i class="bi bi-lock"></i> {% trans "Reserve" %}
+                    {% endif %}
+                </button>
+                <button class="nc-wish-offer-btn"
+                        onclick="offerFromList('{% url 'offer_gift' gift_id=item.gift.id %}', {{ item.gift.group_reserved_on.id|default:from_group_id|default:'null' }})">
+                    <i class="bi bi-gift-fill"></i><span class="nc-btn-label">{% trans "Offered!" %}</span>
+                </button>
+            {% else %}
+                <button class="nc-wish-reserve-btn" disabled>
+                    <i class="bi bi-lock-fill"></i> {% trans "Reserved on another group" %}
+                </button>
+            {% endif %}
+        {% endif %}
+
+        {% if not is_surprise and is_owner %}
+            <button class="nc-wish-offer-btn"
+                    onclick="markReceived('{% url 'mark_received' gift_id=item.gift.id %}', {{ from_group_id|default:'null' }})">
+                <i class="bi bi-check2-circle"></i><span class="nc-btn-label">{% trans "Received!" %}</span>
+            </button>
+        {% endif %}
+
+        {% if is_owner or item.gift.created_by.id == request.user.id %}
+            <div class="dropdown">
+                <button class="nc-wish-more-btn" type="button"
+                        data-bs-toggle="dropdown"
+                        data-bs-boundary="viewport"
+                        aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4">
+                    <li>
+                        <button class="dropdown-item py-2"
+                                data-bs-toggle="modal"
+                                data-bs-target="#{{ edit_modal_id }}{{ item.gift.id }}">
+                            <i class="bi bi-pencil me-2"></i> {% trans "Modify" %}
+                        </button>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form method="post" action="{% url 'delete_gift' item.gift.id %}" class="m-0">
+                            {% csrf_token %}
+                            <button type="submit"
+                                    class="dropdown-item text-danger py-2 btn-delete"
+                                    data-confirm-msg="{% trans 'Delete this gift?' %}">
+                                <i class="bi bi-trash3 me-2"></i> {% trans "Delete" %}
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+</div>

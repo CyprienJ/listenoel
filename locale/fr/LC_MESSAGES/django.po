@@ -1559,10 +1559,173 @@ msgstr "Données de remboursement invalides."
 msgid "Settlement recorded."
 msgstr "Remboursement enregistré."
 
-#, fuzzy
-#~| msgid "Gift history"
-#~ msgid "Payment history"
-#~ msgstr "Historique des remboursements"
+#: gifts/templates/gifts/balance.html
+msgid "My balance"
+msgstr "Mon solde"
+
+#: gifts/templates/gifts/balance.html
+msgid "Net balance per member"
+msgstr "Solde net par membre"
+
+#: gifts/templates/gifts/balance.html
+msgid "Everyone is even ✦"
+msgstr "Tout le monde est quitte ✦"
+
+#: gifts/templates/gifts/balance.html
+msgid "No data yet"
+msgstr "Pas encore de données"
+
+#: gifts/templates/gifts/balance.html
+msgid "Click «Settle» to prefill the form"
+msgstr "Cliquez «Régler» pour pré-remplir le formulaire"
+
+#: gifts/templates/gifts/balance.html
+msgid "All accounts settled"
+msgstr "Tous les comptes sont soldés"
+
+#: gifts/templates/gifts/balance.html
+msgid "No expenses recorded yet."
+msgstr "Aucune dépense enregistrée."
+
+#: gifts/templates/gifts/balance.html
+msgid "Settle"
+msgstr "Régler"
+
+#: gifts/templates/gifts/balance.html
+msgid "I reimbursed a member"
+msgstr "J'ai remboursé un membre"
+
+#: gifts/templates/gifts/balance.html
+msgid "From"
+msgstr "De"
+
+#: gifts/templates/gifts/balance.html
+msgid "To"
+msgstr "À"
+
+#: gifts/templates/gifts/balance.html
+msgid "Choose…"
+msgstr "Choisir…"
+
+#: gifts/templates/gifts/balance.html
+msgid "Payment history"
+msgstr "Historique des remboursements"
+
+#: gifts/templates/gifts/balance.html
+msgid "Showing reveals gift amounts"
+msgstr "L'afficher révèle les montants des cadeaux"
+
+#: gifts/templates/gifts/balance.html
+msgid "Show"
+msgstr "Afficher"
+
+#: gifts/templates/gifts/balance.html
+msgid "Hide"
+msgstr "Masquer"
+
+#: gifts/templates/gifts/balance.html
+msgid "History is hidden"
+msgstr "Historique masqué"
+
+#: gifts/templates/gifts/balance.html
+msgid "Displaying history reveals gift prices in this group."
+msgstr "L'afficher révèle les prix de tous les cadeaux offerts dans ce groupe."
+
+#: gifts/templates/gifts/balance.html
+msgid "Show history?"
+msgstr "Afficher l'historique ?"
+
+#: gifts/templates/gifts/balance.html
+msgid "No payment history yet."
+msgstr "Aucun remboursement enregistré pour l'instant."
+
+#: gifts/templates/gifts/balance.html
+msgid "1 debt in progress"
+msgid_plural "{{ n }} debts in progress"
+msgstr[0] "{{ n }} dette en cours"
+msgstr[1] "{{ n }} dettes en cours"
+
+#: gifts/templates/gifts/view_list.html
+msgid "My"
+msgstr "Ma"
+
+#: gifts/templates/gifts/view_list.html
+msgid "list"
+msgstr "liste"
+
+#: gifts/templates/gifts/view_list.html
+msgid "Reserved by you"
+msgstr "Réservé par vous"
+
+#: gifts/templates/gifts/view_list.html
+msgid "Reserved"
+msgstr "Réservé"
+
+#: gifts/templates/gifts/view_list.html
+msgid "Add your first ideas!"
+msgstr "Ajoutez vos premières idées !"
+
+#: gifts/templates/gifts/view_list.html
+msgid "has no list yet."
+msgstr "n'a pas encore de liste."
+
+#: gifts/templates/gifts/view_list.html
+msgid "Invisible for"
+msgstr "Invisible pour"
+
+#: gifts/templates/gifts/includes/_wish_row.html
+msgid "Offered!"
+msgstr "Offert !"
+
+#: gifts/templates/gifts/includes/_wish_row.html
+msgid "Received!"
+msgstr "Reçu !"
+
+#: gifts/templates/gifts/includes/_mark_received_content.html
+msgid "Save in which group's history?"
+msgstr "Sauvegarder dans l'historique de quel groupe ?"
+
+#: gifts/templates/gifts/includes/_mark_received_content.html
+msgid "Choose a group…"
+msgstr "Choisir un groupe…"
+
+#: gifts/templates/gifts/includes/_mark_received_content.html
+msgid "Don't save in history"
+msgstr "Ne pas sauvegarder dans l'historique"
+
+#: gifts/templates/groups/group_preview.html
+msgid "Invitation"
+msgstr "Invitation"
+
+#: gifts/templates/groups/group_preview.html
+msgid "You are invited!"
+msgstr "Vous êtes invité·e !"
+
+#: gifts/templates/groups/group_preview.html
+msgid "Accept invitation"
+msgstr "Accepter l'invitation"
+
+#: gifts/templates/groups/group_preview.html
+msgid "Decline invitation"
+msgstr "Décliner l'invitation"
+
+#: gifts/templates/groups/group_preview.html
+msgid "Invitation declined"
+msgstr "Invitation refusée"
+
+#: gifts/templates/groups/group_preview.html
+msgid "Back to home"
+msgstr "Retour à l'accueil"
+
+#: gifts/templates/groups/group_preview.html
+msgid "%(count)s member already present"
+msgid_plural "%(count)s members already present"
+msgstr[0] "%(count)s membre déjà présent"
+msgstr[1] "%(count)s membres déjà présents"
+
+#: gifts/templates/groups/group_preview.html
+msgid "You have declined the invitation to join <strong>%(name)s</strong>."
+msgstr "Vous avez décliné l'invitation à rejoindre <strong>%(name)s</strong>."
 
 #~ msgid "Received by"
 #~ msgstr "Reçu par"

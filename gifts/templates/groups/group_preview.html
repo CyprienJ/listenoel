@@ -4,71 +4,92 @@
 {% block title %}{% trans "Join" %} {{ group.name }}{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="mb-4">
-        <a href="{% url 'dashboard' %}" class="text-decoration-none text-muted small fw-bold">
-            <i class="bi bi-chevron-left"></i> {% trans "Back to Dashboard" %}
+<div class="nc-invitation-wrap">
+
+    {# Back link #}
+    <div class="nc-invitation-back">
+        <a href="{% url 'dashboard' %}">
+            <i class="bi bi-chevron-left" style="font-size:13px"></i> {% trans "Back to home" %}
         </a>
     </div>
 
-    <div class="row justify-content-center">
-        <div class="col-md-10 col-lg-6">
+    {# ── Pending state (default) ── #}
+    <div id="nc-invite-pending">
 
-            <div class="card auth-card rounded-5 shadow-sm overflow-hidden mb-5">
-                <div class="card-body p-4 p-md-5 text-center">
+        {# Main invitation card #}
+        <div class="nc-invitation-card">
+            <div class="nc-invitation-icon">
+                <i class="bi bi-envelope-paper-heart"></i>
+            </div>
+            <div class="nc-invitation-supertitle">{% trans "Invitation" %}</div>
+            <h1 class="nc-invitation-title">{% trans "You are invited!" %}</h1>
+            <p class="nc-invitation-subtitle">{% trans "You have been invited to join the group" %}</p>
 
-                    <div class="avatar-circle mx-auto mb-4" style="width: 80px; height: 80px; font-size: 2.5rem;">
-                        <i class="bi bi-envelope-paper-heart"></i>
+            {# Group pill #}
+            <div class="nc-invitation-group-pill">
+                <div class="nc-invitation-group-avatar">{{ group.name|first|upper }}</div>
+                <div style="text-align:left">
+                    <div class="nc-invitation-group-name">{{ group.name }}</div>
+                    <div class="nc-invitation-group-count">
+                        {% blocktrans count count=group.members.count %}{{ count }} member already present{% plural %}{{ count }} members already present{% endblocktrans %}
                     </div>
+                </div>
+            </div>
 
-                    <h1 class="h3 fw-bold mb-2">{% trans "You're Invited!" %}</h1>
-                    <p class="text-muted mb-4">
-                        {% trans "You have been invited to join the group" %}
-                    </p>
+            {# CTA buttons #}
+            <a href="{% url 'join_group_confirm' group.group_token %}"
+               class="nc-invitation-accept-btn">
+                <i class="bi bi-person-plus-fill" style="font-size:16px"></i>
+                {% trans "Accept invitation" %}
+            </a>
+            <button class="nc-invitation-decline-btn" onclick="ncDeclineInvitation()">
+                {% trans "Decline invitation" %}
+            </button>
+        </div>
 
-                    <div class="d-inline-flex align-items-center bg-success-container px-4 py-2 rounded-pill mb-5 border-0">
-                        <div class="avatar-circle me-3 bg-white shadow-sm" style="width: 40px; height: 40px;">
-                            {{ group.name|first|upper }}
+        {# Members grid #}
+        {% if group.members.all %}
+            <div class="nc-invitation-members">
+                <div class="nc-invitation-members-title">{% trans "Members already in this group" %}</div>
+                <div class="nc-invitation-members-grid">
+                    {% for member in group.members.all %}
+                        <div class="nc-invitation-member-card">
+                            <div class="nc-invitation-member-avatar nc-color-m{{ forloop.counter }}">
+                                {{ member.nickname|first|upper }}
+                            </div>
+                            <span class="nc-invitation-member-name">{{ member.nickname|capfirst }}</span>
                         </div>
-                        <span class="h5 fw-bold mb-0">{{ group.name }}</span>
-                    </div>
-
-                    <div class="d-grid">
-                        <a href="{% url 'join_group_confirm' group.group_token %}"
-                           class="btn btn-primary btn-lg rounded-pill py-3 hover-lift shadow-sm">
-                            <i class="bi bi-person-plus-fill me-2"></i>
-                            {% trans "Accept Invitation" %}
-                        </a>
-                    </div>
+                    {% endfor %}
                 </div>
             </div>
+        {% endif %}
 
-            <div class="text-center mb-4">
-                <h3 class="h6 fw-bold text-uppercase text-muted opacity-75" style="letter-spacing: 1px;">
-                    {% trans "Members already in this group" %}
-                </h3>
+    </div>
+
+    {# ── Declined state (hidden until JS toggle) ── #}
+    <div id="nc-invite-declined" style="display:none; max-width:520px; width:100%">
+        <div class="nc-invitation-declined">
+            <div class="nc-invitation-declined-icon">
+                <i class="bi bi-x-lg"></i>
             </div>
-
-            <div class="row g-3 justify-content-center">
-                {% for member in group.members.all %}
-                <div class="col-6 col-sm-4">
-                    <div class="card auth-card rounded-4 p-3 text-center hover-lift border-0 shadow-sm">
-                        <div class="avatar-circle mx-auto mb-2" style="width: 40px; height: 40px; font-size: 0.9rem;">
-                            {{ member.nickname|first|upper }}
-                        </div>
-                        <span class="small fw-bold text-truncate d-block">
-                            {{ member.nickname|capfirst }}
-                        </span>
-                    </div>
-                </div>
-                {% empty %}
-                <div class="col-12 text-center py-3">
-                    <p class="text-muted small fst-italic">{% trans "No members yet. Be the first to join!" %}</p>
-                </div>
-                {% endfor %}
-            </div>
-
+            <h2 class="nc-invitation-declined-title">{% trans "Invitation declined" %}</h2>
+            <p class="nc-invitation-declined-desc">
+                {% blocktrans with name=group.name %}You have declined the invitation to join <strong>{{ name }}</strong>.{% endblocktrans %}
+            </p>
+            <a href="{% url 'dashboard' %}" style="font-size:13px; color:var(--nc-accent)">
+                {% trans "Back to home" %}
+            </a>
         </div>
     </div>
+
 </div>
+
+<script>
+    function ncDeclineInvitation() {
+        document.getElementById('nc-invite-pending').style.display = 'none';
+        const declined = document.getElementById('nc-invite-declined');
+        declined.style.display = 'block';
+        declined.style.animation = 'nc-fade-in 0.5s ease both';
+    }
+</script>
 {% endblock %}

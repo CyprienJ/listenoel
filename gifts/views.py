@@ -698,7 +698,7 @@ def mark_received(request, gift_id):
     reservations = list(Reservation.objects.filter(gift=gift).select_related("reserver").order_by("id"))
 
     receive_group = gift.group_reserved_on
-    if not receive_group and group_id:
+    if not receive_group and group_id and group_id != "none":
         try:
             receive_group = Group.objects.get(id=int(group_id))
         except Group.DoesNotExist:
@@ -708,21 +708,31 @@ def mark_received(request, gift_id):
     history_disabled = receive_group is not None and not receive_group.show_history
 
     if not confirm:
+        all_groups = list(request.user.gift_groups.all())
         context = {
             "gift": gift,
             "reservations": reservations,
             "group_id": group_id,
             "history_disabled": history_disabled,
+            "gift_groups": all_groups,
+            "current_group_id": receive_group.id if receive_group else None,
         }
         return render(request, "gifts/includes/_mark_received_content.html", context)
+
+    if group_id == "none":
+        gift.group_reserved_on = None
+        gift.offered = True
+        gift.offered_at = timezone.now()
+        gift.save()
+        return JsonResponse({"success": True})
 
     if history_disabled:
         gift.delete()
         return JsonResponse({"success": True})
 
-    if group_id and not gift.group_reserved_on_id:
+    if group_id:
         try:
-            gift.group_reserved_on = Group.objects.get(id=int(group_id))
+            gift.group_reserved_on = Group.objects.get(id=int(group_id), members=request.user)
         except (Group.DoesNotExist, ValueError, TypeError):
             return JsonResponse({"success": False, "error": _("GROUP_NOT_FOUND")}, status=400)
 
@@ -795,12 +805,14 @@ def balance_view(request, group_id):
         return render(request, "gifts/balance.html", {**ctx, "balance_disabled": True})
     balances, transactions, members = compute_group_balances(group)
     other_members = [m for m in members if m.id != request.user.id]
+    all_members = list(members)
     settlements = BalanceSettlement.objects.filter(group=group).select_related("payer", "payee").order_by("-created_at")
     gift_history = (
         Gift.objects.filter(group_reserved_on=group, offered=True)
         .prefetch_related("reservation__reserver", "expense_split")
         .order_by("-offered_at")
     )
+    my_balance = balances.get(request.user, Decimal(0))
     return render(
         request,
         "gifts/balance.html",
@@ -809,8 +821,10 @@ def balance_view(request, group_id):
             "balances": balances,
             "transactions": transactions,
             "other_members": other_members,
+            "all_members": all_members,
             "settlements": settlements,
             "gift_history": gift_history,
+            "my_balance": my_balance,
         },
     )
 
@@ -823,12 +837,16 @@ def add_settlement(request, group_id):
         return HttpResponseForbidden(_(PERMISSION_DENIED))
     try:
         payee = group.members.get(id=int(request.POST.get("payee_id", "")))
+        payer_id = request.POST.get("payer_id")
+        payer = group.members.get(id=int(payer_id)) if payer_id else request.user
+        if payer == payee:
+            raise ValueError("payer == payee")
         amount = Decimal(request.POST.get("amount", "").replace(",", "."))
         if amount <= 0:
             raise ValueError
     except Exception:
         messages.error(request, _("Invalid settlement data."))
         return redirect("balance_group", group_id=group_id)
-    BalanceSettlement.objects.create(group=group, payer=request.user, payee=payee, amount=amount)
+    BalanceSettlement.objects.create(group=group, payer=payer, payee=payee, amount=amount)
     messages.success(request, _("Settlement recorded."))
     return redirect("balance_group", group_id=group_id)
