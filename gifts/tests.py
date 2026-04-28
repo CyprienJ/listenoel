@@ -830,7 +830,7 @@ class ComputeGroupBalancesTest(TestCase):
         self.group.members.add(self.user1, self.user2, self.user3)
 
     def test_empty_group_returns_empty(self):
-        balances, transactions, members = compute_group_balances(self.group)
+        balances, transactions, _ = compute_group_balances(self.group)
         self.assertEqual(balances, {})
         self.assertEqual(transactions, [])
 
@@ -848,7 +848,7 @@ class ComputeGroupBalancesTest(TestCase):
         gift.expense_split.set([self.user2, self.user3])
         Reservation.objects.create(gift=gift, reserver=self.user2, amount_paid=Decimal("60.00"))
 
-        balances, transactions, members = compute_group_balances(self.group)
+        balances, transactions, _ = compute_group_balances(self.group)
         self.assertEqual(balances[self.user2], Decimal("30.00"))
         self.assertEqual(balances[self.user3], Decimal("-30.00"))
         self.assertEqual(len(transactions), 1)
@@ -905,7 +905,7 @@ class ComputeGroupBalancesTest(TestCase):
         )
         gift.expense_split.set([self.user2, self.user3])
 
-        balances, transactions, _ = compute_group_balances(self.group)
+        balances, _, _ = compute_group_balances(self.group)
         self.assertEqual(balances, {})
 
 
