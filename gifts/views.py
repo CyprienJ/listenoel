@@ -31,6 +31,7 @@ ACCESS_REFUSED_MSG = "You don't have access to this list"
 METHOD_NOT_AUTHORIZED_MESSAGE = "Method {} not authorized"
 GROUP_NOT_FOUND = "Group not found."
 PERMISSION_DENIED = "You don't have permission to do this"
+INVALID_AMOUNT_FORMAT = _("Invalid amount format.")
 
 
 # --- Helpers ---
@@ -101,11 +102,11 @@ def _apply_payers(gift, payers):
         try:
             uid = int(uid_str)
             amount = Decimal(str(amount_str).replace(",", ".")) if amount_str else None
-            res, created = Reservation.objects.get_or_create(gift=gift, reserver_id=uid)
+            res, _ = Reservation.objects.get_or_create(gift=gift, reserver_id=uid)
             res.amount_paid = amount
             res.save()
         except (ValueError, InvalidOperation):
-            return JsonResponse({"success": False, "error": _("Invalid amount format.")}, status=400)
+            return JsonResponse({"success": False, "error": INVALID_AMOUNT_FORMAT}, status=400)
     return None
 
 
@@ -417,7 +418,7 @@ def reserve_gift(request: HttpRequest, gift_id: int):
     gift.group_reserved_on = group
     gift.save()
 
-    reservations = Reservation.objects.filter(gift=gift).order_by("id")
+    reservations = Reservation.objects.filter(gift=gift).select_related("reserver").order_by("id")
     participant_ids = {r.reserver.id for r in reservations}
     return _render_reservation_modal(request, gift, group_id, reservations, extra_exclude_ids=participant_ids)
 
@@ -448,7 +449,7 @@ def modify_reservation(request: HttpRequest, gift_id: int):
         reservation.exclusivity = True
         reservation.save()
 
-    reservations = Reservation.objects.filter(gift=gift).order_by("id")
+    reservations = Reservation.objects.filter(gift=gift).select_related("reserver").order_by("id")
     return _render_reservation_modal(request, gift, data.get("group_id"), reservations)
 
 
@@ -474,7 +475,7 @@ def delete_reservation(request, gift_id):
 
     Reservation.objects.filter(gift=gift, reserver=reservation_user_to_delete).delete()
 
-    reservations = Reservation.objects.filter(gift=gift).order_by("id")
+    reservations = Reservation.objects.filter(gift=gift).select_related("reserver").order_by("id")
     return _render_reservation_modal(request, gift, data.get("group_id"), reservations)
 
 
@@ -521,7 +522,7 @@ def offer_gift(request, gift_id):
         try:
             gift.actual_cost = Decimal(str(actual_cost_str).replace(",", "."))
         except (InvalidOperation, ValueError):
-            return JsonResponse({"success": False, "error": _("Invalid amount format.")}, status=400)
+            return JsonResponse({"success": False, "error": INVALID_AMOUNT_FORMAT}, status=400)
 
     err = _apply_payers(gift, data.get("payers", {}))
     if err:
@@ -662,7 +663,7 @@ def edit_offered_amounts(request, gift_id):
         try:
             gift.actual_cost = Decimal(str(actual_cost_str).replace(",", "."))
         except (InvalidOperation, ValueError):
-            return JsonResponse({"success": False, "error": _("Invalid amount format.")}, status=400)
+            return JsonResponse({"success": False, "error": INVALID_AMOUNT_FORMAT}, status=400)
     else:
         gift.actual_cost = None
 
