@@ -2,44 +2,94 @@
 {% load i18n %}
 
 {% block group_main_content %}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="h4 fw-bold text-primary mb-0">
-            {% if is_owner %} 🎁 {% trans "My list" %} {% else %} 🎁 {% trans "List of" %} {{ user.nickname|capfirst }} {% endif %}
-        </h2>
-        <div class="d-flex gap-2">
+
+    {# ── Page header ── #}
+    <div class="nc-list-page-header">
+        <div class="d-flex align-items-center gap-3">
+            <div class="nc-list-page-avatar"
+                 style="background:{% if is_owner %}var(--nc-accent){% else %}var(--nc-sage){% endif %}">
+                {{ user.nickname|first|upper }}
+            </div>
+            <div>
+                {% if from_group_id and group %}
+                    <div class="nc-list-page-supertitle">{{ group.name }}</div>
+                {% endif %}
+                <h1 class="nc-list-page-title">
+                    {% if is_owner %}
+                        <em style="color:var(--nc-accent)">{% trans "My" %}</em> {% trans "list" %}
+                    {% else %}
+                        {% trans "List of" %} <em style="color:var(--nc-sage)">{{ user.nickname|capfirst }}</em>
+                    {% endif %}
+                </h1>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
             {% if not is_owner %}
                 <form method="post" action="{% url 'toggle_subscription' user.id %}">
                     {% csrf_token %}
-                    <button type="submit" class="btn {% if is_subscribed %}btn-danger{% else %}btn-outline-primary{% endif %} btn-sm rounded-pill px-3">
-                        {% if is_subscribed %}<i class="bi bi-bell-slash"></i>{% else %}<i class="bi bi-bell"></i>{% endif %}
+                    <button type="submit" class="nc-btn nc-btn--outline nc-btn--sm">
+                        {% if is_subscribed %}
+                            <i class="bi bi-bell-slash" style="font-size:14px"></i>
+                        {% else %}
+                            <i class="bi bi-bell" style="font-size:14px"></i>
+                        {% endif %}
                     </button>
                 </form>
             {% endif %}
-            <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#addGiftModal">
-                <i class="bi bi-plus-lg me-1"></i> {% trans "Add" %}
+            <button class="nc-btn nc-btn--primary nc-btn--sm"
+                    data-bs-toggle="modal" data-bs-target="#addGiftModal">
+                <i class="bi bi-plus-lg"></i> {% trans "Add" %}
             </button>
         </div>
     </div>
 
-    {% if gifts %}
-        <div class="card border-0 shadow-sm rounded-4 mb-5">
-            <div class="card-body p-4">
-                <h3 class="h6 fw-bold text-muted mb-3">{% trans "Wishes" %}</h3>
-                {% include "gifts/includes/_gift_table.html" with items=gifts modal_prefix="editGiftModal" show_creator=False show_action=is_owner hide_status=is_owner %}
+    {# ── Wishes section ── #}
+    <div class="nc-wish-card">
+        <div class="nc-wish-card__header">
+            <div class="d-flex align-items-center gap-2">
+                <span class="nc-wish-badge nc-wish-badge--accent">
+                    <i class="bi bi-gift" style="font-size:12px"></i> {% trans "Wishes" %}
+                </span>
+                {% if gifts %}
+                    <span class="nc-wish-count">{{ gifts|length }}</span>
+                {% endif %}
             </div>
         </div>
-    {% else %}
-        <div class="text-center py-5 mb-5 bg-body-tertiary rounded-5">
-            <p class="text-muted mb-0">{% trans "No wishes yet." %}</p>
-        </div>
-    {% endif %}
 
-    {% if surprises %}
-        <div class="card border-0 shadow-sm rounded-4 bg-primary-container border-start border-primary border-4">
-            <div class="card-body p-4">
-                <h3 class="h6 fw-bold text-primary mb-3">✨ {% trans "Surprises from others" %}</h3>
-                {% include "gifts/includes/_gift_table.html" with items=surprises modal_prefix="editSurpriseModal" show_creator=True show_action=True %}
+        {% if gifts %}
+            {% for item in gifts %}
+                {% include "gifts/includes/_wish_row.html" with icon_class="accent" edit_modal_id="editGiftModal" %}
+                {% if not forloop.last %}<div class="nc-wish-divider"></div>{% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="nc-wish-empty">
+                <i class="bi bi-gift" style="font-size:36px; color:var(--nc-border)"></i>
+                <div class="nc-wish-empty-title">{% trans "No wishes yet." %}</div>
+                <div class="nc-wish-empty-desc">
+                    {% if is_owner %}{% trans "Add your first ideas!" %}{% else %}{{ user.nickname|capfirst }} {% trans "has no list yet." %}{% endif %}
+                </div>
             </div>
+        {% endif %}
+    </div>
+
+    {# ── Surprises section ── #}
+    {% if surprises %}
+        <div class="nc-wish-card">
+            <div class="nc-wish-card__header">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="nc-wish-badge nc-wish-badge--gold">
+                        <i class="bi bi-stars" style="font-size:12px"></i> {% trans "Surprises from others" %}
+                    </span>
+                    <span class="nc-wish-count">{{ surprises|length }}</span>
+                </div>
+                <span class="nc-surprises-label">{% trans "Invisible for" %} {{ user.nickname|capfirst }}</span>
+            </div>
+
+            {% for item in surprises %}
+                {% include "gifts/includes/_wish_row.html" with icon_class="gold" is_surprise=1 edit_modal_id="editSurpriseModal" %}
+                {% if not forloop.last %}<div class="nc-wish-divider"></div>{% endif %}
+            {% endfor %}
         </div>
     {% endif %}
 
@@ -48,7 +98,6 @@
 
 {% block extra_body %}
     {% trans "An error occurred." as js_err_msg %}
-    <!-- Shared offer modal (used by both direct button and in-modal button) -->
     <div class="modal fade" id="offerModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 rounded-5 shadow-lg" id="offerModalContent"></div>
@@ -60,7 +109,6 @@
         function setupOfferModal(containerSelector) {
             const container = document.querySelector(containerSelector);
             if (!container) return;
-
             container.querySelector('#offerTotalCost')?.addEventListener('input', function () {
                 updateOfferTotals(container);
             });
@@ -140,10 +188,16 @@
         }
 
         async function confirmMarkReceived(url, groupId) {
+            const groupSelect = document.getElementById('markReceivedGroupSelect');
+            if (groupSelect && groupSelect.value === '') {
+                groupSelect.classList.add('is-invalid');
+                return;
+            }
+            const effectiveGroupId = groupSelect ? groupSelect.value : (groupId || null);
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
-                body: JSON.stringify({confirm: true, group_id: groupId || null})
+                body: JSON.stringify({confirm: true, group_id: effectiveGroupId})
             });
             const data = await response.json();
             if (data.success) {
@@ -153,6 +207,21 @@
                 if (modalBody) modalBody.innerHTML = '<div class="alert alert-danger rounded-4 border-0 m-0">' + (data.error || errMsg) + '</div>';
             }
         }
+    </script>
+
+    <script>
+        /* Reinitialise dropdowns with fixed Popper strategy so they escape overflow containers */
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.nc-wish-more-btn[data-bs-toggle="dropdown"]').forEach(function (el) {
+                const existing = bootstrap.Dropdown.getInstance(el);
+                if (existing) existing.dispose();
+
+                const dropdown = bootstrap.Dropdown.getOrCreateInstance(el, {
+                    popperConfig: { strategy: 'fixed' }
+                });
+                dropdown.update();
+            });
+        });
     </script>
 
     {% include "gifts/includes/_gift_modals_logic.html" %}

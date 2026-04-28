@@ -3,221 +3,220 @@
 
 {% block title %}{{ group.name }}{% endblock %}
 
+{% block main_class %}p-0{% endblock %}
+
 {% block content %}
-    <div class="container-fluid py-4">
-        <div class="row g-4">
+<div class="nc-group-layout">
 
-            <aside class="col-md-3 col-lg-2">
-                <div class="sticky-top" style="top: 20px;">
-                    <div class="d-flex align-items-center mb-3">
-                        <a href="{% url 'dashboard' %}" class="btn btn-sm btn-secondary rounded-circle shadow-sm me-2">
-                            <i class="bi bi-chevron-left"></i>
-                        </a>
-                        <h3 class="h6 fw-bold text-uppercase text-muted mb-0">{% trans "Members" %}</h3>
-                    </div>
+    <!-- ── Sidebar ───────────────────────────────────────────── -->
+    <aside class="nc-sidebar">
+        <div class="nc-sidebar__label">{% trans "Members" %}</div>
 
-                    <div class="list-group list-group-flush shadow-sm rounded-4 overflow-hidden border">
-                        <a href="{% url 'view_list' request.user.id %}?from_group={{ group.id }}"
-                           class="list-group-item list-group-item-action border-0 py-3 d-flex align-items-center {% if request.user.id == user_being_viewed.id %}active bg-primary-subtle text-primary border-start border-4 border-primary{% endif %}">
-                            {% if request.user.avatar %}
-                                <img src="{{ request.user.avatar.url }}" alt="{{ request.user.nickname }}"
-                                     class="me-2 flex-shrink-0"
-                                     style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover;">
-                            {% else %}
-                                <div class="avatar-circle-small me-2 bg-primary"
-                                     style="width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; font-size: 1rem;">
-                                    {{ request.user.nickname|first|upper }}
-                                </div>
-                            {% endif %}
-                            <span class="small fw-bold">{% trans "My list" %}</span>
-                            <i class="bi bi-pin-angle-fill text-primary ms-auto small"></i>
-                        </a>
-
-                        {% if group.show_history %}
-                        <a href="{% url 'history_group' group.id %}"
-                           class="list-group-item list-group-item-action border-0 py-3 d-flex align-items-center {% if viewing_history %}active bg-primary-subtle text-primary border-start border-4 border-primary{% else %}text-muted{% endif %}">
-                            <div class="me-2 flex-shrink-0"
-                                 style="width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--bs-secondary-bg);">
-                                <i class="bi bi-clock-history"></i>
-                            </div>
-                            <span class="small fw-medium">{% trans "History" %}</span>
-                        </a>
-                    {% endif %}
-
-                        {% if group.show_balance %}
-                        <a href="{% url 'balance_group' group.id %}"
-                           class="list-group-item list-group-item-action border-0 py-3 d-flex align-items-center {% if viewing_balance %}active bg-primary-subtle text-primary border-start border-4 border-primary{% else %}text-muted{% endif %}">
-                            <div class="me-2 flex-shrink-0"
-                                 style="width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--bs-secondary-bg);">
-                                <i class="bi bi-calculator"></i>
-                            </div>
-                            <span class="small fw-medium">{% trans "Balance" %}</span>
-                        </a>
-                        {% endif %}
-
-                    <div class="bg-body-tertiary py-1 border-top border-bottom"></div>
-
-                        {% for member in group.members.all %}
-                            {% if member != request.user %}
-                                <a href="{% url 'view_list' member.id %}?from_group={{ group.id }}"
-                                   class="list-group-item list-group-item-action border-0 py-3 d-flex align-items-center {% if member.id == user_being_viewed.id %}active bg-primary-subtle text-primary border-start border-4 border-primary{% endif %}">
-                                    {% if member.avatar %}
-                                        <img src="{{ member.avatar.url }}" alt="{{ member.nickname }}"
-                                             class="me-2 flex-shrink-0"
-                                             style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover;">
-                                    {% else %}
-                                        <div class="avatar-circle-small me-2 bg-secondary"
-                                             style="width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; font-size: 1rem;">
-                                            {{ member.nickname|first|upper }}
-                                        </div>
-                                    {% endif %}
-                                    <span class="small fw-medium text-truncate">{{ member.nickname|capfirst }}</span>
-                                </a>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
+        <!-- My list -->
+        <a href="{% url 'view_list' request.user.id %}?from_group={{ group.id }}"
+           class="nc-member-item {% if request.user.id == user_being_viewed.id %}nc-member-item--active{% endif %}">
+            {% if request.user.avatar %}
+                <div class="nc-member-avatar">
+                    <img src="{{ request.user.avatar.url }}" alt="{{ request.user.nickname }}">
                 </div>
-            </aside>
+            {% else %}
+                <div class="nc-member-avatar" style="background: var(--nc-accent)">
+                    {{ request.user.nickname|first|upper }}
+                </div>
+            {% endif %}
+            <span class="nc-member-item__name">{% trans "My list" %}</span>
+            {% if request.user.id == user_being_viewed.id %}
+                <i class="bi bi-pencil" style="font-size:11px; color:var(--nc-accent); flex-shrink:0"></i>
+            {% endif %}
+        </a>
 
-            <main class="col-md-9 col-lg-10">
-                <div class="card border-0 shadow-sm rounded-5 mb-4">
-                    <div class="card-body p-4">
-                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-                            <div>
-                                <h1 class="h3 fw-bold mb-1 text-primary">{{ group.name }}</h1>
-                                <div class="d-flex align-items-center gap-2">
-                                    <button type="button"
-                                            class="badge bg-body-tertiary text-primary border px-3 py-2 rounded-pill font-monospace"
-                                            onclick="copyToClipboard('{{ group.group_token }}', this)"
-                                            title="{% trans 'Click to copy token' %}"
-                                            aria-label="{% trans 'Group token:' %} {{ group.group_token }}. {% trans 'Click to copy' %}."
-                                            style="border-style: solid !important; font-size: inherit; line-height: inherit;">
-                                        <i class="bi bi-hash me-1" aria-hidden="true"></i>
-                                        <span class="token-text">{{ group.group_token }}</span>
-                                    </button>
+        <!-- History -->
+        {% if group.show_history %}
+            <a href="{% url 'history_group' group.id %}"
+               class="nc-member-item {% if viewing_history %}nc-member-item--active{% endif %}">
+                <div class="nc-member-avatar" style="background: var(--nc-bg-sub); color: var(--nc-text-muted)">
+                    <i class="bi bi-clock-history" style="font-size:13px"></i>
+                </div>
+                <span class="nc-member-item__name">{% trans "History" %}</span>
+            </a>
+        {% endif %}
 
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-primary rounded-pill px-3"
-                                            onclick="copyInviteLink('{{ group.group_token }}', this)">
-                                        <i class="bi bi-person-plus-fill me-1" aria-hidden="true"></i>
-                                        <span class="btn-text">{% trans "Invite link" %}</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="dropdown">
-                                    <button class="btn bg-body-tertiary rounded-circle shadow-sm" type="button"
-                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="bi bi-three-dots-vertical"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow rounded-4 p-2">
-                                        <li>
-                                            <button class="dropdown-item rounded-3 py-2" data-bs-toggle="modal"
-                                                    data-bs-target="#editGroupModal">
-                                                <i class="bi bi-pencil me-2 text-primary"></i> {% trans "Edit group" %}
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <form method="post" action="{% url 'regenerate_group_token' group.id %}"
-                                                  onsubmit="return confirm('{% trans "Regenerate code?" %}')">
-                                                {% csrf_token %}
-                                                <button type="submit" class="dropdown-item rounded-3 py-2 text-warning">
-                                                    <i class="bi bi-arrow-clockwise me-2"></i> {% trans "Reset token" %}
-                                                </button>
-                                            </form>
-                                        </li>
-                                        <li>
-                                            <hr class="dropdown-divider opacity-50">
-                                        </li>
-                                        <li>
-                                            <button class="dropdown-item rounded-3 py-2 text-danger"
-                                                    data-bs-toggle="modal" data-bs-target="#leaveGroupModal">
-                                                <i class="bi bi-box-arrow-right me-2"></i> {% trans "Leave group" %}
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
+        <!-- Balance -->
+        {% if group.show_balance %}
+            <a href="{% url 'balance_group' group.id %}"
+               class="nc-member-item {% if viewing_balance %}nc-member-item--active{% endif %}">
+                <div class="nc-member-avatar" style="background: var(--nc-bg-sub); color: var(--nc-text-muted)">
+                    <i class="bi bi-calculator" style="font-size:13px"></i>
+                </div>
+                <span class="nc-member-item__name">{% trans "Balance" %}</span>
+            </a>
+        {% endif %}
+
+        <div class="nc-sidebar__divider"></div>
+
+        <!-- Other members -->
+        {% for member in group.members.all %}
+            {% if member != request.user %}
+                {% cycle "nc-color-m1" "nc-color-m2" "nc-color-m3" "nc-color-m4" "nc-color-m5" "nc-color-m6" "nc-color-m7" "nc-color-m8" as member_color silent %}
+                <a href="{% url 'view_list' member.id %}?from_group={{ group.id }}"
+                   class="nc-member-item {% if member.id == user_being_viewed.id %}nc-member-item--active{% endif %}">
+                    {% if member.avatar %}
+                        <div class="nc-member-avatar">
+                            <img src="{{ member.avatar.url }}" alt="{{ member.nickname }}">
                         </div>
-                    </div>
-                </div>
-
-                {% block group_main_content %}
-                    {% if not user_being_viewed %}
-                        <div class="card border-0 shadow-sm rounded-5 overflow-hidden mb-4">
-                            <div class="row g-0">
-                                {% if group.image %}
-                                    <div class="col-md-5">
-                                        <img src="{{ group.image.url }}" class="img-fluid h-100"
-                                             style="object-fit: cover; min-height: 250px;" alt="{{ group.name }}">
-                                    </div>
-                                {% endif %}
-
-                                <div class="col-md-{% if group.image %}7{% else %}12{% endif %}">
-                                    <div class="card-body p-4 p-lg-5">
-                                        <h2 class="display-6 fw-bold mb-3">{{ group.name }}</h2>
-
-                                        <div class="text-muted mb-4 lead">
-                                            {% if group.description %}
-                                                {{ group.description|linebreaks }}
-                                            {% else %}
-                                                <p>{% trans "Welcome! Select a member from the sidebar to discover their wishes and start gifting." %}</p>
-                                            {% endif %}
-                                        </div>
-
-                                        <hr class="my-4 opacity-25">
-
-                                        <div class="row g-3">
-                                            <div class="col-6 col-sm-4">
-                                                <div class="small text-muted">{% trans "Members" %}</div>
-                                                <div class="fw-bold fs-5">{{ group.members.count }}</div>
-                                            </div>
-                                            <div class="col-6 col-sm-4">
-                                                <div class="small text-muted">{% trans "Created" %}</div>
-                                                <div class="fw-bold fs-5">{{ group.created_at|date:"M Y" }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                    {% else %}
+                        <div class="nc-member-avatar {{ member_color }}">
+                            {{ member.nickname|first|upper }}
                         </div>
                     {% endif %}
-                {% endblock %}
-            </main>
+                    <span class="nc-member-item__name">{{ member.nickname|capfirst }}</span>
+                </a>
+            {% endif %}
+        {% endfor %}
+    </aside>
+
+    <!-- ── Main ──────────────────────────────────────────────── -->
+    <div class="nc-group-main">
+
+        <!-- Group header -->
+        <div class="nc-group-header">
+            <div>
+                <h1 class="nc-group-name">{{ group.name }}</h1>
+                <div class="nc-group-meta">
+
+                    <!-- Code chip (click to copy) -->
+                    <button type="button" class="nc-code-chip"
+                            onclick="copyToClipboard('{{ group.group_token }}', this)"
+                            title="{% trans 'Click to copy token' %}"
+                            aria-label="{% trans 'Group token:' %} {{ group.group_token }}. {% trans 'Click to copy' %}.">
+                        <i class="bi bi-hash" aria-hidden="true"></i>
+                        <span class="token-text">{{ group.group_token }}</span>
+                    </button>
+
+                    <!-- Invite link button -->
+                    <button type="button"
+                            class="nc-btn nc-btn--ghost nc-btn--sm"
+                            onclick="copyInviteLink('{{ group.group_token }}', this)">
+                        <i class="bi bi-person-plus-fill" aria-hidden="true"></i>
+                        <span class="btn-text">{% trans "Invite link" %}</span>
+                    </button>
+
+                </div>
+            </div>
+
+            <!-- Options dropdown -->
+            <div class="dropdown">
+                <button class="btn" type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                        style="width:36px; height:36px; border-radius:50%; background:var(--nc-bg-sub); border:1px solid var(--nc-border); display:flex; align-items:center; justify-content:center; padding:0">
+                    <i class="bi bi-three-dots-vertical" style="color:var(--nc-text-sub)"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2">
+                    <li>
+                        <button class="dropdown-item py-2" data-bs-toggle="modal" data-bs-target="#editGroupModal">
+                            <i class="bi bi-pencil me-2" style="color:var(--nc-accent)"></i> {% trans "Edit group" %}
+                        </button>
+                    </li>
+                    <li>
+                        <form method="post" action="{% url 'regenerate_group_token' group.id %}"
+                              onsubmit="return confirm('{% trans "Regenerate code?" %}')">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item py-2 text-warning">
+                                <i class="bi bi-arrow-clockwise me-2"></i> {% trans "Reset token" %}
+                            </button>
+                        </form>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <button class="dropdown-item py-2 text-danger"
+                                data-bs-toggle="modal" data-bs-target="#leaveGroupModal">
+                            <i class="bi bi-box-arrow-right me-2"></i> {% trans "Leave group" %}
+                        </button>
+                    </li>
+                </ul>
+            </div>
         </div>
-    </div>
 
-    {% include "groups/includes/_group_modals.html" %}
+        <!-- Content area -->
+        <div class="nc-group-content">
+            {% block group_main_content %}
+                {% if not user_being_viewed %}
+                    <!-- Group overview -->
+                    <div class="nc-group-overview">
+                        {% if group.image %}
+                            <img src="{{ group.image.url }}" class="nc-group-overview__cover" alt="{{ group.name }}">
+                        {% endif %}
+                        <div class="nc-group-overview__body">
+                            <h2 class="nc-group-overview__title">{{ group.name }}</h2>
+                            <div class="nc-group-overview__desc">
+                                {% if group.description %}
+                                    {{ group.description|linebreaks }}
+                                {% else %}
+                                    <p>{% trans "Welcome! Select a member from the sidebar to discover their wishes and start gifting." %}</p>
+                                {% endif %}
+                            </div>
+                            <hr style="border-color: var(--nc-border); opacity: 1; margin: 20px 0">
+                            <div class="nc-group-stats">
+                                <div>
+                                    <div class="nc-stat__label">{% trans "Members" %}</div>
+                                    <div class="nc-stat__value">{{ group.members.count }}</div>
+                                </div>
+                                <div>
+                                    <div class="nc-stat__label">{% trans "Created" %}</div>
+                                    <div class="nc-stat__value">{{ group.created_at|date:"M Y" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endblock %}
+        </div>
+
+    </div>
+</div>
+
+{% include "groups/includes/_group_modals.html" %}
 {% endblock %}
 
 {% block extra_js %}
     <script>
         function copyToClipboard(text, element) {
             navigator.clipboard.writeText(text).then(() => {
-                const originalHTML = element.innerHTML;
-
-                if (element.tagName === 'BUTTON') {
+                const original = element.innerHTML;
+                if (element.classList.contains('nc-code-chip')) {
+                    element.innerHTML = '<i class="bi bi-check2"></i> {% trans "Copied!" %}';
+                    element.style.color = 'var(--nc-sage)';
+                    element.style.borderColor = 'var(--nc-sage)';
+                } else {
                     element.classList.replace('btn-outline-primary', 'btn-success');
                     element.innerHTML = '<i class="bi bi-check2 me-1"></i> {% trans "Copied!" %}';
-                } else {
-                    element.classList.replace('text-primary', 'text-success');
-                    element.innerHTML = '<i class="bi bi-check2 me-1"></i> {% trans "Copied!" %}';
                 }
-
                 setTimeout(() => {
-                    if (element.tagName === 'BUTTON') {
-                        element.classList.replace('btn-success', 'btn-outline-primary');
+                    if (element.classList.contains('nc-code-chip')) {
+                        element.style.color = '';
+                        element.style.borderColor = '';
                     } else {
-                        element.classList.replace('text-success', 'text-primary');
+                        element.classList.replace('btn-success', 'btn-outline-primary');
                     }
-                    element.innerHTML = originalHTML;
+                    element.innerHTML = original;
                 }, 2000);
             });
         }
 
         function copyInviteLink(token, btn) {
-            const inviteUrl = globalThis.location.origin + "/group/join/" + token + "/";
-            copyToClipboard(inviteUrl, btn);
+            const url = globalThis.location.origin + "/group/join/" + token + "/";
+            const original = btn.innerHTML;
+            navigator.clipboard.writeText(url).then(() => {
+                btn.innerHTML = '<i class="bi bi-check2"></i> {% trans "Copied!" %}';
+                btn.style.background = 'var(--nc-sage-light)';
+                btn.style.borderColor = 'var(--nc-sage)';
+                btn.style.color = 'var(--nc-sage)';
+                setTimeout(() => {
+                    btn.innerHTML = original;
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                }, 2000);
+            });
         }
     </script>
 {% endblock %}

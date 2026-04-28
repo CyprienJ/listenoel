@@ -4,91 +4,115 @@
 {% block title %}{% trans "Dashboard" %}{% endblock %}
 
 {% block content %}
-    <div class="container py-4">
-        <!-- Welcome message -->
-        <header class="text-center mb-5">
-            <h1 class="display-5 fw-bold text-primary">
-                <span id="emoji-trigger" class="cursor-pointer"
-                      title="{% trans 'Click me!' %}">{{ greeting_emoji }}</span>
-                {% trans "Hello" %}, {{ request.user.nickname|capfirst }} !
+<div class="nc-dashboard">
+
+    <!-- Page header -->
+    <header class="nc-dashboard__header">
+        <div>
+            <h1 class="nc-greeting">
+                <span id="emoji-trigger" class="cursor-pointer" title="{% trans 'Click me!' %}">{{ greeting_emoji }}</span>
+                {% trans "Hello" %}, <em>{{ request.user.nickname|capfirst }}</em> !
             </h1>
-            <p class="text-muted">{% trans "Ready to prepare wonderful surprises?" %}</p>
-        </header>
-
-        <div class="row g-4 justify-content-center">
-
-            <div class="col-md-5">
-                <div class="card h-100 border-0 shadow-sm rounded-5 auth-card text-center p-4">
-                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
-                        <div class="bg-primary-container p-3 rounded-circle mb-3">
-                            <i class="bi bi-gift-fill fs-1 text-primary"></i>
-                        </div>
-                        <h3 class="fw-bold h4 mb-3">{% trans "My list" %}</h3>
-                        <p class="small text-muted mb-4">{% trans "Manage your personal desires and wishes." %}</p>
-                        <a href="{% url 'view_list' request.user.id %}"
-                           class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm">
-                            {% trans "View my list" %}
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card: Others' lists -->
-            <div class="col-md-7">
-                <div class="card h-100 border-0 shadow-sm rounded-5 auth-card p-4">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center justify-content-between mb-4">
-                            <div class="d-flex align-items-center">
-                                <div class="bg-success-container p-2 rounded-3 me-3">
-                                    <i class="bi bi-people-fill text-success fs-4"></i>
-                                </div>
-                                <h3 class="h5 fw-bold mb-0">{% trans "My groups" %}</h3>
-                            </div>
-                            <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill"
-                                        data-bs-toggle="modal" data-bs-target="#createGroupModal">
-                                    <i class="bi bi-plus-lg"></i> {% trans "Create" %}
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill"
-                                        data-bs-toggle="modal" data-bs-target="#joinGroupModal">
-                                    <i class="bi bi-person-plus"></i> {% trans "Join" %}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="list-group list-group-flush rounded-4 overflow-hidden">
-                            {% for group in user_groups %}
-                                <a href="{% url 'group_detail' group.id %}"
-                                   class="list-group-item list-group-item-action border-0 py-3 d-flex align-items-center justify-content-between auth-input mb-2 rounded-4">
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar-circle me-3 bg-success">
-                                            {{ group.name|first|upper }}
-                                        </div>
-                                        <span class="fw-medium">{{ group.name }}</span>
-                                    </div>
-                                    <i class="bi bi-chevron-right text-muted"></i>
-                                </a>
-                            {% empty %}
-                                <div class="text-center py-4 text-muted">
-                                    <i class="bi bi-people fs-1 opacity-25 d-block mb-2"></i>
-                                    {% trans "You are not part of any group yet." %}
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            <p class="nc-subtitle">
+                {% if user_groups %}
+                    {% blocktrans count count=user_groups.count %}You are part of {{ count }} group{% plural %}You are part of {{ count }} groups{% endblocktrans %}
+                {% else %}
+                    {% trans "Join your first group to start sharing." %}
+                {% endif %}
+            </p>
         </div>
-    </div>
+        <div class="nc-dashboard__actions">
+            <button type="button" class="nc-btn nc-btn--ghost"
+                    data-bs-toggle="modal" data-bs-target="#joinGroupModal">
+                <i class="bi bi-person-plus" style="font-size:13px"></i>
+                {% trans "Join" %}
+            </button>
+            <button type="button" class="nc-btn nc-btn--primary"
+                    data-bs-toggle="modal" data-bs-target="#createGroupModal">
+                <i class="bi bi-plus-lg" style="font-size:13px"></i>
+                {% trans "Create" %}
+            </button>
+        </div>
+    </header>
+
+    <!-- My list banner -->
+    <a href="{% url 'view_list' request.user.id %}" class="nc-list-banner" style="text-decoration:none">
+        <div class="nc-list-banner__icon">🎁</div>
+        <div class="nc-list-banner__body">
+            <div class="nc-list-banner__title">{% trans "My gift list" %}</div>
+            <div class="nc-list-banner__sub">
+                {% blocktrans count count=request.user.gifts.count %}{{ count }} idea{% plural %}{{ count }} ideas{% endblocktrans %}
+                {% if user_groups %}
+                    · {% blocktrans count count=user_groups.count %}{{ count }} group{% plural %}{{ count }} groups{% endblocktrans %}
+                {% endif %}
+            </div>
+        </div>
+        <span class="nc-btn nc-btn--white nc-btn--sm">
+            <i class="bi bi-pencil" style="font-size:11px"></i>
+            {% trans "Edit" %}
+        </span>
+    </a>
+
+    <!-- Groups -->
+    {% if user_groups %}
+        <div class="nc-section-label">{% trans "My groups" %} · {{ user_groups.count }}</div>
+        <div class="nc-groups-grid">
+            {% for group in user_groups %}
+                {% cycle "nc-color-1" "nc-color-2" "nc-color-3" "nc-color-4" "nc-color-5" "nc-color-6" "nc-color-7" "nc-color-8" as group_color silent %}
+                <a href="{% url 'group_detail' group.id %}" class="nc-group-card">
+                    {% if group.image %}
+                        <div class="nc-group-avatar" style="background:none; border-radius:14px; overflow:hidden; padding:0">
+                            <img src="{{ group.image.url }}" alt="{{ group.name }}"
+                                 style="width:100%; height:100%; object-fit:cover; border-radius:14px">
+                        </div>
+                    {% else %}
+                        <div class="nc-group-avatar {{ group_color }}">
+                            {{ group.name|first|upper }}
+                        </div>
+                    {% endif %}
+                    <div class="nc-group-card__name">{{ group.name }}</div>
+                    <div class="nc-group-card__meta">{{ group.members.count }} {% trans "members" %}</div>
+                </a>
+            {% endfor %}
+
+            <!-- Join / Create card -->
+            <button type="button" class="nc-group-card--new"
+                    data-bs-toggle="modal" data-bs-target="#createGroupModal">
+                <i class="bi bi-plus-lg" style="font-size:18px"></i>
+                <span>{% trans "New" %}</span>
+            </button>
+        </div>
+
+    {% else %}
+        <!-- Empty state -->
+        <div class="nc-empty-state">
+            <span class="nc-empty-state__icon">👥</span>
+            <p class="nc-empty-state__title">{% trans "No groups yet" %}</p>
+            <p class="nc-empty-state__body">
+                {% trans "Create or join a group to start sharing your gift ideas." %}
+            </p>
+            <div class="nc-empty-state__actions">
+                <button type="button" class="nc-btn nc-btn--ghost"
+                        data-bs-toggle="modal" data-bs-target="#joinGroupModal">
+                    <i class="bi bi-person-plus"></i> {% trans "Join a group" %}
+                </button>
+                <button type="button" class="nc-btn nc-btn--primary"
+                        data-bs-toggle="modal" data-bs-target="#createGroupModal">
+                    <i class="bi bi-plus-lg"></i> {% trans "Create a group" %}
+                </button>
+            </div>
+        </div>
+    {% endif %}
+
+</div>
 {% endblock %}
 
 {% block extra_body %}
-    <!-- Modal Create Group -->
-    <div class="modal fade" id="createGroupModal" tabindex="-1" aria-labelledby="createGroupModalLabel"
-         aria-hidden="true">
+
+    <!-- Modal: Create Group -->
+    <div class="modal fade" id="createGroupModal" tabindex="-1" aria-labelledby="createGroupModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-5">
+            <div class="modal-content shadow-lg">
                 <div class="modal-header border-0 pb-0">
                     <h5 class="modal-title fw-bold" id="createGroupModalLabel">{% trans "Create a new group" %}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -97,109 +121,90 @@
                     {% csrf_token %}
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="id_name" class="form-label small fw-bold">{% trans "Group Name" %}</label>
-                            <input type="text" name="name" class="form-control rounded-pill border-1 p-3" id="id_name"
+                            <label for="id_name" class="form-label">{% trans "Group Name" %}</label>
+                            <input type="text" name="name" class="form-control rounded-pill p-3" id="id_name"
                                    required placeholder="ex: Famille Smith">
                         </div>
-                        <p class="text-muted small">
-                            <i class="bi bi-info-circle"></i>
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-info-circle me-1"></i>
                             {% trans "Once created, you will get a unique code to share." %}
                         </p>
                     </div>
                     <div class="modal-footer border-0 pt-0">
-                        <button type="submit"
-                                class="btn btn-primary w-100 rounded-pill py-3 fw-bold">{% trans "Create Group" %}</button>
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold">
+                            {% trans "Create Group" %}
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
+    <!-- Modal: Join Group -->
     <div class="modal fade" id="joinGroupModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content border-0 shadow-lg rounded-5">
-                            <div class="modal-header border-0 pb-0">
-                                <h5 class="modal-title fw-bold">{% trans "Join a group" %}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label for="group_token_input"
-                                           class="form-label small fw-bold">{% trans "Group Code" %}</label>
-                                    <input type="text"
-                                           id="group_token_input"
-                                           class="form-control rounded-pill border-1 p-3 text-center fw-bold"
-                                           placeholder="EX: A1B2C3D4"
-                                           maxlength="12">
-                                </div>
-                            </div>
-                            <div class="modal-footer border-0 pt-0">
-                                <button type="button" id="btnJoinConfirm"
-                                        class="btn btn-secondary w-100 rounded-pill py-3 fw-bold">
-                                    {% trans "See group" %}
-                                </button>
-                            </div>
-                        </div>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">{% trans "Join a group" %}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="group_token_input" class="form-label">{% trans "Group Code" %}</label>
+                        <input type="text" id="group_token_input"
+                               class="form-control rounded-pill p-3 text-center fw-bold"
+                               placeholder="EX: A1B2C3D4" maxlength="12">
                     </div>
                 </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" id="btnJoinConfirm"
+                            class="btn btn-primary w-100 rounded-pill py-3 fw-bold">
+                        {% trans "See group" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}
 
 {% block extra_js %}
     <script>
+        /* Emoji rain */
         document.getElementById('emoji-trigger').addEventListener('click', function () {
             const emojis = {{ rain_emojis|safe }};
-            const container = document.body;
-
             for (let i = 0; i < 30; i++) {
                 setTimeout(() => {
-                    const emoji = document.createElement('div');
-                    emoji.className = 'emoji-rain';
-                    emoji.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-
-                    // Position aléatoire horizontale
-                    emoji.style.left = Math.random() * 100 + 'vw';
-
-                    // Durée de chute aléatoire (entre 2 et 5 secondes)
-                    const duration = Math.random() * 3 + 2;
-                    emoji.style.animationDuration = duration + 's';
-
-                    // Taille aléatoire
-                    emoji.style.fontSize = (Math.random() * 1.5 + 1) + 'rem';
-
-                    container.appendChild(emoji);
-
-                    // Supprimer l'élément après l'animation
-                    setTimeout(() => {
-                        emoji.remove();
-                    }, duration * 1000);
-                }, i * 100); // Délai progressif pour chaque emoji
+                    const el = document.createElement('div');
+                    el.className = 'emoji-rain';
+                    el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                    el.style.left = Math.random() * 100 + 'vw';
+                    const dur = Math.random() * 3 + 2;
+                    el.style.animationDuration = dur + 's';
+                    el.style.fontSize = (Math.random() * 1.5 + 1) + 'rem';
+                    document.body.appendChild(el);
+                    setTimeout(() => el.remove(), dur * 1000);
+                }, i * 100);
             }
         });
 
+        /* Join group redirect */
         document.addEventListener('DOMContentLoaded', function () {
-    const confirmButton = document.getElementById('btnJoinConfirm');
-    const tokenInput = document.getElementById('group_token_input');
+            const btn   = document.getElementById('btnJoinConfirm');
+            const input = document.getElementById('group_token_input');
+            if (!btn || !input) return;
 
-    if (confirmButton && tokenInput) {
-        const redirectToGroup = () => {
-            const token = tokenInput.value.trim();
-            if (token) {
-                const baseUrl = "{% url 'join_group' 'TEMP_TOKEN' %}";
-                window.location.href = baseUrl.replace('TEMP_TOKEN', encodeURIComponent(token));
-            } else {
-                alert("{% trans 'Please enter a valid code.' %}");
-            }
-        };
-
-        confirmButton.addEventListener('click', redirectToGroup);
-
-        tokenInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                redirectToGroup();
-            }
+            const redirect = () => {
+                const token = input.value.trim();
+                if (token) {
+                    const base = "{% url 'join_group' 'TEMP_TOKEN' %}";
+                    window.location.href = base.replace('TEMP_TOKEN', encodeURIComponent(token));
+                } else {
+                    alert("{% trans 'Please enter a valid code.' %}");
+                }
+            };
+            btn.addEventListener('click', redirect);
+            input.addEventListener('keypress', e => { if (e.key === 'Enter') redirect(); });
         });
-    }
-});
     </script>
 {% endblock %}
