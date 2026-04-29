@@ -1,0 +1,574 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% if context_type == "profile" %}{% trans "Profile photo" %}{% else %}{% trans "Group photo" %}{% endif %} – Nos cadeaux{% endblock %}
+
+{% block main_class %}{% endblock %}
+
+{% block content %}
+<style>
+@keyframes pu-fadeUp { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:translateY(0) } }
+@keyframes pu-pop    { 0%{transform:scale(0.94)} 60%{transform:scale(1.03)} 100%{transform:scale(1)} }
+@keyframes pu-spin   { to { transform:rotate(360deg) } }
+
+.pu-fade-up { animation: pu-fadeUp 0.35s ease both; }
+.pu-pop     { animation: pu-pop 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+.pu-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: calc(100vh - 56px);
+  padding: 32px 16px 48px;
+}
+
+.pu-drop-zone {
+  border: 2px dashed var(--nc-border);
+  border-radius: 18px;
+  padding: 52px 32px;
+  text-align: center;
+  cursor: pointer;
+  background: var(--nc-white);
+  transition: border-color 0.15s, background 0.15s;
+  margin-bottom: 0;
+}
+.pu-drop-zone:hover,
+.pu-drop-zone.over {
+  border-color: var(--nc-accent);
+  background: var(--nc-accent-light);
+}
+
+.pu-crop-stage {
+  background: oklch(18% 0.01 60);
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  margin-bottom: 20px;
+}
+
+.pu-crop-container {
+  position: relative;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  flex-shrink: 0;
+}
+.pu-crop-container:active { cursor: grabbing; }
+
+.pu-crop-image {
+  position: absolute;
+  left: 50%; top: 50%;
+  max-width: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  transform-origin: center center;
+  pointer-events: none;
+}
+
+.pu-grid-overlay {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(oklch(100% 0 0 / 0.18) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(100% 0 0 / 0.18) 1px, transparent 1px);
+  background-size: 33.33% 33.33%;
+}
+
+.pu-hint-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: oklch(100% 0 0 / 0.12);
+  border-radius: 99px; padding: 4px 12px;
+  pointer-events: none;
+}
+
+.pu-zoom-box {
+  background: var(--nc-white);
+  border: 1px solid var(--nc-border);
+  border-radius: 14px;
+  padding: 18px 22px;
+  margin-bottom: 20px;
+}
+
+input.pu-range[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 4px; border-radius: 2px;
+  background: var(--nc-border); outline: none; cursor: pointer;
+  flex: 1;
+}
+input.pu-range[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--nc-accent); border: 2px solid white;
+  box-shadow: 0 1px 4px oklch(18% 0.01 60 / 0.2); cursor: grab;
+}
+input.pu-range[type=range]:active::-webkit-slider-thumb { cursor: grabbing; }
+
+.pu-preview-bubble {
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  border: 2.5px solid white;
+  box-shadow: 0 2px 12px oklch(18% 0.01 60 / 0.14);
+}
+.pu-preview-bubble img {
+  position: absolute; left: 50%; top: 50%;
+  max-width: none; user-select: none; pointer-events: none;
+  transform-origin: center center;
+}
+
+.pu-spinner {
+  display: inline-block; width: 14px; height: 14px;
+  border-radius: 50%; border: 2px solid oklch(88% 0.09 15);
+  border-top-color: transparent;
+  animation: pu-spin 0.7s linear infinite;
+  vertical-align: middle; margin-right: 4px;
+}
+
+.pu-label {
+  font-size: 11px; font-weight: 600; color: var(--nc-text-muted);
+  letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;
+}
+.pu-title {
+  font-family: 'Lora', Georgia, serif; font-weight: 500; color: var(--nc-text);
+  letter-spacing: -0.03em; margin: 0 0 6px;
+}
+.pu-subtitle { font-size: 14px; color: var(--nc-text-muted); margin: 0; }
+
+.pu-back-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--nc-text-muted); font-size: 13px; text-decoration: none;
+  padding: 4px 8px; border-radius: 6px; transition: background 0.12s;
+  margin-bottom: 28px;
+}
+.pu-back-link:hover { background: var(--nc-bg-sub); color: var(--nc-text-muted); }
+
+.pu-actions-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+}
+
+.pu-done-card {
+  background: var(--nc-white); border: 1px solid var(--nc-border);
+  border-radius: 20px; padding: 44px 36px;
+  box-shadow: 0 4px 32px oklch(18% 0.01 60 / 0.07);
+}
+</style>
+
+<div class="pu-page">
+
+  {# ── STEP 1: UPLOAD ── #}
+  <div id="step-upload" class="pu-fade-up" style="width:100%; max-width:540px;">
+
+    <a href="{{ back_url }}" class="pu-back-link">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      {% if context_type == "profile" %}{% trans "My Profile" %}{% else %}{{ group.name }}{% endif %}
+    </a>
+
+    <div style="text-align:center; margin-bottom:28px;">
+      <div class="pu-label">
+        {% if context_type == "profile" %}{% trans "Profile photo" %}{% else %}{% trans "Group photo" %}{% endif %}
+      </div>
+      <h1 class="pu-title" style="font-size:26px;">{% trans "Choose a photo" %}</h1>
+      <p class="pu-subtitle">
+        {% if context_type == "profile" %}
+          {% trans "Your avatar visible to other members." %}
+        {% else %}
+          {% trans "The image that represents your group." %}
+        {% endif %}
+      </p>
+    </div>
+
+    <div id="drop-zone" class="pu-drop-zone">
+      <div id="drop-icon" style="width:56px;height:56px;border-radius:50%;background:var(--nc-bg-sub);border:1.5px solid var(--nc-border);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;transition:all 0.15s;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--nc-text-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+          <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+        </svg>
+      </div>
+      <div id="drop-label" style="font-size:15px;font-weight:600;color:var(--nc-text);margin-bottom:4px;">
+        {% trans "Drag and drop an image" %}
+      </div>
+      <div style="font-size:13px;color:var(--nc-text-muted);">
+        {% trans "or" %} <span style="color:var(--nc-accent);font-weight:500;">{% trans "browse your files" %}</span>
+      </div>
+      <div style="font-size:11px;color:var(--nc-text-muted);margin-top:10px;opacity:0.7;">
+        JPG, PNG, WEBP — {% trans "max 10 MB" %}
+      </div>
+    </div>
+    <input type="file" id="file-input" accept="image/*" style="display:none;">
+
+  </div>
+
+  {# ── STEP 2: CROP ── #}
+  <div id="step-crop" style="display:none; width:100%; max-width:620px;">
+
+    <div style="text-align:center; margin-bottom:24px;">
+      <div class="pu-label">
+        {% if context_type == "profile" %}{% trans "Profile photo" %}{% else %}{% trans "Group photo" %}{% endif %}
+      </div>
+      <h1 class="pu-title" style="font-size:24px;">{% trans "Frame your photo" %}</h1>
+      <p class="pu-subtitle" style="font-size:13px;">
+        {% trans "Drag to reposition · use the slider to zoom" %}
+      </p>
+    </div>
+
+    <div class="pu-crop-stage">
+      <div style="position:absolute;top:12px;left:0;right:0;display:flex;justify-content:center;">
+        <div class="pu-hint-pill">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="oklch(80% 0 0)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/>
+            <polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/>
+            <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
+          </svg>
+          <span style="font-size:11px;color:oklch(80% 0 0);font-weight:500;">{% trans "Drag the image" %}</span>
+        </div>
+      </div>
+      <div id="crop-container" class="pu-crop-container">
+        <img id="crop-image" class="pu-crop-image" draggable="false" alt="">
+        <div class="pu-grid-overlay"></div>
+      </div>
+    </div>
+
+    <div class="pu-zoom-box">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--nc-text-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/>
+        </svg>
+        <input type="range" id="zoom-range" class="pu-range" min="0.1" max="5" step="any" value="1">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--nc-text-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+        </svg>
+        <span id="zoom-display" style="font-size:12px;font-weight:600;color:var(--nc-accent);min-width:36px;text-align:right;flex-shrink:0;">100%</span>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:flex-end;">
+        <button id="btn-reset" style="display:flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;font-size:12px;color:var(--nc-text-muted);font-family:'DM Sans',sans-serif;padding:0;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
+          </svg>
+          {% trans "Reset" %}
+        </button>
+      </div>
+    </div>
+
+    <div class="pu-actions-row">
+      <div>
+        <div class="pu-label">{% trans "Preview" %}</div>
+        <div style="display:flex;align-items:flex-end;gap:10px;">
+          <div>
+            <div class="pu-preview-bubble" data-size="60" style="width:60px;height:60px;"></div>
+            <div style="font-size:10px;color:var(--nc-text-muted);text-align:center;margin-top:4px;">{% trans "Large" %}</div>
+          </div>
+          <div>
+            <div class="pu-preview-bubble" data-size="40" style="width:40px;height:40px;"></div>
+            <div style="font-size:10px;color:var(--nc-text-muted);text-align:center;margin-top:4px;">{% trans "Medium" %}</div>
+          </div>
+          <div>
+            <div class="pu-preview-bubble" data-size="26" style="width:26px;height:26px;"></div>
+            <div style="font-size:10px;color:var(--nc-text-muted);text-align:center;margin-top:4px;">{% trans "Small" %}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button id="btn-back" class="nc-btn nc-btn--ghost" style="border-radius:99px;">
+          {% trans "Choose another photo" %}
+        </button>
+        <button id="btn-save" class="nc-btn nc-btn--primary" style="border-radius:99px;min-width:130px;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          {% trans "Save" %}
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  {# ── STEP 3: DONE ── #}
+  <div id="step-done" style="display:none; max-width:420px; width:100%; text-align:center;">
+    <div class="pu-pop pu-done-card">
+      <div style="display:flex;justify-content:center;margin-bottom:24px;">
+        <div style="position:relative;">
+          <div id="done-preview" class="pu-preview-bubble" style="width:96px;height:96px;"></div>
+          <div style="position:absolute;bottom:-4px;right:-4px;width:26px;height:26px;border-radius:50%;background:oklch(55% 0.12 150);display:flex;align-items:center;justify-content:center;border:2px solid white;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="pu-title" style="font-size:22px;margin-bottom:8px;">{% trans "Photo saved!" %}</h2>
+      <p class="pu-subtitle" style="margin-bottom:28px;line-height:1.6;">
+        {% if context_type == "profile" %}
+          {% trans "Your profile photo has been updated and is now visible to other members." %}
+        {% else %}
+          {% trans "Your group photo has been updated and is now visible to all members." %}
+        {% endif %}
+      </p>
+
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <a href="{{ back_url }}" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-radius:12px;background:var(--nc-accent);color:white;font-size:13px;font-weight:600;text-decoration:none;font-family:'DM Sans',sans-serif;">
+          {% if context_type == "profile" %}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+            {% trans "View my profile" %}
+          {% else %}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            {% trans "View the group" %}
+          {% endif %}
+        </a>
+        <button id="btn-change-again" style="padding:11px;border-radius:12px;border:1px solid var(--nc-border);background:transparent;color:var(--nc-text-sub);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.12s;"
+          onFocus="this.style.background='var(--nc-bg-sub)'"
+          onmouseover="this.style.background='var(--nc-bg-sub)'" onmouseout="this.style.background='transparent'" onblur="this.style.background='transparent'"">
+          {% trans "Change again" %}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const IS_PROFILE = '{{ context_type }}' === 'profile';
+  const CROP_W  = IS_PROFILE ? 280 : 380;
+  const CROP_H  = IS_PROFILE ? 280 : 127;  // 127 ≈ 380/3, ratio 3:1
+  const EXPORT_W = IS_PROFILE ? 200 : 1200;
+  const EXPORT_H = IS_PROFILE ? 200 : 400;  // 1200×400 = ratio 3:1
+  const CSRF = '{{ csrf_token }}';
+
+  let zoom = 1, ox = 0, oy = 0;
+  let dragging = false, dsx = 0, dsy = 0, dox = 0, doy = 0;
+  let rafPending = false;
+
+  const stepUpload = document.getElementById('step-upload');
+  const stepCrop   = document.getElementById('step-crop');
+  const stepDone   = document.getElementById('step-done');
+  const fileInput  = document.getElementById('file-input');
+  const dropZone   = document.getElementById('drop-zone');
+  const cropImg    = document.getElementById('crop-image');
+  const cropCont   = document.getElementById('crop-container');
+  const zoomRange  = document.getElementById('zoom-range');
+  const zoomDisp   = document.getElementById('zoom-display');
+  const donePreview = document.getElementById('done-preview');
+
+  // ── Initial shape setup
+  cropCont.style.width        = CROP_W + 'px';
+  cropCont.style.height       = CROP_H + 'px';
+  cropCont.style.borderRadius = IS_PROFILE ? '50%' : '16px';
+  cropCont.style.boxShadow    = '0 0 0 9999px oklch(18% 0.01 60 / 0.55)';
+
+  document.querySelectorAll('.pu-preview-bubble[data-size]').forEach(el => {
+    const s = Number.parseInt(el.dataset.size);
+    if (IS_PROFILE) {
+      el.style.borderRadius = '50%';
+    } else {
+      el.style.height       = Math.round(s * CROP_H / CROP_W) + 'px';
+      el.style.borderRadius = Math.round(s * 0.22) + 'px';
+    }
+  });
+
+  if (IS_PROFILE) {
+    donePreview.style.borderRadius = '50%';
+  } else {
+    donePreview.style.height       = Math.round(96 * CROP_H / CROP_W) + 'px';
+    donePreview.style.borderRadius = '14px';
+  }
+
+  // ── Helpers
+  function showStep(s) {
+    stepUpload.style.display = s === 'upload' ? '' : 'none';
+    stepCrop.style.display   = s === 'crop'   ? '' : 'none';
+    stepDone.style.display   = s === 'done'   ? '' : 'none';
+    if (s === 'crop') stepCrop.classList.add('pu-fade-up');
+  }
+
+  function ensurePreviewImg(el) {
+    let img = el.querySelector('img');
+    if (!img) {
+      img = document.createElement('img');
+      img.draggable = false;
+      img.style.cssText = 'position:absolute;left:50%;top:50%;max-width:none;user-select:none;transform-origin:center center;pointer-events:none;';
+      el.appendChild(img);
+    }
+    return img;
+  }
+
+  // Never touches img.src — only updates CSS transforms for instant redraws
+  function updateTransform() {
+    cropImg.style.transform = `translate(calc(-50% + ${ox}px), calc(-50% + ${oy}px)) scale(${zoom})`;
+    zoomDisp.textContent = Math.round(zoom * 100) + '%';
+    document.querySelectorAll('.pu-preview-bubble[data-size]').forEach(el => {
+      const f = Number.parseInt(el.dataset.size) / CROP_W;
+      ensurePreviewImg(el).style.transform = `translate(calc(-50% + ${ox * f}px), calc(-50% + ${oy * f}px)) scale(${zoom * f})`;
+    });
+  }
+
+  // RAF-throttled wrapper for drag events
+  function scheduleUpdate() {
+    if (rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(() => { rafPending = false; updateTransform(); });
+  }
+
+  // ── Load file
+  function loadFile(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      // Set onload BEFORE src to avoid race on fast image decoders
+      cropImg.onload = () => {
+        const nw = cropImg.naturalWidth;
+        const nh = cropImg.naturalHeight;
+        // fillZoom: image fills the crop window with no empty edges
+        // fitZoom : entire image visible inside the crop window
+        const fillZoom = Math.max(CROP_W / nw, CROP_H / nh);
+        const fitZoom  = Math.min(CROP_W / nw, CROP_H / nh);
+        zoomRange.min   = (fitZoom * 0.85).toFixed(5);
+        zoomRange.max   = Math.max(fillZoom * 4, 3).toFixed(5);
+        zoom = fillZoom;
+        ox = 0; oy = 0;
+        zoomRange.value = zoom;
+        // Set preview img.src here once — updateTransform never touches src
+        document.querySelectorAll('.pu-preview-bubble[data-size]').forEach(el => {
+          ensurePreviewImg(el).src = e.target.result;
+        });
+        updateTransform();
+        showStep('crop');
+      };
+      cropImg.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ── Drag (mouse)
+  cropCont.addEventListener('mousedown', e => {
+    dragging = true;
+    dsx = e.clientX; dsy = e.clientY; dox = ox; doy = oy;
+    e.preventDefault();
+  });
+  globalThis.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    ox = dox + (e.clientX - dsx);
+    oy = doy + (e.clientY - dsy);
+    scheduleUpdate();
+  });
+  globalThis.addEventListener('mouseup', () => { dragging = false; });
+
+  // ── Drag (touch)
+  cropCont.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    dragging = true;
+    dsx = t.clientX; dsy = t.clientY; dox = ox; doy = oy;
+  }, { passive: true });
+  cropCont.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    const t = e.touches[0];
+    ox = dox + (t.clientX - dsx);
+    oy = doy + (t.clientY - dsy);
+    scheduleUpdate();
+    e.preventDefault();
+  }, { passive: false });
+  cropCont.addEventListener('touchend', () => { dragging = false; });
+
+  // ── Zoom
+  zoomRange.addEventListener('input', () => {
+    zoom = Number.parseFloat(zoomRange.value);
+    updateTransform();
+  });
+
+  // ── Reset — back to fill zoom, centered
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    const fillZoom = Math.max(CROP_W / cropImg.naturalWidth, CROP_H / cropImg.naturalHeight);
+    zoom = fillZoom; ox = 0; oy = 0;
+    zoomRange.value = zoom;
+    updateTransform();
+  });
+
+  // ── Drop zone
+  dropZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropZone.classList.add('over');
+    document.getElementById('drop-label').textContent = "{% trans 'Release to load' %}";
+    document.getElementById('drop-icon').style.borderColor = 'var(--nc-accent)';
+  });
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('over');
+    document.getElementById('drop-label').textContent = "{% trans 'Drag and drop an image' %}";
+    document.getElementById('drop-icon').style.borderColor = '';
+  });
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('over');
+    document.getElementById('drop-label').textContent = "{% trans 'Drag and drop an image' %}";
+    document.getElementById('drop-icon').style.borderColor = '';
+    loadFile(e.dataTransfer.files[0]);
+  });
+  dropZone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', e => loadFile(e.target.files[0]));
+
+  // ── Back / Change again
+  document.getElementById('btn-back').addEventListener('click', () => {
+    fileInput.value = ''; showStep('upload');
+  });
+  document.getElementById('btn-change-again').addEventListener('click', () => {
+    fileInput.value = ''; zoom = 1; ox = 0; oy = 0; showStep('upload');
+  });
+
+  // ── Save
+  document.getElementById('btn-save').addEventListener('click', () => {
+    const canvas = document.createElement('canvas');
+    canvas.width  = EXPORT_W;
+    canvas.height = EXPORT_H;
+    const ctx = canvas.getContext('2d');
+
+    const startX = cropImg.naturalWidth  / 2 - CROP_W / (2 * zoom) - ox / zoom;
+    const startY = cropImg.naturalHeight / 2 - CROP_H / (2 * zoom) - oy / zoom;
+
+    ctx.drawImage(cropImg, startX, startY, CROP_W / zoom, CROP_H / zoom, 0, 0, EXPORT_W, EXPORT_H);
+
+    const saveBtn = document.getElementById('btn-save');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="pu-spinner"></span>{% trans "Saving…" %}';
+
+    canvas.toBlob(blob => {
+      const fd = new FormData();
+      fd.append('photo', blob, 'photo.jpg');
+      fd.append('csrfmiddlewaretoken', CSRF);
+
+      fetch(globalThis.location.pathname, { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            const f = 96 / CROP_W;
+            const img = ensurePreviewImg(donePreview);
+            img.src = cropImg.src;
+            img.style.transform = `translate(calc(-50% + ${ox * f}px), calc(-50% + ${oy * f}px)) scale(${zoom * f})`;
+            showStep('done');
+          } else {
+            restoreSaveBtn(saveBtn);
+          }
+        })
+        .catch(() => restoreSaveBtn(saveBtn));
+    }, 'image/jpeg', 0.92);
+  });
+
+  function restoreSaveBtn(btn) {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> {% trans "Save" %}';
+  }
+})();
+</script>
+{% endblock %}

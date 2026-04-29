@@ -7,6 +7,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.core.management import call_command
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -113,6 +114,29 @@ def resend_verification(request):
     send_verification_email(request, request.user)
     messages.success(request, _("A new verification email has been sent."))
     return redirect("verify_email_sent")
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def photo_upload(request):
+    if request.method == "POST":
+        uploaded = request.FILES.get("photo")
+        if not uploaded:
+            return JsonResponse({"success": False, "error": "No file"}, status=400)
+        old = request.user.avatar
+        if old and os.path.isfile(old.path):
+            os.remove(old.path)
+        request.user.avatar = uploaded
+        request.user.save(update_fields=["avatar"])
+        return JsonResponse({"success": True})
+    return render(
+        request,
+        "photos/photo_upload.html",
+        {
+            "context_type": "profile",
+            "back_url": reverse("account"),
+        },
+    )
 
 
 @require_http_methods(["GET", "POST"])

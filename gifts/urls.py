@@ -22,6 +22,7 @@ urlpatterns = [
         name="account/change_password/",
     ),
     path("account/", account.account, name="account"),
+    path("account/photo/", account.photo_upload, name="photo_upload_profile"),
     path("account/delete/", account.delete_account, name="delete_account"),
     path("account/verify-email/", account.verify_email_sent, name="verify_email_sent"),
     path("account/verify-email/confirm/<uidb64>/<token>/", account.verify_email_confirm, name="verify_email_confirm"),
@@ -61,6 +62,7 @@ urlpatterns = [
     path("group/join/<str:token>/confirm/", groups.join_group_confirm, name="join_group_confirm"),
     path("group/<int:group_id>/", groups.group_detail, name="group_detail"),
     path("group/<int:group_id>/edit/", groups.edit_group, name="edit_group"),
+    path("group/<int:group_id>/photo/", groups.group_photo_upload, name="photo_upload_group"),
     path("group/<int:group_id>/regenerate-token/", groups.regenerate_group_token, name="regenerate_group_token"),
     path("group/<int:group_id>/leave/", groups.leave_group, name="leave_group"),
     # List

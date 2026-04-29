@@ -2,8 +2,9 @@ import os
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
@@ -129,6 +130,30 @@ def edit_group(request, group_id):
         return redirect("group_detail", group_id=group.id)
 
     return redirect("group_detail", group_id=group.id)
+
+
+@login_required
+def group_photo_upload(request, group_id):
+    group = get_object_or_404(Group, pk=group_id, members=request.user)
+    if request.method == "POST":
+        uploaded = request.FILES.get("photo")
+        if not uploaded:
+            return JsonResponse({"success": False, "error": "No file"}, status=400)
+        old = group.image
+        if old and os.path.isfile(old.path):
+            os.remove(old.path)
+        group.image = uploaded
+        group.save(update_fields=["image"])
+        return JsonResponse({"success": True})
+    return render(
+        request,
+        "photos/photo_upload.html",
+        {
+            "context_type": "group",
+            "group": group,
+            "back_url": reverse("group_detail", args=[group_id]),
+        },
+    )
 
 
 @login_required
