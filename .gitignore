@@ -2,3 +2,4 @@ uv.lock
 .idea
 staticfiles
 db.sqlite3
+CLAUDE.md

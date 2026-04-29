@@ -26,14 +26,16 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="groupImage" class="form-label small fw-bold text-muted">{% trans "Group Cover Image" %}</label>
-                        <input type="file" class="form-control rounded-4 border-0 p-3"
-                               id="groupImage" name="image" accept="image/*">
+                        <div class="form-label small fw-bold text-muted">{% trans "Group Cover Image" %}</div>
                         {% if group.image %}
-                            <div class="form-text mt-2 small text-primary">
-                                <i class="bi bi-image me-1"></i> {% trans "An image is already set. Upload a new one to replace it." %}
+                            <div class="d-flex align-items-center gap-3 mb-2">
+                                <img src="{{ group.image.url }}" alt="" style="width:56px;height:42px;object-fit:cover;border-radius:8px;border:1px solid var(--nc-border);">
+                                <span class="text-muted small">{% trans "Current image" %}</span>
                             </div>
                         {% endif %}
+                        <a href="{% url 'photo_upload_group' group.id %}" class="btn btn-sm btn-outline-secondary rounded-pill">
+                            <i class="bi bi-camera me-1"></i>{% trans "Change group photo" %}
+                        </a>
                     </div>
 
                     <div class="d-flex align-items-center justify-content-between p-3 rounded-4">

@@ -28,7 +28,7 @@ class Group(models.Model):
     created_by = models.ForeignKey("User", on_delete=models.SET_NULL, null=True, related_name="owned_groups")
     description = models.TextField(blank=True)
     image = ResizedImageField(
-        size=[800, 600], crop=["middle", "center"], upload_to=get_group_image_path, quality=75, blank=True, null=True
+        size=[1200, 400], crop=["middle", "center"], upload_to=get_group_image_path, quality=75, blank=True, null=True
     )
     show_history = models.BooleanField(default=False)
     show_balance = models.BooleanField(default=False)

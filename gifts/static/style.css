@@ -543,7 +543,7 @@ body {
 }
 .nc-group-overview__cover {
     width: 100%;
-    height: 240px;
+    aspect-ratio: 3 / 1;
     object-fit: cover;
     display: block;
 }
