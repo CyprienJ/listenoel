@@ -107,7 +107,7 @@
             </button>
         {% endif %}
 
-        {% if is_owner or item.gift.created_by.id == request.user.id %}
+        {% if is_owner or user.is_managed or item.gift.created_by.id == request.user.id %}
             <div class="dropdown">
                 <button class="nc-wish-more-btn" type="button"
                         data-bs-toggle="dropdown"

@@ -70,7 +70,13 @@
             {% for member, balance in balances.items %}
             {% cycle "nc-color-m1" "nc-color-m2" "nc-color-m3" "nc-color-m4" "nc-color-m5" "nc-color-m6" "nc-color-m7" "nc-color-m8" as bal_color silent %}
             <div class="nc-balance-row" data-amount="{{ balance }}">
-                {% if member.avatar %}
+                {% if member.is_managed %}
+                    {% with mm=member.managed_member_profile %}
+                    <div style="width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:white;background:{% if mm %}{{ mm.color }}{% else %}var(--nc-text-muted){% endif %}">
+                        {{ member.nickname|first|upper }}
+                    </div>
+                    {% endwith %}
+                {% elif member.avatar %}
                     <div style="width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0">
                         <img src="{{ member.avatar.url }}" alt="{{ member.nickname }}" style="width:100%;height:100%;object-fit:cover">
                     </div>
@@ -81,7 +87,10 @@
                 {% endif %}
                 <div class="nc-balance-info">
                     <div class="nc-balance-name-row">
-                        <span class="nc-balance-name">{{ member.nickname|capfirst }}</span>
+                        <span class="nc-balance-name">
+                            {{ member.nickname|capfirst }}
+                            {% if member.is_managed %}<span class="nc-member-managed-pill" style="vertical-align:middle">{% trans "managed" %}</span>{% endif %}
+                        </span>
                         <span class="nc-balance-amount {% if balance > 0 %}nc-balance-amount--pos{% elif balance < 0 %}nc-balance-amount--neg{% else %}nc-balance-amount--zero{% endif %}">
                             {% if balance > 0 %}+{% endif %}{{ balance|floatformat:2 }} €
                         </span>
@@ -94,7 +103,7 @@
             </div>
             {% endfor %}
         {% else %}
-            <div class="nc-balance-empty">{% trans "No expenses recorded yet. Offer gifts with amounts to start tracking." %}</div>
+            <div class="nc-balance-empty">{% trans "No members yet." %}</div>
         {% endif %}
     </div>
 </div>
@@ -136,29 +145,55 @@
                 <div class="nc-debt-row">
                     <!-- From -->
                     <div class="nc-debt-party">
-                        <div class="nc-member-avatar" style="width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:white;background:oklch(55% 0.16 25)">
-                            {{ debtor.nickname|first|upper }}
-                        </div>
-                        <span class="nc-debt-party-name">{{ debtor.nickname|capfirst }}</span>
+                        {% if debtor %}
+                            {% if debtor.is_managed %}{% with mm=debtor.managed_member_profile %}
+                            <div class="nc-member-avatar" style="width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:white;background:{% if mm %}{{ mm.color }}{% else %}oklch(55% 0.16 25){% endif %}">
+                                {{ debtor.nickname|first|upper }}
+                            </div>
+                            {% endwith %}{% else %}
+                            <div class="nc-member-avatar" style="width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:white;background:oklch(55% 0.16 25)">
+                                {{ debtor.nickname|first|upper }}
+                            </div>
+                            {% endif %}
+                            <span class="nc-debt-party-name">{{ debtor.nickname|capfirst }}</span>
+                        {% else %}
+                            <div class="nc-member-avatar" style="width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:white;background:var(--nc-text-muted)">?</div>
+                            <span class="nc-debt-party-name" style="color:var(--nc-text-muted)">{% trans "Unknown" %}</span>
+                        {% endif %}
                     </div>
                     <!-- Arrow + amount chip -->
                     <div class="nc-debt-arrow-wrap">
                         <div class="nc-debt-line"></div>
-                        <div class="nc-debt-amount-chip">{{ amount|floatformat:2 }} €</div>
+                        <div class="nc-debt-amount-chip {% if not debtor or not creditor %}nc-debt-amount-chip--warning{% endif %}">{{ amount|floatformat:2 }} €</div>
                         <i class="bi bi-arrow-right" style="color:var(--nc-border);font-size:12px;flex-shrink:0"></i>
                     </div>
                     <!-- To -->
                     <div class="nc-debt-party nc-debt-party--right">
-                        <span class="nc-debt-party-name">{{ creditor.nickname|capfirst }}</span>
-                        <div class="nc-member-avatar" style="width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:white;background:var(--nc-sage)">
-                            {{ creditor.nickname|first|upper }}
-                        </div>
+                        {% if creditor %}
+                            <span class="nc-debt-party-name">{{ creditor.nickname|capfirst }}</span>
+                            {% if creditor.is_managed %}{% with mm=creditor.managed_member_profile %}
+                            <div class="nc-member-avatar" style="width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:white;background:{% if mm %}{{ mm.color }}{% else %}var(--nc-sage){% endif %}">
+                                {{ creditor.nickname|first|upper }}
+                            </div>
+                            {% endwith %}{% else %}
+                            <div class="nc-member-avatar" style="width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:white;background:var(--nc-sage)">
+                                {{ creditor.nickname|first|upper }}
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            <span class="nc-debt-party-name" style="color:var(--nc-text-muted)">{% trans "Payer not recorded" %}</span>
+                            <div class="nc-member-avatar" style="width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:white;background:var(--nc-text-muted)">?</div>
+                        {% endif %}
                     </div>
-                    <!-- Settle button — always shown; prefills form when I'm the debtor -->
-                    <button type="button" class="nc-settle-btn {% if debtor != request.user %}nc-settle-btn--muted{% endif %}"
+                    <!-- Settle button — only when both parties are known -->
+                    {% if debtor and creditor %}
+                    <button type="button" class="nc-settle-btn"
                             onclick="prefillSettlement('{{ debtor.id }}', '{{ creditor.id }}', '{{ amount }}')">
                         <i class="bi bi-check2" style="font-size:11px"></i>{% trans "Settle" %}
                     </button>
+                    {% else %}
+                    <span style="font-size:11px;color:var(--nc-text-muted);flex-shrink:0">{% trans "Fix amounts" %}</span>
+                    {% endif %}
                 </div>
             {% endfor %}
         {% endif %}
@@ -282,12 +317,11 @@
                         {{ gift.title }}
                     </div>
                     <div style="font-size:11px;color:var(--nc-text-muted);margin-top:1px">
-                        {% if gift.offered_at %}{{ gift.offered_at|date:"d M Y" }}{% if gift.actual_cost %} · {% endif %}{% endif %}
+                        <span>{% trans "For" %} {{ gift.owner.nickname|capfirst }}</span>
+                        {% if gift.offered_at %} · {{ gift.offered_at|date:"d M Y" }}{% endif %}
                         {% if gift.actual_cost %}
-                            {% if payer %}
-                                {% blocktrans with name=payer.reserver.nickname|capfirst cost=gift.actual_cost %}Paid by {{ name }} — {{ cost }} €{% endblocktrans %}
-                            {% else %}
-                                {{ gift.actual_cost }} €
+                            {% if payer %} · {% blocktrans with name=payer.reserver.nickname|capfirst cost=gift.actual_cost %}Paid by {{ name }} — {{ cost }} €{% endblocktrans %}
+                            {% else %} · {{ gift.actual_cost }} €
                             {% endif %}
                         {% endif %}
                     </div>

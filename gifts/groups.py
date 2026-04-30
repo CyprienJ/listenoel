@@ -1,4 +1,5 @@
 import os
+import uuid
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -9,7 +10,9 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
 from gifts.forms import GroupForm
-from gifts.models import Group
+from gifts.models import Group, ManagedMember, User
+
+NOT_A_MEMBER = "You are not a member of this group."
 
 
 @login_required
@@ -77,9 +80,80 @@ def group_detail(request, group_id):
         return render(request, "groups/group_not_found.html", status=404)
 
     if request.user not in group.members.all():
-        return HttpResponseForbidden(_("You are not a member of this group."))
+        return HttpResponseForbidden(_(NOT_A_MEMBER))
 
-    return render(request, "groups/group_detail.html", {"group": group})
+    managed_members = group.managed_members.all().order_by("created_at")
+    return render(request, "groups/group_detail.html", {"group": group, "managed_members": managed_members})
+
+
+@login_required
+@require_GET
+def view_managed_list(request, group_id, member_id):
+    """Redirect to the standard view_list for the managed user."""
+    group = get_object_or_404(Group, id=group_id)
+    if request.user not in group.members.all():
+        return HttpResponseForbidden(_(NOT_A_MEMBER))
+    member = get_object_or_404(ManagedMember, id=member_id, group=group)
+    if member.user:
+        return redirect(f"{reverse('view_list', args=[member.user.id])}?from_group={group_id}")
+    return redirect("group_detail", group_id=group_id)
+
+
+@login_required
+@require_POST
+def add_managed_member(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    if request.user not in group.members.all():
+        return HttpResponseForbidden(_(NOT_A_MEMBER))
+    name = request.POST.get("name", "").strip()
+    if not name:
+        messages.error(request, _("Name is required."))
+        return redirect("group_detail", group_id=group_id)
+
+    email = f"managed_{uuid.uuid4().hex[:12]}@noscadeaux.internal"
+    managed_user = User.objects.create(
+        email=email,
+        username=email,
+        nickname=name,
+        is_managed=True,
+        is_verified=True,
+        is_active=False,
+    )
+    group.members.add(managed_user)
+    return redirect(f"{reverse('view_list', args=[managed_user.id])}?from_group={group_id}")
+
+
+@login_required
+@require_POST
+def rename_managed_member(request, group_id, member_id):
+    group = get_object_or_404(Group, id=group_id)
+    if request.user not in group.members.all():
+        return HttpResponseForbidden(_(NOT_A_MEMBER))
+    member = get_object_or_404(ManagedMember, id=member_id, group=group)
+    name = request.POST.get("name", "").strip()
+    if name:
+        member.name = name
+        member.save(update_fields=["name"])
+        if member.user:
+            member.user.nickname = name
+            member.user.save(update_fields=["nickname"])
+    if member.user:
+        return redirect(f"{reverse('view_list', args=[member.user.id])}?from_group={group_id}")
+    return redirect("group_detail", group_id=group_id)
+
+
+@login_required
+@require_POST
+def delete_managed_member(request, group_id, member_id):
+    group = get_object_or_404(Group, id=group_id)
+    if request.user not in group.members.all():
+        return HttpResponseForbidden(_(NOT_A_MEMBER))
+    member = get_object_or_404(ManagedMember, id=member_id, group=group)
+    if member.user:
+        member.user.delete()  # cascades: deletes ManagedMember + all owned gifts
+    else:
+        member.delete()
+    return redirect("group_detail", group_id=group_id)
 
 
 @login_required

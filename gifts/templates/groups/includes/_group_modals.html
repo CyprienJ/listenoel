@@ -113,6 +113,110 @@
     </div>
 </div>
 
+<!-- ── Add managed member modal ── -->
+<div class="modal fade" id="addManagedMemberModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-5 shadow-lg">
+            <div class="modal-header border-0 p-4 pb-0">
+                <div>
+                    <h5 class="modal-title fw-bold">{% trans "Add an account-free member" %}</h5>
+                    <p class="text-muted small mb-0 mt-1">{% trans "This member has no account. Their wish list will be managed by all group members." %}</p>
+                </div>
+                <button type="button" class="btn-close ms-3 flex-shrink-0" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'add_managed_member' group.id %}">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label for="newManagedMemberName" class="form-label fw-medium small text-muted text-uppercase" style="letter-spacing:.06em">{% trans "First name" %}</label>
+                        <input id="newManagedMemberName" type="text" name="name" class="form-control rounded-4 bg-body-tertiary border-0 p-3"
+                               placeholder="{% trans 'First name' %}" required>
+                    </div>
+                    <div class="d-flex align-items-start gap-2 p-3 rounded-4" style="background:var(--nc-bg-sub)">
+                        <i class="bi bi-people" style="color:var(--nc-text-muted); margin-top:2px; flex-shrink:0"></i>
+                        <p class="mb-0 small" style="color:var(--nc-text-muted)">
+                            {% trans "Any group member can add or modify wishes for this person." %}
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                        <i class="bi bi-person-plus me-1"></i>{% trans "Add" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ── Manage managed member modal ── -->
+<div class="modal fade" id="manageManagedMemberModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-5 shadow-lg">
+            <div class="modal-header border-0 p-4 pb-0">
+                <h5 class="modal-title fw-bold">{% trans "Manage" %} · <span id="managedMemberModalTitle"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+
+                <!-- Avatar preview -->
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div id="managedMemberPreview" class="nc-member-avatar nc-color-m1" style="width:44px;height:44px;font-size:18px;border-radius:14px">
+                        <span id="managedMemberPreviewInitial"></span>
+                    </div>
+                    <div>
+                        <div class="fw-semibold" id="managedMemberPreviewName"></div>
+                        <span class="nc-member-managed-pill">{% trans "managed" %}</span>
+                    </div>
+                </div>
+
+                <!-- Rename form -->
+                <form id="renameManagedForm" method="post" action="">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="managedMemberName" class="form-label fw-medium small text-muted text-uppercase" style="letter-spacing:.06em">{% trans "Rename" %}</label>
+                        <input id="managedMemberName" type="text" name="name" class="form-control rounded-4 bg-body-tertiary border-0 p-3" required>
+                    </div>
+                    <div class="modal-footer border-0 p-0 pt-0 mb-4">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4">
+                            <i class="bi bi-check2 me-1"></i>{% trans "Save" %}
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Delete zone -->
+                <div id="managedMemberDeleteSection" class="nc-danger-zone rounded-4 p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="fw-semibold small" style="color:oklch(45% 0.14 15)">{% trans "Delete this member" %}</div>
+                            <div class="small text-muted mt-1" id="managedMemberDeleteConfirm"
+                                 data-template="{% trans 'Delete {name} and all their wishes? This cannot be undone.' %}">
+                            </div>
+                        </div>
+                        <button id="managedMemberDeleteBtn" type="button"
+                                class="btn btn-sm rounded-3 ms-3 flex-shrink-0"
+                                style="border:1.5px solid oklch(78% 0.14 15);color:oklch(50% 0.16 15);font-size:12px;font-weight:600">
+                            {% trans "Delete" %}
+                        </button>
+                    </div>
+                    <div id="managedMemberDeleteActions" class="d-none mt-3 d-flex gap-2">
+                        <form id="deleteManagedForm" method="post" action="" class="d-flex gap-2 w-100">
+                            {% csrf_token %}
+                            <button type="button" id="managedMemberDeleteCancel"
+                                    class="btn btn-outline-secondary rounded-3 flex-fill" style="font-size:13px">{% trans "Cancel" %}</button>
+                            <button type="submit"
+                                    class="btn rounded-3 flex-fill text-white fw-semibold" style="background:oklch(52% 0.18 15);font-size:13px">{% trans "Confirm" %}</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="leaveGroupModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 rounded-5 shadow-lg auth-card">

@@ -58,6 +58,7 @@ class User(AbstractUser):
 
     nickname = models.CharField(max_length=150, blank=False)
     is_verified = models.BooleanField(default=False)
+    is_managed = models.BooleanField(default=False)
     subscriptions = models.ManyToManyField("self", symmetrical=False, related_name="subscribers", blank=True)
     avatar = ResizedImageField(
         size=[200, 200], crop=["middle", "center"], upload_to=get_avatar_path, quality=80, blank=True, null=True
@@ -87,6 +88,9 @@ class Gift(models.Model):
     group_reserved_on = models.ForeignKey(
         Group, blank=True, null=True, on_delete=models.SET_NULL, related_name="reservations_group"
     )
+    managed_member = models.ForeignKey(
+        "ManagedMember", blank=True, null=True, on_delete=models.CASCADE, related_name="gifts"
+    )
 
     def __str__(self):
         return f"{self.title} ({self.owner.nickname})"
@@ -106,6 +110,28 @@ class Reservation(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     exclusivity = models.BooleanField(default=False)
     amount_paid = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
+
+
+MANAGED_MEMBER_COLORS = [
+    "oklch(60% 0.14 100)",
+    "oklch(60% 0.14 180)",
+    "oklch(60% 0.14 230)",
+    "oklch(60% 0.14 290)",
+    "oklch(60% 0.14 340)",
+]
+
+
+class ManagedMember(models.Model):
+    name = models.CharField(max_length=100)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="managed_members")
+    color = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.OneToOneField(
+        "User", on_delete=models.CASCADE, null=True, blank=True, related_name="managed_member_profile"
+    )
+
+    def __str__(self):
+        return f"{self.name} ({self.group.name})"
 
 
 class BalanceSettlement(models.Model):
