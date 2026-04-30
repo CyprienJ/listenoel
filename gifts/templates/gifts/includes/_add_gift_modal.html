@@ -5,7 +5,7 @@
         <div class="modal-content border-0 rounded-5 shadow-lg auth-card">
             <div class="modal-header border-0 p-4 pb-0">
                 <h5 class="modal-title fw-bold text-primary">
-                    {% if is_owner %}
+                    {% if is_owner or user.is_managed %}
                         <i class="bi bi-gift me-2"></i>{% trans "New wish" %}
                     {% else %}
                         <i class="bi bi-magic me-2"></i>{% trans "New surprise" %}

@@ -475,6 +475,110 @@ body {
     object-fit: cover;
 }
 
+/* Managed member pill ("géré") */
+.nc-member-managed-pill {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--nc-text-muted);
+    background: var(--nc-bg-sub);
+    border: 1px solid var(--nc-border);
+    padding: 2px 6px;
+    border-radius: 99px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+/* Managed member badge in list page header */
+.nc-managed-badge {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--nc-text-muted);
+    background: var(--nc-bg-sub);
+    border: 1px solid var(--nc-border);
+    padding: 2px 8px;
+    border-radius: 99px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* Wrapper for managed members (needed for the floating manage button) */
+.nc-member-item-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nc-member-item-wrapper .nc-member-item {
+    padding-right: 36px;
+    flex: 1;
+}
+.nc-member-manage-btn {
+    position: absolute;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: var(--nc-border);
+    border: none;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    color: var(--nc-text-sub);
+    display: none;
+    transition: background 0.12s;
+}
+.nc-member-item-wrapper:hover .nc-member-manage-btn,
+.nc-member-item--active ~ .nc-member-manage-btn {
+    display: flex;
+}
+.nc-member-manage-btn:hover { background: var(--nc-accent-mid); }
+
+/* Dashed "Add account-free member" button */
+.nc-add-managed-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    background: transparent;
+    border: 1.5px dashed var(--nc-border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.14s, border-color 0.14s;
+    font-family: 'DM Sans', sans-serif;
+}
+.nc-add-managed-btn:hover {
+    background: var(--nc-accent-light);
+    border-color: var(--nc-accent-mid);
+}
+.nc-add-managed-btn__avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--nc-bg-sub);
+    border: 1px dashed var(--nc-border-strong, var(--nc-border));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.nc-add-managed-btn__label {
+    font-size: 12px;
+    color: var(--nc-text-muted);
+    font-weight: 500;
+}
+
+/* Danger zone in manage modal */
+.nc-danger-zone {
+    border: 1.5px solid var(--nc-border);
+    background: var(--nc-white, #fff);
+    transition: border-color 0.18s, background 0.18s;
+}
+.nc-danger-zone.nc-danger-confirm {
+    border-color: oklch(78% 0.14 15);
+    background: oklch(98% 0.03 15);
+}
+
 /* Group main content area */
 .nc-group-main {
     flex: 1;
@@ -820,6 +924,9 @@ body {
     border-radius: 99px; padding: 3px 10px;
     font-size: 12px; font-weight: 600; color: oklch(55% 0.16 25);
     white-space: nowrap; z-index: 1;
+}
+.nc-debt-amount-chip--warning {
+    border-color: oklch(75% 0.14 80); color: oklch(50% 0.14 80);
 }
 .nc-settle-btn {
     display: flex; align-items: center; gap: 5px;

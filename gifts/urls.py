@@ -65,6 +65,18 @@ urlpatterns = [
     path("group/<int:group_id>/photo/", groups.group_photo_upload, name="photo_upload_group"),
     path("group/<int:group_id>/regenerate-token/", groups.regenerate_group_token, name="regenerate_group_token"),
     path("group/<int:group_id>/leave/", groups.leave_group, name="leave_group"),
+    path("group/<int:group_id>/managed/add/", groups.add_managed_member, name="add_managed_member"),
+    path("group/<int:group_id>/managed/<int:member_id>/", groups.view_managed_list, name="view_managed_list"),
+    path(
+        "group/<int:group_id>/managed/<int:member_id>/rename/",
+        groups.rename_managed_member,
+        name="rename_managed_member",
+    ),
+    path(
+        "group/<int:group_id>/managed/<int:member_id>/delete/",
+        groups.delete_managed_member,
+        name="delete_managed_member",
+    ),
     # List
     path("list/<int:user_id>/", views.view_list, name="view_list"),
     path("add-gift/<int:owner_id>/", views.add_gift, name="add_gift"),

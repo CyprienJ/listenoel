@@ -54,9 +54,9 @@
 
         <div class="nc-sidebar__divider"></div>
 
-        <!-- Other members -->
+        <!-- Other members (regular accounts) -->
         {% for member in group.members.all %}
-            {% if member != request.user %}
+            {% if member != request.user and not member.is_managed %}
                 {% cycle "nc-color-m1" "nc-color-m2" "nc-color-m3" "nc-color-m4" "nc-color-m5" "nc-color-m6" "nc-color-m7" "nc-color-m8" as member_color silent %}
                 <a href="{% url 'view_list' member.id %}?from_group={{ group.id }}"
                    class="nc-member-item {% if member.id == user_being_viewed.id %}nc-member-item--active{% endif %}">
@@ -73,6 +73,42 @@
                 </a>
             {% endif %}
         {% endfor %}
+
+        <!-- Managed members (account-free) -->
+        {% for member in group.members.all %}
+            {% if member.is_managed %}
+                {% with mm=member.managed_member_profile %}
+                <div class="nc-member-item-wrapper">
+                    <a href="{% url 'view_list' member.id %}?from_group={{ group.id }}"
+                       class="nc-member-item {% if member.id == user_being_viewed.id %}nc-member-item--active{% endif %}">
+                        <div class="nc-member-avatar" style="background:{% if mm %}{{ mm.color }}{% else %}var(--nc-text-muted){% endif %}">
+                            {{ member.nickname|first|upper }}
+                        </div>
+                        <span class="nc-member-item__name">{{ member.nickname|capfirst }}</span>
+                        <span class="nc-member-managed-pill">{% trans "managed" %}</span>
+                    </a>
+                    {% if mm %}
+                    <button class="nc-member-manage-btn"
+                            onclick="openManageManagedModal('{{ mm.id }}', '{{ member.nickname|escapejs }}', '{% url 'rename_managed_member' group.id mm.id %}', '{% url 'delete_managed_member' group.id mm.id %}')"
+                            title="{% trans 'Manage' %} {{ member.nickname }}">
+                        <i class="bi bi-three-dots-vertical" style="font-size:10px"></i>
+                    </button>
+                    {% endif %}
+                </div>
+                {% endwith %}
+            {% endif %}
+        {% endfor %}
+
+        <!-- Add managed member -->
+        <div style="padding: 8px 8px 4px; border-top: 1px solid var(--nc-border); margin-top: 6px;">
+            <button class="nc-add-managed-btn"
+                    data-bs-toggle="modal" data-bs-target="#addManagedMemberModal">
+                <div class="nc-add-managed-btn__avatar">
+                    <i class="bi bi-person-plus" style="font-size:12px; color:var(--nc-text-muted)"></i>
+                </div>
+                <span class="nc-add-managed-btn__label">{% trans "Account-free member" %}</span>
+            </button>
+        </div>
     </aside>
 
     <!-- ── Main ──────────────────────────────────────────────── -->
@@ -179,6 +215,38 @@
 
 {% block extra_js %}
     <script>
+        function openManageManagedModal(memberId, memberName, renameUrl, deleteUrl) {
+            document.getElementById('managedMemberName').value = memberName;
+            document.getElementById('managedMemberPreviewInitial').textContent = memberName.slice(0, 1).toUpperCase();
+            document.getElementById('managedMemberPreviewName').textContent = memberName;
+            document.getElementById('managedMemberModalTitle').textContent = memberName;
+            document.getElementById('renameManagedForm').action = renameUrl;
+            document.getElementById('deleteManagedForm').action = deleteUrl;
+            document.getElementById('managedMemberDeleteConfirm').textContent =
+                document.getElementById('managedMemberDeleteConfirm').dataset.template.replace('{name}', memberName);
+            document.getElementById('managedMemberDeleteSection').classList.remove('nc-danger-confirm');
+            document.getElementById('managedMemberDeleteActions').classList.add('d-none');
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('manageManagedMemberModal')).show();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const nameInput = document.getElementById('managedMemberName');
+            if (!nameInput) return;
+            nameInput.addEventListener('input', function () {
+                const val = nameInput.value;
+                document.getElementById('managedMemberPreviewInitial').textContent = val ? val[0].toUpperCase() : '?';
+                document.getElementById('managedMemberPreviewName').textContent = val || '';
+            });
+            document.getElementById('managedMemberDeleteBtn').addEventListener('click', function () {
+                document.getElementById('managedMemberDeleteSection').classList.add('nc-danger-confirm');
+                document.getElementById('managedMemberDeleteActions').classList.remove('d-none');
+            });
+            document.getElementById('managedMemberDeleteCancel').addEventListener('click', function () {
+                document.getElementById('managedMemberDeleteSection').classList.remove('nc-danger-confirm');
+                document.getElementById('managedMemberDeleteActions').classList.add('d-none');
+            });
+        });
+
         function copyToClipboard(text, element) {
             navigator.clipboard.writeText(text).then(() => {
                 const original = element.innerHTML;

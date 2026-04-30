@@ -56,6 +56,10 @@ def _redirect_to_referer_or(request, view_name, **kwargs):
 def _check_gift_access(request, gift):
     is_owner = gift.owner == request.user
     is_reserver = Reservation.objects.filter(gift=gift, reserver=request.user).exists()
+    if gift.owner.is_managed:
+        mm = getattr(gift.owner, "managed_member_profile", None)
+        if mm and request.user in mm.group.members.all():
+            return None
     if not (is_owner or is_reserver):
         return HttpResponseForbidden(_(PERMISSION_DENIED))
     return None
@@ -176,7 +180,11 @@ def view_list(request: HttpRequest, user_id: int):
         ).distinct()
 
     all_gifts = all_gifts_query.prefetch_related("visible_in")
-    user_groups = request.user.gift_groups.all()
+    if target_user.is_managed:
+        mm = getattr(target_user, "managed_member_profile", None)
+        user_groups = Group.objects.filter(id=mm.group_id) if mm else Group.objects.none()
+    else:
+        user_groups = request.user.gift_groups.all()
 
     gifts: list = []
     surprises: list = []
@@ -206,7 +214,8 @@ def view_list(request: HttpRequest, user_id: int):
                 "other_non_participant": other_non_participants,
                 "group_id": from_group_id,
             }
-            if gift.created_by == gift.owner:
+            # Managed user gifts are always shown as wishes, never as surprises
+            if gift.created_by == gift.owner or target_user.is_managed:
                 gifts.append(item)
             else:
                 surprises.append(item)
@@ -329,7 +338,17 @@ def add_gift(request, owner_id):
 @login_required
 @require_POST
 def delete_gift(request, gift_id):
-    gift = get_object_or_404(Gift, id=gift_id, created_by=request.user)
+    gift = get_object_or_404(Gift, id=gift_id)
+    # Managed member gifts: any group member can delete
+    if gift.owner.is_managed:
+        mm = getattr(gift.owner, "managed_member_profile", None)
+        if not mm or request.user not in mm.group.members.all():
+            return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+        owner_id = gift.owner.id
+        gift.delete()
+        return _redirect_to_referer_or(request, "view_list", user_id=owner_id)
+    if gift.created_by != request.user:
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
     owner_id = gift.owner.id
     gift.delete()
     return _redirect_to_referer_or(request, "view_list", user_id=owner_id)
@@ -338,7 +357,14 @@ def delete_gift(request, gift_id):
 @login_required
 @require_POST
 def edit_gift(request: HttpRequest, gift_id: int):
-    gift = get_object_or_404(Gift, id=gift_id, created_by=request.user)
+    gift = get_object_or_404(Gift, id=gift_id)
+
+    if gift.owner.is_managed:
+        mm = getattr(gift.owner, "managed_member_profile", None)
+        if not mm or request.user not in mm.group.members.all():
+            return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+    elif gift.created_by != request.user:
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
     title = request.POST.get("title", "").strip()
     if title:
@@ -785,6 +811,16 @@ def compute_group_balances(group):
         if -debt - amount > Decimal("0.01"):
             heapq.heappush(neg, (debt + amount, did))
 
+    # Unmatched debtors: expense_split was recorded but payer wasn't → show with no creditor
+    while neg:
+        debt, did = heapq.heappop(neg)
+        transactions.append((members.get(did), None, (-debt).quantize(Decimal("0.01"))))
+
+    # Unmatched creditors: payer recorded but no split → show with no debtor
+    while pos:
+        credit, cid = heapq.heappop(pos)
+        transactions.append((None, members.get(cid), credit.quantize(Decimal("0.01"))))
+
     return (
         {members[uid]: bal.quantize(Decimal("0.01")) for uid, bal in balances.items() if uid in members},
         transactions,
@@ -804,11 +840,13 @@ def balance_view(request, group_id):
     if not group.show_balance:
         return render(request, "gifts/balance.html", {**ctx, "balance_disabled": True})
     balances, transactions, members = compute_group_balances(group)
+    full_balances = {m: balances.get(m, Decimal("0.00")) for m in members}
     other_members = [m for m in members if m.id != request.user.id]
     all_members = list(members)
     settlements = BalanceSettlement.objects.filter(group=group).select_related("payer", "payee").order_by("-created_at")
     gift_history = (
         Gift.objects.filter(group_reserved_on=group, offered=True)
+        .select_related("owner")
         .prefetch_related("reservation__reserver", "expense_split")
         .order_by("-offered_at")
     )
@@ -818,7 +856,7 @@ def balance_view(request, group_id):
         "gifts/balance.html",
         {
             **ctx,
-            "balances": balances,
+            "balances": full_balances,
             "transactions": transactions,
             "other_members": other_members,
             "all_members": all_members,

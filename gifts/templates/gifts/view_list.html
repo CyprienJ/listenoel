@@ -7,7 +7,7 @@
     <div class="nc-list-page-header">
         <div class="d-flex align-items-center gap-3">
             <div class="nc-list-page-avatar"
-                 style="background:{% if is_owner %}var(--nc-accent){% else %}var(--nc-sage){% endif %}">
+                 style="background:{% if is_owner %}var(--nc-accent){% elif user.is_managed and user.managed_member_profile %}{{ user.managed_member_profile.color }}{% else %}var(--nc-sage){% endif %}">
                 {{ user.nickname|first|upper }}
             </div>
             <div>
@@ -18,14 +18,17 @@
                     {% if is_owner %}
                         <em style="color:var(--nc-accent)">{% trans "My" %}</em> {% trans "list" %}
                     {% else %}
-                        {% trans "List of" %} <em style="color:var(--nc-sage)">{{ user.nickname|capfirst }}</em>
+                        {% trans "List of" %} <em style="color:{% if user.is_managed %}var(--nc-text){% else %}var(--nc-sage){% endif %}">{{ user.nickname|capfirst }}</em>
                     {% endif %}
                 </h1>
+                {% if user.is_managed %}
+                    <div class="nc-member-managed-pill" style="margin-top:4px">{% trans "managed by the group" %}</div>
+                {% endif %}
             </div>
         </div>
 
         <div class="d-flex align-items-center gap-2">
-            {% if not is_owner %}
+            {% if not is_owner and not user.is_managed %}
                 <form method="post" action="{% url 'toggle_subscription' user.id %}">
                     {% csrf_token %}
                     <button type="submit" class="nc-btn nc-btn--outline nc-btn--sm">
@@ -37,10 +40,12 @@
                     </button>
                 </form>
             {% endif %}
-            <button class="nc-btn nc-btn--primary nc-btn--sm"
-                    data-bs-toggle="modal" data-bs-target="#addGiftModal">
-                <i class="bi bi-plus-lg"></i> {% trans "Add" %}
-            </button>
+            {% if is_owner or user.is_managed %}
+                <button class="nc-btn nc-btn--primary nc-btn--sm"
+                        data-bs-toggle="modal" data-bs-target="#addGiftModal">
+                    <i class="bi bi-plus-lg"></i> {% trans "Add" %}
+                </button>
+            {% endif %}
         </div>
     </div>
 

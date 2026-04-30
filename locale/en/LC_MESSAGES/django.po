@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-29 12:47+0000\n"
+"POT-Creation-Date: 2026-04-30 09:39+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -94,16 +94,21 @@ msgstr ""
 msgid "No group found with this code."
 msgstr ""
 
-#: gifts/groups.py:80
+#: gifts/groups.py:80 gifts/groups.py:91 gifts/groups.py:131
+#: gifts/groups.py:146 gifts/groups.py:160
 msgid "You are not a member of this group."
 msgstr ""
 
-#: gifts/groups.py:91
+#: gifts/groups.py:134
+msgid "Name is required."
+msgstr ""
+
+#: gifts/groups.py:172
 #, python-format
 msgid "You have left the group '%s'."
 msgstr ""
 
-#: gifts/groups.py:165
+#: gifts/groups.py:249
 msgid "New invitation code generated !"
 msgstr ""
 
@@ -169,7 +174,11 @@ msgstr ""
 #: gifts/templates/gifts/includes/_offer_modal_content.html:43
 #: gifts/templates/groups/includes/_group_modals.html:68
 #: gifts/templates/groups/includes/_group_modals.html:109
-#: gifts/templates/groups/includes/_group_modals.html:130
+#: gifts/templates/groups/includes/_group_modals.html:143
+#: gifts/templates/groups/includes/_group_modals.html:182
+#: gifts/templates/groups/includes/_group_modals.html:208
+#: gifts/templates/groups/includes/_group_modals.html:234
+#: gifts/templates/groups/managed_list.html:100
 msgid "Cancel"
 msgstr ""
 
@@ -351,6 +360,22 @@ msgstr ""
 msgid "Net balance per member"
 msgstr ""
 
+#: gifts/templates/gifts/balance.html
+msgid "No members yet."
+msgstr ""
+
+#: gifts/templates/gifts/balance.html
+msgid "Unknown"
+msgstr ""
+
+#: gifts/templates/gifts/balance.html
+msgid "Payer not recorded"
+msgstr ""
+
+#: gifts/templates/gifts/balance.html
+msgid "Fix amounts"
+msgstr ""
+
 #: gifts/templates/gifts/balance.html:97
 msgid "No expenses recorded yet. Offer gifts with amounts to start tracking."
 msgstr ""
@@ -396,6 +421,10 @@ msgstr ""
 
 #: gifts/templates/gifts/balance.html:178
 msgid "I reimbursed a member"
+msgstr ""
+
+#: gifts/templates/gifts/balance.html
+msgid "For"
 msgstr ""
 
 #: gifts/templates/gifts/balance.html:188
@@ -628,15 +657,18 @@ msgstr ""
 #: gifts/templates/gifts/history.html:76
 #: gifts/templates/gifts/includes/_gift_table.html:155
 #: gifts/templates/gifts/includes/_wish_row.html:133
+#: gifts/templates/groups/includes/_group_modals.html:201
 msgid "Delete"
 msgstr ""
 
 #: gifts/templates/gifts/history.html:163
-#: gifts/templates/gifts/view_list.html:100 gifts/tests.py:733
+#: gifts/templates/gifts/view_list.html:100
+#: gifts/templates/groups/managed_list.html:114 gifts/tests.py:733
 msgid "An error occurred."
 msgstr ""
 
 #: gifts/templates/gifts/includes/_add_gift_modal.html:9
+#: gifts/templates/groups/managed_list.html:67
 msgid "New wish"
 msgstr ""
 
@@ -647,10 +679,12 @@ msgstr ""
 #: gifts/templates/gifts/includes/_add_gift_modal.html:21
 #: gifts/templates/gifts/includes/_edit_gift.html:26
 #: gifts/templates/gifts/includes/_edit_gift.html:27
+#: gifts/templates/groups/managed_list.html:75
 msgid "Gift name"
 msgstr ""
 
 #: gifts/templates/gifts/includes/_add_gift_modal.html:23
+#: gifts/templates/groups/managed_list.html:78
 msgid "What is it?"
 msgstr ""
 
@@ -659,14 +693,17 @@ msgstr ""
 #: gifts/templates/gifts/includes/_edit_gift.html:36
 #: gifts/templates/gifts/includes/_view_gift.html:25
 #: gifts/templates/groups/includes/_group_modals.html:22
+#: gifts/templates/groups/managed_list.html:81
 msgid "Description"
 msgstr ""
 
 #: gifts/templates/gifts/includes/_add_gift_modal.html:29
+#: gifts/templates/groups/managed_list.html:84
 msgid "Size, color, details..."
 msgstr ""
 
 #: gifts/templates/gifts/includes/_add_gift_modal.html:33
+#: gifts/templates/groups/managed_list.html:87
 msgid "Link (URL)"
 msgstr ""
 
@@ -681,6 +718,9 @@ msgstr ""
 
 #: gifts/templates/gifts/includes/_add_gift_modal.html:77
 #: gifts/templates/gifts/view_list.html:42
+#: gifts/templates/groups/includes/_group_modals.html:145
+#: gifts/templates/groups/managed_list.html:24
+#: gifts/templates/groups/managed_list.html:103
 msgid "Add"
 msgstr ""
 
@@ -724,8 +764,9 @@ msgstr ""
 
 #: gifts/templates/gifts/includes/_edit_offered_amounts_content.html:12
 #: gifts/templates/gifts/includes/_edit_price_modal.html:28
+#: gifts/templates/groups/includes/_group_modals.html:184
 #: gifts/templates/photos/photo_upload.html:285
-#: gifts/templates/photos/photo_upload.html:569
+#: gifts/templates/photos/photo_upload.html:570
 msgid "Save"
 msgstr ""
 
@@ -890,7 +931,8 @@ msgstr ""
 
 #: gifts/templates/gifts/includes/_mark_received_content.html:57
 #: gifts/templates/gifts/includes/_offer_modal_content.html:35
-#: gifts/templates/groups/includes/_group_modals.html:135
+#: gifts/templates/groups/includes/_group_modals.html:210
+#: gifts/templates/groups/includes/_group_modals.html:239
 msgid "Confirm"
 msgstr ""
 
@@ -1069,14 +1111,17 @@ msgid "list"
 msgstr ""
 
 #: gifts/templates/gifts/view_list.html:21
+#: gifts/templates/groups/managed_list.html:16
 msgid "List of"
 msgstr ""
 
 #: gifts/templates/gifts/view_list.html:52
+#: gifts/templates/groups/managed_list.html:33
 msgid "Wishes"
 msgstr ""
 
 #: gifts/templates/gifts/view_list.html:68
+#: gifts/templates/groups/managed_list.html:49
 msgid "No wishes yet."
 msgstr ""
 
@@ -1240,7 +1285,7 @@ msgid "Create an account"
 msgstr ""
 
 #: gifts/templates/groups/group_detail.html:13
-#: gifts/templates/groups/group_detail.html:160
+#: gifts/templates/groups/group_detail.html:190
 msgid "Members"
 msgstr ""
 
@@ -1248,52 +1293,70 @@ msgstr ""
 msgid "My list"
 msgstr ""
 
+#: gifts/templates/groups/group_detail.html:86
+#: gifts/templates/groups/includes/_group_modals.html:170
+msgid "managed"
+msgstr ""
+
+#: gifts/templates/gifts/view_list.html
+msgid "managed by the group"
+msgstr ""
+
 #: gifts/templates/groups/group_detail.html:90
+#: gifts/templates/groups/includes/_group_modals.html:158
+msgid "Manage"
+msgstr ""
+
+#: gifts/templates/groups/group_detail.html:103
+msgid "Account-free member"
+msgstr ""
+
+#: gifts/templates/groups/group_detail.html:120
 msgid "Click to copy token"
 msgstr ""
 
-#: gifts/templates/groups/group_detail.html:91
+#: gifts/templates/groups/group_detail.html:121
 msgid "Group token:"
 msgstr ""
 
-#: gifts/templates/groups/group_detail.html:91
+#: gifts/templates/groups/group_detail.html:121
 msgid "Click to copy"
 msgstr ""
 
-#: gifts/templates/groups/group_detail.html:101
+#: gifts/templates/groups/group_detail.html:131
 msgid "Invite link"
 msgstr ""
 
-#: gifts/templates/groups/group_detail.html:116
+#: gifts/templates/groups/group_detail.html:146
 #: gifts/templates/groups/includes/_group_modals.html:7
 msgid "Edit group"
 msgstr ""
 
-#: gifts/templates/groups/group_detail.html:121
+#: gifts/templates/groups/group_detail.html:151
 msgid "Regenerate code?"
 msgstr ""
 
-#: gifts/templates/groups/group_detail.html:124
+#: gifts/templates/groups/group_detail.html:154
 msgid "Reset token"
 msgstr ""
 
-#: gifts/templates/groups/group_detail.html:132
+#: gifts/templates/groups/group_detail.html:162
 msgid "Leave group"
 msgstr ""
 
-#: gifts/templates/groups/group_detail.html:154
+#: gifts/templates/groups/group_detail.html:184
 msgid ""
 "Welcome! Select a member from the sidebar to discover their wishes and start "
 "gifting."
 msgstr ""
 
-#: gifts/templates/groups/group_detail.html:164
+#: gifts/templates/groups/group_detail.html:194
 msgid "Created"
 msgstr ""
 
-#: gifts/templates/groups/group_detail.html:186
-#: gifts/templates/groups/group_detail.html:191
-#: gifts/templates/groups/group_detail.html:209
+#: gifts/templates/groups/group_detail.html:248
+#: gifts/templates/groups/group_detail.html:253
+#: gifts/templates/groups/group_detail.html:271
 msgid "Copied!"
 msgstr ""
 
@@ -1397,14 +1460,59 @@ msgstr ""
 msgid "Delete and disable"
 msgstr ""
 
-#: gifts/templates/groups/includes/_group_modals.html:120
+#: gifts/templates/groups/includes/_group_modals.html:122
+msgid "Add an account-free member"
+msgstr ""
+
+#: gifts/templates/groups/includes/_group_modals.html:123
+msgid ""
+"This member has no account. Their wish list will be managed by all group "
+"members."
+msgstr ""
+
+#: gifts/templates/groups/includes/_group_modals.html:131
+#: gifts/templates/groups/includes/_group_modals.html:133
+msgid "First name"
+msgstr ""
+
+#: gifts/templates/groups/includes/_group_modals.html:138
+msgid "Any group member can add or modify wishes for this person."
+msgstr ""
+
+#: gifts/templates/groups/includes/_group_modals.html:178
+msgid "Rename"
+msgstr ""
+
+#: gifts/templates/groups/includes/_group_modals.html:193
+msgid "Delete this member"
+msgstr ""
+
+#: gifts/templates/groups/includes/_group_modals.html:195
+#, python-brace-format
+msgid "Delete {name} and all their wishes? This cannot be undone."
+msgstr ""
+
+#: gifts/templates/groups/includes/_group_modals.html:224
 msgid "Leave group?"
 msgstr ""
 
-#: gifts/templates/groups/includes/_group_modals.html:125
+#: gifts/templates/groups/includes/_group_modals.html:229
 msgid ""
 "Are you sure you want to leave this group? You won't be able to see the "
 "shared lists anymore."
+msgstr ""
+
+#: gifts/templates/groups/managed_list.html:18
+msgid "Managed by the group"
+msgstr ""
+
+#: gifts/templates/groups/managed_list.html:51
+#, python-format
+msgid "Add %(name)s's first wishes."
+msgstr ""
+
+#: gifts/templates/groups/managed_list.html:55
+msgid "Add a wish"
 msgstr ""
 
 #: gifts/templates/photos/photo_upload.html:4
@@ -1432,8 +1540,8 @@ msgid "The image that represents your group."
 msgstr ""
 
 #: gifts/templates/photos/photo_upload.html:193
-#: gifts/templates/photos/photo_upload.html:508
-#: gifts/templates/photos/photo_upload.html:514
+#: gifts/templates/photos/photo_upload.html:509
+#: gifts/templates/photos/photo_upload.html:515
 msgid "Drag and drop an image"
 msgstr ""
 
@@ -1506,15 +1614,15 @@ msgstr ""
 msgid "View the group"
 msgstr ""
 
-#: gifts/templates/photos/photo_upload.html:332
+#: gifts/templates/photos/photo_upload.html:333
 msgid "Change again"
 msgstr ""
 
-#: gifts/templates/photos/photo_upload.html:503
+#: gifts/templates/photos/photo_upload.html:504
 msgid "Release to load"
 msgstr ""
 
-#: gifts/templates/photos/photo_upload.html:543
+#: gifts/templates/photos/photo_upload.html:544
 msgid "Saving…"
 msgstr ""
 
@@ -1679,42 +1787,42 @@ msgstr ""
 msgid "New gift on %(name)s's list!"
 msgstr ""
 
-#: gifts/views.py:373
+#: gifts/views.py:404
 msgid "Estimated price updated!"
 msgstr ""
 
-#: gifts/views.py:375
+#: gifts/views.py:406
 msgid "Invalid price format."
 msgstr ""
 
-#: gifts/views.py:488
+#: gifts/views.py:519
 msgid "You cannot mark your own gift as offered"
 msgstr ""
 
-#: gifts/views.py:505 gifts/views.py:707
+#: gifts/views.py:536 gifts/views.py:738
 msgid "Invalid group ID."
 msgstr ""
 
-#: gifts/views.py:619
+#: gifts/views.py:650
 msgid "Gift put back in the list."
 msgstr ""
 
-#: gifts/views.py:636
+#: gifts/views.py:667
 msgid "Gift deleted."
 msgstr ""
 
-#: gifts/views.py:690
+#: gifts/views.py:721
 msgid "Only the gift owner can mark it as received"
 msgstr ""
 
-#: gifts/views.py:705 gifts/views.py:737
+#: gifts/views.py:736 gifts/views.py:768
 msgid "GROUP_NOT_FOUND"
 msgstr ""
 
-#: gifts/views.py:848
+#: gifts/views.py:879
 msgid "Invalid settlement data."
 msgstr ""
 
-#: gifts/views.py:851
+#: gifts/views.py:882
 msgid "Settlement recorded."
 msgstr ""
