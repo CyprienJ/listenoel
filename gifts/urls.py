@@ -3,7 +3,7 @@ from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.urls import path, reverse_lazy
 
-from . import account, groups, views
+from . import account, events, groups, views
 
 urlpatterns = [
     # Default
@@ -95,6 +95,25 @@ urlpatterns = [
     path("gift/<int:gift_id>/mark-received/", views.mark_received, name="mark_received"),
     path("balance/<int:group_id>/", views.balance_view, name="balance_group"),
     path("group/<int:group_id>/add-settlement/", views.add_settlement, name="add_settlement"),
+    # Event lists
+    path("event/create/", events.create_event_list, name="create_event_list"),
+    path("event/<str:token>/", events.event_detail, name="event_detail"),
+    path("event/<str:token>/guest/", events.set_guest_name, name="event_set_guest"),
+    path("event/<str:token>/gift/add/", events.add_event_gift, name="add_event_gift"),
+    path("event/<str:token>/gift/<int:gift_id>/edit/", events.edit_event_gift, name="edit_event_gift"),
+    path("event/<str:token>/gift/<int:gift_id>/delete/", events.delete_event_gift, name="delete_event_gift"),
+    path(
+        "event/<str:token>/gift/<int:gift_id>/hide/",
+        events.toggle_event_gift_hidden,
+        name="toggle_event_gift_hidden",
+    ),
+    path("event/<str:token>/gift/<int:gift_id>/reserve/", events.reserve_event_gift, name="reserve_event_gift"),
+    path("event/<str:token>/gift/<int:gift_id>/transfer/", events.transfer_event_gift, name="transfer_event_gift"),
+    path("event/<str:token>/edit-info/", events.edit_event_info, name="edit_event_info"),
+    path("event/<str:token>/leave/", events.leave_event_list, name="leave_event_list"),
+    path("event/<str:token>/delete/", events.delete_event_list, name="delete_event_list"),
+    path("event/<str:token>/regenerate/", events.regenerate_event_token, name="regenerate_event_token"),
+    path("event/<str:token>/photo/", events.event_photo_upload, name="event_photo_upload"),
     # Notification
     path("subscribe/<int:user_id>/", views.toggle_subscription, name="toggle_subscription"),
     path("unsubscribe/<uidb64>/<token>/", views.unsubscribe_token, name="unsubscribe_token"),

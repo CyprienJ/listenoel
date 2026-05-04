@@ -77,17 +77,17 @@
                     {% endif %}
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2">
+                    <li class="px-2 py-1">
+                        <select id="themeSelect" class="form-select form-select-sm" style="font-size:12px">
+                            <option value="auto">🖥️ {% trans "Auto" %}</option>
+                            <option value="light">☀️ {% trans "Bright" %}</option>
+                            <option value="dark">🌙 {% trans "Dark" %}</option>
+                        </select>
+                    </li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
                     {% if user.is_authenticated %}
-                        <li class="px-2 py-1">
-                            <select id="themeSelect" class="form-select form-select-sm" style="font-size:12px">
-                                <option value="auto">🖥️ {% trans "Auto" %}</option>
-                                <option value="light">☀️ {% trans "Bright" %}</option>
-                                <option value="dark">🌙 {% trans "Dark" %}</option>
-                            </select>
-                        </li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
                         {% if user.is_staff %}
                             <li>
                                 <a class="dropdown-item py-2" href="{% url 'admin:index' %}" target="_blank">
@@ -95,9 +95,7 @@
                                     {% trans "Administration" %}
                                 </a>
                             </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
+                            <li><hr class="dropdown-divider"></li>
                         {% endif %}
                         <li>
                             <a class="dropdown-item py-2" href="{% url 'account' %}">

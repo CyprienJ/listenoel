@@ -30,7 +30,7 @@ class EmailVerificationMiddleware:
             if not any(
                 request.path == url or (url != reverse("welcome") and request.path.startswith(url))
                 for url in allowed_urls
-            ):
+            ) and not request.path.startswith("/event/"):
                 return redirect("verify_email_sent")
 
         return self.get_response(request)

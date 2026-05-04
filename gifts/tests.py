@@ -18,7 +18,7 @@ from django.utils.translation import activate, deactivate
 from django.utils.translation import gettext as _
 from PIL import Image
 
-from .models import BalanceSettlement, Gift, Group, Reservation, User
+from .models import BalanceSettlement, EventList, Gift, Group, GuestReservation, Reservation, User
 from .views import compute_group_balances
 
 
@@ -1130,4 +1130,411 @@ class UnOfferDeleteGiftTest(TestCase):
         self.client.force_login(self.user3)
         response = self.client.post(reverse("delete_offered_gift", args=[self.gift.id]))
         self.assertEqual(response.status_code, 403)
+
+
+# ── Event List tests ──────────────────────────────────────────────────────────
+
+
+class EventListCRUDTest(TestCase):
+    def setUp(self):
+        self.user1, self.user2, self.user3 = create_users()
+        self.event = EventList.objects.create(name="Wedding", owner=self.user1)
+
+    def test_create_event_list_redirects_to_detail(self):
+        self.client.force_login(self.user1)
+        response = self.client.post(
+            reverse("create_event_list"),
+            {"name": "Birthday", "description": "", "event_date": ""},
+        )
+        event = EventList.objects.get(name="Birthday")
+        self.assertRedirects(response, reverse("event_detail", kwargs={"token": event.access_token}))
+
+    def test_create_event_list_empty_name_redirects_to_dashboard(self):
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse("create_event_list"), {"name": "", "description": ""})
+        self.assertRedirects(response, reverse("dashboard"))
+        self.assertEqual(EventList.objects.filter(owner=self.user1).count(), 1)
+
+    def test_create_requires_login(self):
+        response = self.client.post(reverse("create_event_list"), {"name": "Test"})
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/login/", response["Location"])
+
+    def test_edit_info_updates_name_desc_date(self):
+        self.client.force_login(self.user1)
+        response = self.client.post(
+            reverse("edit_event_info", kwargs={"token": self.event.access_token}),
+            {"name": "New Name", "description": "A description", "event_date": "2026-12-25"},
+        )
+        self.assertRedirects(response, reverse("event_detail", kwargs={"token": self.event.access_token}))
+        self.event.refresh_from_db()
+        self.assertEqual(self.event.name, "New Name")
+        self.assertEqual(self.event.description, "A description")
+        self.assertEqual(str(self.event.event_date), "2026-12-25")
+
+    def test_edit_info_clears_date_when_empty(self):
+        import datetime
+
+        self.event.event_date = datetime.date(2026, 1, 1)
+        self.event.save()
+        self.client.force_login(self.user1)
+        self.client.post(
+            reverse("edit_event_info", kwargs={"token": self.event.access_token}),
+            {"name": "Wedding", "description": "", "event_date": ""},
+        )
+        self.event.refresh_from_db()
+        self.assertIsNone(self.event.event_date)
+
+    def test_edit_info_forbidden_for_non_owner(self):
+        self.client.force_login(self.user2)
+        response = self.client.post(
+            reverse("edit_event_info", kwargs={"token": self.event.access_token}),
+            {"name": "Hack"},
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_delete_event_list_by_owner(self):
+        self.client.force_login(self.user1)
+        token = self.event.access_token
+        response = self.client.post(reverse("delete_event_list", kwargs={"token": token}))
+        self.assertRedirects(response, reverse("dashboard"))
+        self.assertFalse(EventList.objects.filter(access_token=token).exists())
+
+    def test_delete_forbidden_for_non_owner(self):
+        self.client.force_login(self.user2)
+        response = self.client.post(reverse("delete_event_list", kwargs={"token": self.event.access_token}))
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(EventList.objects.filter(id=self.event.id).exists())
+
+
+class EventDetailViewTest(TestCase):
+    def setUp(self):
+        self.user1, self.user2, self.user3 = create_users()
+        self.event = EventList.objects.create(name="Party", owner=self.user1)
+        self.visible_gift = Gift.objects.create(
+            owner=self.user1, created_by=self.user1, title="Visible", event_list=self.event
+        )
+        self.hidden_gift = Gift.objects.create(
+            owner=self.user1, created_by=self.user1, title="Hidden", event_list=self.event, is_hidden=True
+        )
+
+    def _url(self):
+        return reverse("event_detail", kwargs={"token": self.event.access_token})
+
+    def test_owner_sees_hidden_gifts(self):
+        self.client.force_login(self.user1)
+        response = self.client.get(self._url())
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["gifts_list"]), 2)
+
+    def test_visitor_does_not_see_hidden_gifts(self):
+        self.client.force_login(self.user2)
+        response = self.client.get(self._url())
+        self.assertEqual(len(response.context["gifts_list"]), 1)
+        self.assertEqual(response.context["gifts_list"][0]["gift"].title, "Visible")
+
+    def test_anonymous_does_not_see_hidden_gifts(self):
+        response = self.client.get(self._url())
+        self.assertEqual(len(response.context["gifts_list"]), 1)
+
+    def test_authenticated_visitor_added_to_participants(self):
+        self.client.force_login(self.user2)
+        self.client.get(self._url())
+        self.assertIn(self.user2, self.event.participants.all())
+
+    def test_owner_not_added_to_participants(self):
+        self.client.force_login(self.user1)
+        self.client.get(self._url())
+        self.assertNotIn(self.user1, self.event.participants.all())
+
+    def test_anonymous_not_added_to_participants(self):
+        self.client.get(self._url())
+        self.assertEqual(self.event.participants.count(), 0)
+
+    def test_is_owner_true_for_owner(self):
+        self.client.force_login(self.user1)
+        response = self.client.get(self._url())
+        self.assertTrue(response.context["is_owner"])
+
+    def test_is_owner_false_for_visitor(self):
+        self.client.force_login(self.user2)
+        response = self.client.get(self._url())
+        self.assertFalse(response.context["is_owner"])
+
+    def test_invalid_token_returns_404(self):
+        response = self.client.get(reverse("event_detail", kwargs={"token": "INVALID99"}))
+        self.assertEqual(response.status_code, 404)
+
+
+class EventGiftManagementTest(TestCase):
+    def setUp(self):
+        self.user1, self.user2, self.user3 = create_users()
+        self.event = EventList.objects.create(name="Shower", owner=self.user1)
+        self.gift = Gift.objects.create(
+            owner=self.user1, created_by=self.user1, title="Existing", event_list=self.event
+        )
+
+    def _post_json(self, url_name, data, user=None, **kwargs):
+        if user:
+            self.client.force_login(user)
+        return self.client.post(
+            reverse(url_name, kwargs={"token": self.event.access_token, **kwargs}),
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+
+    def test_add_gift_success(self):
+        response = self._post_json("add_event_gift", {"title": "New Gift", "price": "25.00"}, user=self.user1)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertTrue(data["success"])
+        self.assertTrue(Gift.objects.filter(title="New Gift", event_list=self.event).exists())
+
+    def test_add_gift_missing_title(self):
+        response = self._post_json("add_event_gift", {}, user=self.user1)
+        self.assertEqual(response.status_code, 400)
+
+    def test_add_gift_forbidden_for_non_owner(self):
+        response = self._post_json("add_event_gift", {"title": "Hack"}, user=self.user2)
+        self.assertEqual(response.status_code, 403)
+
+    def test_add_gift_requires_login(self):
+        response = self.client.post(
+            reverse("add_event_gift", kwargs={"token": self.event.access_token}),
+            data=json.dumps({"title": "Test"}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/login/", response["Location"])
+
+    def test_edit_gift_success(self):
+        response = self._post_json("edit_event_gift", {"title": "Updated"}, user=self.user1, gift_id=self.gift.id)
+        self.assertEqual(response.status_code, 200)
+        self.gift.refresh_from_db()
+        self.assertEqual(self.gift.title, "Updated")
+
+    def test_edit_gift_forbidden_for_non_owner(self):
+        response = self._post_json("edit_event_gift", {"title": "Hack"}, user=self.user2, gift_id=self.gift.id)
+        self.assertEqual(response.status_code, 403)
+
+    def test_delete_gift_success(self):
+        self.client.force_login(self.user1)
+        response = self.client.post(
+            reverse("delete_event_gift", kwargs={"token": self.event.access_token, "gift_id": self.gift.id})
+        )
+        self.assertRedirects(response, reverse("event_detail", kwargs={"token": self.event.access_token}))
+        self.assertFalse(Gift.objects.filter(id=self.gift.id).exists())
+
+    def test_delete_gift_forbidden_for_non_owner(self):
+        self.client.force_login(self.user2)
+        response = self.client.post(
+            reverse("delete_event_gift", kwargs={"token": self.event.access_token, "gift_id": self.gift.id})
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_toggle_hidden_hides_gift(self):
+        self.client.force_login(self.user1)
+        response = self.client.post(
+            reverse("toggle_event_gift_hidden", kwargs={"token": self.event.access_token, "gift_id": self.gift.id})
+        )
+        data = json.loads(response.content)
+        self.assertTrue(data["hidden"])
+        self.gift.refresh_from_db()
+        self.assertTrue(self.gift.is_hidden)
+
+    def test_toggle_hidden_shows_gift(self):
+        self.gift.is_hidden = True
+        self.gift.save()
+        self.client.force_login(self.user1)
+        response = self.client.post(
+            reverse("toggle_event_gift_hidden", kwargs={"token": self.event.access_token, "gift_id": self.gift.id})
+        )
+        data = json.loads(response.content)
+        self.assertFalse(data["hidden"])
+
+    def test_toggle_hidden_forbidden_for_non_owner(self):
+        self.client.force_login(self.user2)
+        response = self.client.post(
+            reverse("toggle_event_gift_hidden", kwargs={"token": self.event.access_token, "gift_id": self.gift.id})
+        )
+        self.assertEqual(response.status_code, 403)
+
+
+class GuestReservationTest(TestCase):
+    def setUp(self):
+        self.user1, self.user2, self.user3 = create_users()
+        self.event = EventList.objects.create(name="Expo", owner=self.user1)
+        self.gift = Gift.objects.create(owner=self.user1, created_by=self.user1, title="Gadget", event_list=self.event)
+
+    def _reserve_url(self):
+        return reverse("reserve_event_gift", kwargs={"token": self.event.access_token, "gift_id": self.gift.id})
+
+    def _guest_url(self):
+        return reverse("event_set_guest", kwargs={"token": self.event.access_token})
+
+    def test_set_guest_name_stores_in_session(self):
+        response = self.client.post(
+            self._guest_url(), data=json.dumps({"name": "Mario"}), content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertTrue(data["success"])
+        self.assertEqual(self.client.session["guest_name"], "Mario")
+
+    def test_set_guest_name_empty_returns_400(self):
+        response = self.client.post(self._guest_url(), data=json.dumps({"name": ""}), content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_set_guest_name_claims_existing_reservations(self):
+        old_res = GuestReservation.objects.create(gift=self.gift, reserver_name="Mario", session_key="OLDSESSION")
+        response = self.client.post(
+            self._guest_url(), data=json.dumps({"name": "mario"}), content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        new_session = self.client.session.session_key
+        old_res.refresh_from_db()
+        self.assertEqual(old_res.session_key, new_session)
+
+    def test_reserve_gift_as_authenticated_user(self):
+        self.client.force_login(self.user2)
+        response = self.client.post(self._reserve_url(), data=json.dumps({}), content_type="application/json")
+        data = json.loads(response.content)
+        self.assertTrue(data["success"])
+        self.assertTrue(data["reserved"])
+        self.assertTrue(GuestReservation.objects.filter(gift=self.gift, reserver_user=self.user2).exists())
+
+    def test_reserve_gift_as_guest(self):
+        session = self.client.session
+        session["guest_name"] = "Luigi"
+        session.save()
+        response = self.client.post(self._reserve_url(), data=json.dumps({}), content_type="application/json")
+        data = json.loads(response.content)
+        self.assertTrue(data["reserved"])
+        self.assertTrue(GuestReservation.objects.filter(gift=self.gift, reserver_name="Luigi").exists())
+
+    def test_unreserve_gift_toggles_off(self):
+        self.client.force_login(self.user2)
+        GuestReservation.objects.create(gift=self.gift, reserver_user=self.user2, reserver_name="User2")
+        response = self.client.post(self._reserve_url(), data=json.dumps({}), content_type="application/json")
+        data = json.loads(response.content)
+        self.assertFalse(data["reserved"])
+        self.assertFalse(GuestReservation.objects.filter(gift=self.gift, reserver_user=self.user2).exists())
+
+    def test_reserve_requires_identity(self):
+        response = self.client.post(self._reserve_url(), data=json.dumps({}), content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+        data = json.loads(response.content)
+        self.assertFalse(data["success"])
+
+    def test_reserve_hidden_gift_returns_404(self):
+        self.gift.is_hidden = True
+        self.gift.save()
+        self.client.force_login(self.user2)
+        response = self.client.post(self._reserve_url(), data=json.dumps({}), content_type="application/json")
+        self.assertEqual(response.status_code, 404)
+
+    def test_reserve_exclusive_sets_flag(self):
+        self.client.force_login(self.user2)
+        self.client.post(self._reserve_url(), data=json.dumps({"exclusivity": True}), content_type="application/json")
+        res = GuestReservation.objects.get(gift=self.gift, reserver_user=self.user2)
+        self.assertTrue(res.exclusivity)
+
+    def test_reserve_non_exclusive_sets_flag_false(self):
+        self.client.force_login(self.user2)
+        self.client.post(self._reserve_url(), data=json.dumps({"exclusivity": False}), content_type="application/json")
+        res = GuestReservation.objects.get(gift=self.gift, reserver_user=self.user2)
+        self.assertFalse(res.exclusivity)
+
+
+class EventTokenAndPhotoTest(TestCase):
+    def setUp(self):
+        self.user1, self.user2, self.user3 = create_users()
+        self.event = EventList.objects.create(name="Concert", owner=self.user1)
+
+    def test_regenerate_token_changes_token(self):
+        old_token = self.event.access_token
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse("regenerate_event_token", kwargs={"token": old_token}))
+        self.event.refresh_from_db()
+        new_token = self.event.access_token
+        self.assertNotEqual(old_token, new_token)
+        self.assertRedirects(response, reverse("event_detail", kwargs={"token": new_token}))
+
+    def test_regenerate_token_old_url_returns_404(self):
+        old_token = self.event.access_token
+        self.client.force_login(self.user1)
+        self.client.post(reverse("regenerate_event_token", kwargs={"token": old_token}))
+        response = self.client.get(reverse("event_detail", kwargs={"token": old_token}))
+        self.assertEqual(response.status_code, 404)
+
+    def test_regenerate_token_forbidden_for_non_owner(self):
+        self.client.force_login(self.user2)
+        response = self.client.post(reverse("regenerate_event_token", kwargs={"token": self.event.access_token}))
+        self.assertEqual(response.status_code, 403)
+
+    @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+    def test_photo_upload_saves_image(self):
+        self.client.force_login(self.user1)
+        img = make_image()
+        response = self.client.post(
+            reverse("event_photo_upload", kwargs={"token": self.event.access_token}),
+            {"image": img},
+        )
+        self.assertRedirects(response, reverse("event_detail", kwargs={"token": self.event.access_token}))
+        self.event.refresh_from_db()
+        self.assertTrue(bool(self.event.image))
+
+    def test_photo_upload_forbidden_for_non_owner(self):
+        self.client.force_login(self.user2)
+        img = make_image()
+        response = self.client.post(
+            reverse("event_photo_upload", kwargs={"token": self.event.access_token}),
+            {"image": img},
+        )
+        self.assertEqual(response.status_code, 403)
+
+
+class EventTransferAndLeaveTest(TestCase):
+    def setUp(self):
+        self.user1, self.user2, self.user3 = create_users()
+        self.group = Group.objects.create(name="Family", created_by=self.user1)
+        self.group.members.add(self.user1)
+        self.event = EventList.objects.create(name="Reunion", owner=self.user1)
+        self.gift = Gift.objects.create(owner=self.user1, created_by=self.user1, title="Book", event_list=self.event)
+        GuestReservation.objects.create(gift=self.gift, reserver_name="Guest", session_key="sk123")
+
+    def test_transfer_moves_gift_to_personal_list(self):
+        self.client.force_login(self.user1)
+        self.client.post(
+            reverse("transfer_event_gift", kwargs={"token": self.event.access_token, "gift_id": self.gift.id})
+        )
+        self.gift.refresh_from_db()
+        self.assertIsNone(self.gift.event_list)
+        self.assertIn(self.group, self.gift.visible_in.all())
+
+    def test_transfer_deletes_guest_reservations(self):
+        self.client.force_login(self.user1)
+        self.client.post(
+            reverse("transfer_event_gift", kwargs={"token": self.event.access_token, "gift_id": self.gift.id})
+        )
+        self.assertFalse(GuestReservation.objects.filter(gift=self.gift).exists())
+
+    def test_transfer_forbidden_for_non_owner(self):
+        self.client.force_login(self.user2)
+        response = self.client.post(
+            reverse("transfer_event_gift", kwargs={"token": self.event.access_token, "gift_id": self.gift.id})
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_leave_removes_user_from_participants(self):
+        self.event.participants.add(self.user2)
+        self.client.force_login(self.user2)
+        response = self.client.post(reverse("leave_event_list", kwargs={"token": self.event.access_token}))
+        self.assertRedirects(response, reverse("dashboard"))
+        self.assertNotIn(self.user2, self.event.participants.all())
+
+    def test_leave_requires_login(self):
+        response = self.client.post(reverse("leave_event_list", kwargs={"token": self.event.access_token}))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/login/", response["Location"])
         self.assertTrue(Gift.objects.filter(id=self.gift.id).exists())

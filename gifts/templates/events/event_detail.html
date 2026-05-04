@@ -1,0 +1,805 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{{ event.name }} — noscadeaux{% endblock %}
+
+{% block main_class %}nc-event-page{% endblock %}
+
+{% block content %}
+
+<!-- ── COVER ──────────────────────────────────────────────────────────────── -->
+<div class="nc-event-cover">
+    {% if event.image %}
+        <img src="{{ event.image.url }}" alt="{{ event.name }}" class="nc-event-cover__img">
+    {% endif %}
+    <div class="nc-event-cover__overlay">
+        <div class="nc-event-cover__badge">
+            🎁 {% trans "Event list" %}
+        </div>
+        <h1 class="nc-event-cover__title">{{ event.name }}</h1>
+    </div>
+    {% if is_owner %}
+    <form method="post" action="{% url 'event_photo_upload' token=event.access_token %}"
+          enctype="multipart/form-data" class="nc-event-cover__upload-btn">
+        {% csrf_token %}
+        <label class="nc-btn nc-btn--ghost nc-btn--sm" title="{% trans 'Change cover photo' %}">
+            <i class="bi bi-camera-fill"></i>
+            <input type="file" name="image" accept="image/*" style="display:none"
+                   onchange="this.form.submit()">
+        </label>
+    </form>
+    {% endif %}
+</div>
+
+<!-- ── INFO STRIP ─────────────────────────────────────────────────────────── -->
+<div class="nc-event-info-strip">
+    <div class="nc-event-info-strip__desc">
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <div class="nc-event-info-label mb-0">{% trans "About" %}</div>
+            {% if is_owner %}
+            <button type="button" class="nc-event-icon-btn nc-event-icon-btn--sm"
+                    title="{% trans 'Edit' %}"
+                    onclick="openEditInfo()">
+                <i class="bi bi-pencil"></i>
+            </button>
+            {% endif %}
+        </div>
+        {% if event.description %}
+            <p class="nc-event-info-text">{{ event.description }}</p>
+        {% else %}
+            <p class="nc-event-info-text nc-text-muted">{% if is_owner %}<em>{% trans "No description" %}</em>{% else %}—{% endif %}</p>
+        {% endif %}
+    </div>
+
+    <div class="nc-event-info-strip__meta">
+        {% if event.event_date %}
+        <div class="nc-event-info-row">
+            <div class="nc-event-info-label">{% trans "Event date" %}</div>
+            <div class="nc-event-info-date">
+                <i class="bi bi-calendar3"></i>
+                {{ event.event_date|date:"j F Y" }}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    {% if is_owner %}
+    <div class="nc-event-info-strip__owner-actions">
+        <button type="button" class="nc-btn nc-btn--ghost nc-btn--sm"
+                data-bs-toggle="modal" data-bs-target="#shareModal">
+            <i class="bi bi-share"></i> {% trans "Share" %}
+        </button>
+        <button type="button" class="nc-btn nc-btn--ghost nc-btn--sm text-danger"
+                data-bs-toggle="modal" data-bs-target="#deleteListModal">
+            <i class="bi bi-trash3"></i>
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ── MESSAGES ──────────────────────────────────────────────────────────── -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} border-0 shadow-sm mx-3 mt-3 mb-0">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<!-- ── WISHLIST ───────────────────────────────────────────────────────────── -->
+<div class="nc-event-wishlist">
+    <div class="nc-event-wishlist__header">
+        {% if not is_owner %}
+        <div class="nc-event-filter-bar">
+            <button type="button" class="nc-event-filter-btn active" onclick="setFilter('all', this)">{% trans "All" %}</button>
+            <button type="button" class="nc-event-filter-btn" onclick="setFilter('available', this)">{% trans "Available" %}</button>
+            <button type="button" class="nc-event-filter-btn" onclick="setFilter('reserved', this)">{% trans "Reserved" %}</button>
+        </div>
+        {% endif %}
+        <div class="d-flex align-items-center gap-2 ms-auto">
+        {% if is_owner %}
+        <button type="button" class="nc-btn nc-btn--primary nc-btn--sm"
+                data-bs-toggle="modal" data-bs-target="#addGiftModal">
+            <i class="bi bi-plus-lg"></i> {% trans "Add a wish" %}
+        </button>
+        {% endif %}
+        </div>
+    </div>
+
+    {% if is_owner %}
+    <div class="nc-event-owner-hint">
+        <i class="bi bi-eye"></i>
+        {% trans "Use the <strong>eye</strong> icon to hide a wish from visitors." %}
+    </div>
+    {% endif %}
+
+    {% if not is_owner %}
+    <div class="nc-event-identity-banner">
+        {% if has_identity %}
+            {% if reserver_user %}
+                <i class="bi bi-person-check-fill"></i>
+                <span>{% blocktrans with name=reserver_user.nickname %}Viewing as <strong>{{ name }}</strong>{% endblocktrans %}</span>
+            {% else %}
+                <i class="bi bi-person-check-fill"></i>
+                <span>{% blocktrans with name=guest_name %}Viewing as <strong>{{ name }}</strong>{% endblocktrans %}</span>
+            {% endif %}
+            <button type="button" class="nc-btn nc-btn--ghost nc-btn--sm ms-auto"
+                    data-bs-toggle="modal" data-bs-target="#identityModal">
+                {% trans "Change" %}
+            </button>
+        {% else %}
+            <i class="bi bi-question-circle"></i>
+            <span>{% trans "Who are you? Identify yourself to reserve a gift." %}</span>
+            <button type="button" class="nc-btn nc-btn--primary nc-btn--sm ms-auto"
+                    data-bs-toggle="modal" data-bs-target="#identityModal">
+                {% trans "I'm…" %}
+            </button>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="nc-event-gift-list">
+        {% for item in gifts_list %}
+        {% with gift=item.gift my_res=item.my_reservation other_res=item.other_reservations %}
+        <div class="nc-event-gift-row {% if gift.is_hidden %}nc-event-gift-row--hidden{% endif %}"
+             id="gift-row-{{ gift.id }}"
+             data-reserved="{% if item.my_reservation or item.other_reservations %}true{% else %}false{% endif %}">
+            <div class="nc-event-gift-icon {% if my_res %}nc-event-gift-icon--mine{% elif other_res %}nc-event-gift-icon--taken{% endif %}">
+                {% if my_res %}
+                    <i class="bi bi-check2 nc-event-check-mine"></i>
+                {% elif other_res %}
+                    <i class="bi bi-check2 nc-event-check-taken"></i>
+                {% else %}
+                    <i class="bi bi-gift nc-event-gift-icon-color"></i>
+                {% endif %}
+            </div>
+
+            <div class="nc-event-gift-body">
+                <div class="nc-event-gift-title {% if not is_owner and item.has_exclusive_other and not my_res %}text-decoration-line-through{% endif %}">
+                    {{ gift.title }}
+                    {% if is_owner and gift.is_hidden %}
+                        <span class="nc-event-hidden-badge">{% trans "Hidden" %}</span>
+                    {% endif %}
+                </div>
+                {% if gift.description %}
+                    <div class="nc-event-gift-desc">{{ gift.description }}</div>
+                {% endif %}
+                <div class="nc-event-gift-meta">
+                    {% if gift.price %}
+                        <span class="nc-event-gift-price">{{ gift.price }} €</span>
+                    {% endif %}
+                    {% if gift.url %}
+                        <a href="{{ gift.url }}" target="_blank" rel="noopener" class="nc-event-gift-link">
+                            <i class="bi bi-link-45deg"></i> {% trans "Link" %}
+                        </a>
+                    {% endif %}
+                    {% if not is_owner %}
+                        {% for r in other_res %}
+                            <span class="nc-event-reserved-by">
+                                <i class="bi bi-check2-circle"></i>
+                                {% blocktrans with name=r.reserver_name %}Reserved by {{ name }}{% endblocktrans %}{% if r.exclusivity %} ({% trans "excl." %}){% endif %}
+                            </span>
+                        {% endfor %}
+                        {% if my_res %}
+                            <span class="nc-event-reserved-by nc-event-reserved-by--mine">
+                                <i class="bi bi-check2-circle"></i>
+                                {% blocktrans with name=my_res.reserver_name %}Reserved by {{ name }}{% endblocktrans %}{% if my_res.exclusivity %} ({% trans "excl." %}){% endif %}
+                            </span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="nc-event-gift-actions">
+                {% if is_owner %}
+                    <button type="button" class="nc-event-icon-btn"
+                            title="{% trans 'Edit' %}"
+                            onclick="openEditGift({{ gift.id }}, '{{ gift.title|escapejs }}', '{{ gift.description|escapejs }}', '{{ gift.url|escapejs }}', '{{ gift.price|default:'' }}')">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button type="button" class="nc-event-icon-btn {% if gift.is_hidden %}nc-event-icon-btn--active{% endif %}"
+                            title="{% if gift.is_hidden %}{% trans 'Show to visitors' %}{% else %}{% trans 'Hide from visitors' %}{% endif %}"
+                            onclick="toggleHidden({{ gift.id }}, this)">
+                        <i class="bi bi-eye{% if gift.is_hidden %}-slash{% endif %}"></i>
+                    </button>
+                    <button type="button" class="nc-event-icon-btn"
+                            title="{% trans 'Transfer to my wish list' %}"
+                            onclick="openTransferConfirm('{% url 'transfer_event_gift' token=event.access_token gift_id=gift.id %}', '{{ gift.title|escapejs }}')">
+                        <i class="bi bi-box-arrow-up-right"></i>
+                    </button>
+                    <button type="button" class="nc-event-icon-btn nc-event-icon-btn--danger"
+                            title="{% trans 'Delete' %}"
+                            onclick="confirmDeleteGift({{ gift.id }}, '{{ gift.title|escapejs }}')">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+
+                {% else %}
+                    {% if my_res %}
+                        <button type="button" class="nc-event-reserve-btn nc-event-reserve-btn--mine"
+                                onclick="cancelReserve({{ gift.id }}, this)"
+                                data-gift-id="{{ gift.id }}">
+                            <i class="bi bi-check2"></i>
+                            {% trans "Reserved by you" %}{% if my_res.exclusivity %} ({% trans "excl." %}){% endif %}
+                        </button>
+                    {% elif item.has_exclusive_other %}
+                        <span class="nc-event-taken-label">
+                            <i class="bi bi-lock-fill"></i> {% trans "Reserved exclusively" %}
+                        </span>
+                    {% elif other_res %}
+                        <button type="button" class="nc-event-reserve-btn"
+                                onclick="openReserveModal({{ gift.id }}, '{{ gift.title|escapejs }}')"
+                                {% if not has_identity %}
+                                    data-bs-toggle="modal" data-bs-target="#identityModal"
+                                    data-pending-gift="{{ gift.id }}"
+                                {% endif %}
+                                data-gift-id="{{ gift.id }}">
+                            <i class="bi bi-gift"></i>
+                            {% trans "I'll offer it too!" %}
+                        </button>
+                    {% else %}
+                        <button type="button"
+                                class="nc-event-reserve-btn"
+                                onclick="openReserveModal({{ gift.id }}, '{{ gift.title|escapejs }}')"
+                                {% if not has_identity %}
+                                    data-bs-toggle="modal" data-bs-target="#identityModal"
+                                    data-pending-gift="{{ gift.id }}"
+                                {% endif %}
+                                data-gift-id="{{ gift.id }}">
+                            <i class="bi bi-gift"></i>
+                            {% trans "I'll offer it!" %}
+                        </button>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% if not forloop.last %}<div class="nc-event-gift-divider"></div>{% endif %}
+        {% endwith %}
+        {% empty %}
+        <div class="nc-event-empty-gifts">
+            {% if is_owner %}
+                <i class="bi bi-gift" style="font-size:28px; color:var(--nc-text-muted)"></i>
+                <p>{% trans "No wishes yet. Add the first one!" %}</p>
+            {% else %}
+                <i class="bi bi-hourglass-split" style="font-size:28px; color:var(--nc-text-muted)"></i>
+                <p>{% trans "No wishes have been added yet." %}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ── IDENTITY MODAL ─────────────────────────────────────────────────────── -->
+<div class="modal fade" id="identityModal" tabindex="-1" aria-labelledby="identityModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="identityModalLabel">{% trans "Who are you?" %}</h5>
+                {% if has_identity %}
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                {% endif %}
+            </div>
+            <div class="modal-body">
+                {% if participants %}
+                <div class="mb-3">
+                    <div class="nc-event-info-label mb-2">{% trans "Pick your name" %}</div>
+                    <div class="nc-event-participant-list">
+                        {% for name in participants %}
+                        <button type="button" class="nc-event-participant-chip"
+                                onclick="selectParticipant('{{ name|escapejs }}')">
+                            <span class="nc-event-avatar-sm">{{ name|first|upper }}</span>
+                            {{ name }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                    <div class="nc-event-or-divider">{% trans "or" %}</div>
+                </div>
+                {% endif %}
+                <div class="mb-3">
+                    <label for="guestNameInput" class="form-label">{% trans "Enter your name" %}</label>
+                    <input type="text" id="guestNameInput" class="form-control"
+                           placeholder="{% trans 'First name or nickname' %}"
+                           value="{{ guest_name|default:'' }}" maxlength="100" autocomplete="off">
+                </div>
+                <div id="identityError" class="text-danger small d-none"></div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                {% if has_identity %}
+                <button type="button" class="nc-btn nc-btn--ghost" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                {% endif %}
+                <button type="button" class="nc-btn nc-btn--primary w-100" onclick="submitIdentity()">
+                    {% trans "Continue" %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if is_owner %}
+<!-- ── ADD GIFT MODAL ─────────────────────────────────────────────────────── -->
+<div class="modal fade" id="addGiftModal" tabindex="-1" aria-labelledby="addGiftModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="addGiftModalLabel">{% trans "New wish" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="addTitle" class="form-label">{% trans "Name" %} <span class="text-danger">*</span></label>
+                    <input type="text" id="addTitle" class="form-control"
+                           placeholder="{% trans 'What is it?' %}" maxlength="200" required>
+                </div>
+                <div class="mb-3">
+                    <label for="addDesc" class="form-label">{% trans "Details" %}</label>
+                    <textarea id="addDesc" class="form-control" rows="2"
+                              placeholder="{% trans 'Size, color, details…' %}"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="addUrl" class="form-label">{% trans "Link" %}</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
+                        <input type="url" id="addUrl" class="form-control" placeholder="https://…">
+                    </div>
+                </div>
+                <div class="mb-1">
+                    <label for="addPrice" class="form-label">{% trans "Estimated price" %}</label>
+                    <div class="input-group">
+                        <input type="number" id="addPrice" class="form-control"
+                               placeholder="0.00" min="0" step="0.01">
+                        <span class="input-group-text">€</span>
+                    </div>
+                </div>
+                <div id="addGiftError" class="text-danger small d-none mt-2"></div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="nc-btn nc-btn--ghost" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <button type="button" class="nc-btn nc-btn--primary" onclick="submitAddGift()">{% trans "Add" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── EDIT GIFT MODAL ────────────────────────────────────────────────────── -->
+<div class="modal fade" id="editGiftModal" tabindex="-1" aria-labelledby="editGiftModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="editGiftModalLabel">{% trans "Edit wish" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editGiftId">
+                <div class="mb-3">
+                    <label for="editTitle" class="form-label">{% trans "Name" %} <span class="text-danger">*</span></label>
+                    <input type="text" id="editTitle" class="form-control" maxlength="200" required>
+                </div>
+                <div class="mb-3">
+                    <label for="editDesc" class="form-label">{% trans "Details" %}</label>
+                    <textarea id="editDesc" class="form-control" rows="2"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="editUrl" class="form-label">{% trans "Link" %}</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
+                        <input type="url" id="editUrl" class="form-control" placeholder="https://…">
+                    </div>
+                </div>
+                <div class="mb-1">
+                    <label for="editPrice" class="form-label">{% trans "Estimated price" %}</label>
+                    <div class="input-group">
+                        <input type="number" id="editPrice" class="form-control"
+                               placeholder="0.00" min="0" step="0.01">
+                        <span class="input-group-text">€</span>
+                    </div>
+                </div>
+                <div id="editGiftError" class="text-danger small d-none mt-2"></div>
+            </div>
+            <div class="modal-footer border-0 pt-0 justify-content-between">
+                <button type="button" class="nc-btn nc-btn--ghost text-danger" id="deleteGiftBtn">
+                    <i class="bi bi-trash3"></i> {% trans "Delete" %}
+                </button>
+                <div class="d-flex gap-2">
+                    <button type="button" class="nc-btn nc-btn--ghost" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="button" class="nc-btn nc-btn--primary" onclick="submitEditGift()">{% trans "Save" %}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── DELETE GIFT CONFIRM ────────────────────────────────────────────────── -->
+<div class="modal fade" id="deleteGiftModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-body text-center pt-4 px-4">
+                <div class="mb-2" style="font-size:28px">🗑️</div>
+                <p class="fw-bold mb-1">{% trans "Delete this wish?" %}</p>
+                <p class="text-muted small" id="deleteGiftName"></p>
+            </div>
+            <div class="modal-footer border-0 pt-0 justify-content-center gap-2">
+                <button type="button" class="nc-btn nc-btn--ghost" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <form id="deleteGiftForm" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="nc-btn nc-btn--primary"
+                            style="background:var(--nc-danger,#e53e3e); border-color:var(--nc-danger,#e53e3e)">
+                        {% trans "Delete" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── DELETE LIST MODAL ──────────────────────────────────────────────────── -->
+<div class="modal fade" id="deleteListModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-body text-center pt-4 px-4">
+                <div class="mb-2" style="font-size:28px">⚠️</div>
+                <p class="fw-bold mb-1">{% trans "Delete this event list?" %}</p>
+                <p class="text-muted small">{% trans "All wishes and reservations will be permanently deleted." %}</p>
+            </div>
+            <div class="modal-footer border-0 pt-0 justify-content-center gap-2">
+                <button type="button" class="nc-btn nc-btn--ghost" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <form method="post" action="{% url 'delete_event_list' token=event.access_token %}">
+                    {% csrf_token %}
+                    <button type="submit" class="nc-btn nc-btn--primary"
+                            style="background:var(--nc-danger,#e53e3e); border-color:var(--nc-danger,#e53e3e)">
+                        {% trans "Delete" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── SHARE MODAL ────────────────────────────────────────────────────────── -->
+<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="shareModalLabel">{% trans "Share this list" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-3">{% trans "Anyone with this link can view and reserve gifts without an account." %}</p>
+                <div class="input-group">
+                    <input type="text" id="shareUrl" class="form-control" readonly
+                           value="{{ request.scheme }}://{{ request.get_host }}{% url 'event_detail' token=event.access_token %}">
+                    <button class="btn btn-outline-secondary" type="button" onclick="copyShareUrl()">
+                        <i class="bi bi-clipboard" id="copyIcon"></i>
+                    </button>
+                </div>
+                <div id="copySuccess" class="text-success small mt-2 d-none">
+                    <i class="bi bi-check2"></i> {% trans "Copied!" %}
+                </div>
+                <hr class="my-3">
+                <button type="button" class="btn btn-outline-warning btn-sm w-100"
+                        onclick="openRegenerateConfirm()">
+                    <i class="bi bi-arrow-repeat me-1"></i>{% trans "Generate a new link" %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ── TRANSFER CONFIRM MODAL ────────────────────────────────────────────── -->
+<div class="modal fade" id="transferConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-body text-center pt-4 px-4">
+                <div class="mb-2" style="font-size:28px">📋</div>
+                <p class="fw-bold mb-1">{% trans "Transfer to my wish list?" %}</p>
+                <p class="text-muted small" id="transferGiftName"></p>
+                <p class="text-muted small">{% trans "The gift will be moved to your personal wish list and shared with your groups." %}</p>
+            </div>
+            <div class="modal-footer border-0 pt-0 justify-content-center gap-2">
+                <button type="button" class="nc-btn nc-btn--ghost" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <form id="transferGiftForm" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="nc-btn nc-btn--primary">{% trans "Transfer" %}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── REGENERATE CONFIRM MODAL ───────────────────────────────────────────── -->
+<div class="modal fade" id="regenerateConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-body text-center pt-4 px-4">
+                <div class="mb-2" style="font-size:28px">🔗</div>
+                <p class="fw-bold mb-1">{% trans "Generate a new link?" %}</p>
+                <p class="text-muted small">{% trans "The old link will stop working." %}</p>
+            </div>
+            <div class="modal-footer border-0 pt-0 justify-content-center gap-2">
+                <button type="button" class="nc-btn nc-btn--ghost" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <form method="post" action="{% url 'regenerate_event_token' token=event.access_token %}">
+                    {% csrf_token %}
+                    <button type="submit" class="nc-btn nc-btn--primary"
+                            style="background:var(--nc-warning,#d97706); border-color:var(--nc-warning,#d97706)">
+                        {% trans "Generate" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ── EDIT INFO MODAL ───────────────────────────────────────────────────── -->
+<div class="modal fade" id="editInfoModal" tabindex="-1" aria-labelledby="editInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="editInfoModalLabel">{% trans "Edit list info" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'edit_event_info' token=event.access_token %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editInfoName" class="form-label">{% trans "Name" %}</label>
+                        <input type="text" id="editInfoName" name="name" class="form-control"
+                               value="{{ event.name }}" maxlength="200" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editInfoDate" class="form-label">{% trans "Event date" %} <span class="text-muted small">({% trans "optional" %})</span></label>
+                        <input type="date" id="editInfoDate" name="event_date" class="form-control"
+                               value="{{ event.event_date|date:'Y-m-d'|default:'' }}">
+                    </div>
+                    <div class="mb-1">
+                        <label for="editInfoDesc" class="form-label">{% trans "Description" %} <span class="text-muted small">({% trans "optional" %})</span></label>
+                        <textarea id="editInfoDesc" name="description" class="form-control" rows="3"
+                                  placeholder="{% trans 'A short message for your guests…' %}">{{ event.description }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="nc-btn nc-btn--ghost" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="submit" class="nc-btn nc-btn--primary">{% trans "Save" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}{# is_owner #}
+
+<!-- ── RESERVE MODAL (exclusivity choice) ────────────────────────────────── -->
+<div class="modal fade" id="reserveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="reserveModalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pb-1">
+                <p class="text-muted small mb-3">{% trans "How do you want to offer this gift?" %}</p>
+                <div class="d-grid gap-2">
+                    <button type="button" class="nc-btn nc-btn--primary"
+                            onclick="submitReserve(false)">
+                        <i class="bi bi-people me-1"></i> {% trans "Others can join" %}
+                    </button>
+                    <button type="button" class="nc-btn nc-btn--ghost"
+                            onclick="submitReserve(true)">
+                        <i class="bi bi-person-check me-1"></i> {% trans "I'll take it exclusively" %}
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-2 pb-3 justify-content-center">
+                <button type="button" class="btn btn-link btn-sm text-muted" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_body %}
+<script>
+const CSRF_TOKEN = "{{ csrf_token }}";
+const URL_GUEST    = "{% url 'event_set_guest'           token=event.access_token %}";
+const URL_ADD_GIFT = "{% url 'add_event_gift'            token=event.access_token %}";
+const URL_RESERVE  = "{% url 'reserve_event_gift'        token=event.access_token gift_id=0 %}";
+const URL_EDIT     = "{% url 'edit_event_gift'           token=event.access_token gift_id=0 %}";
+const URL_HIDE     = "{% url 'toggle_event_gift_hidden'  token=event.access_token gift_id=0 %}";
+const URL_DELETE   = "{% url 'delete_event_gift'         token=event.access_token gift_id=0 %}";
+
+function giftUrl(template, id) { return template.replace('/0/', `/${id}/`); }
+
+let pendingGiftId = null;
+
+function selectParticipant(name) {
+    document.getElementById("guestNameInput").value = name;
+}
+
+function submitIdentity() {
+    const name = document.getElementById("guestNameInput").value.trim();
+    const errEl = document.getElementById("identityError");
+    if (!name) {
+        errEl.textContent = "{% trans 'Please enter your name.' %}";
+        errEl.classList.remove("d-none");
+        return;
+    }
+    errEl.classList.add("d-none");
+    fetch(URL_GUEST, {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "X-CSRFToken": CSRF_TOKEN},
+        body: JSON.stringify({name}),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById("identityModal"));
+            if (modal) modal.hide();
+            if (pendingGiftId) {
+                const gid = pendingGiftId;
+                pendingGiftId = null;
+                const btn = document.querySelector(`[data-gift-id="${gid}"]`);
+                const title = btn?.closest(".nc-event-gift-row")?.querySelector(".nc-event-gift-title")?.textContent?.trim() || "";
+                setTimeout(() => openReserveModal(gid, title), 300);
+            } else {
+                location.reload();
+            }
+        }
+    });
+}
+
+document.querySelectorAll("[data-pending-gift]").forEach(btn => {
+    btn.addEventListener("click", () => { pendingGiftId = btn.dataset.pendingGift; });
+});
+
+let reserveGiftId = null;
+
+function openReserveModal(giftId, title) {
+    reserveGiftId = giftId;
+    document.getElementById("reserveModalTitle").textContent = title;
+    new bootstrap.Modal(document.getElementById("reserveModal")).show();
+}
+
+function submitReserve(exclusivity) {
+    bootstrap.Modal.getInstance(document.getElementById("reserveModal"))?.hide();
+    fetch(giftUrl(URL_RESERVE, reserveGiftId), {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "X-CSRFToken": CSRF_TOKEN},
+        body: JSON.stringify({exclusivity}),
+    })
+    .then(r => r.json())
+    .then(data => { if (data.success) location.reload(); });
+}
+
+function cancelReserve(giftId, btn) {
+    if (btn.dataset.pendingGift) return;
+    fetch(giftUrl(URL_RESERVE, giftId), {
+        method: "POST",
+        headers: {"X-CSRFToken": CSRF_TOKEN},
+    })
+    .then(r => r.json())
+    .then(data => { if (data.success) location.reload(); });
+}
+
+function setFilter(filter, btn) {
+    document.querySelectorAll(".nc-event-filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".nc-event-gift-row").forEach(row => {
+        const reserved = row.dataset.reserved === "true";
+        let visible;
+        if (filter === "all") visible = true;
+        else if (filter === "available") visible = !reserved;
+        else visible = reserved;
+        row.classList.toggle("d-none", !visible);
+    });
+    document.querySelectorAll(".nc-event-gift-divider").forEach(d => {
+        d.classList.toggle("d-none", filter !== "all");
+    });
+}
+
+function openTransferConfirm(url, title) {
+    document.getElementById("transferGiftName").textContent = title;
+    document.getElementById("transferGiftForm").action = url;
+    new bootstrap.Modal(document.getElementById("transferConfirmModal")).show();
+}
+
+function openRegenerateConfirm() {
+    new bootstrap.Modal(document.getElementById("regenerateConfirmModal")).show();
+}
+
+function openEditInfo() {
+    new bootstrap.Modal(document.getElementById("editInfoModal")).show();
+}
+
+function submitAddGift() {
+    const title = document.getElementById("addTitle").value.trim();
+    const errEl = document.getElementById("addGiftError");
+    if (!title) {
+        errEl.textContent = "{% trans 'Name is required.' %}";
+        errEl.classList.remove("d-none");
+        return;
+    }
+    errEl.classList.add("d-none");
+    fetch(URL_ADD_GIFT, {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "X-CSRFToken": CSRF_TOKEN},
+        body: JSON.stringify({
+            title,
+            description: document.getElementById("addDesc").value.trim(),
+            url: document.getElementById("addUrl").value.trim(),
+            price: document.getElementById("addPrice").value.trim(),
+        }),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) location.reload();
+        else { errEl.textContent = data.error || "Error"; errEl.classList.remove("d-none"); }
+    });
+}
+
+function openEditGift(id, title, desc, url, price) {
+    document.getElementById("editGiftId").value = id;
+    document.getElementById("editTitle").value = title;
+    document.getElementById("editDesc").value = desc;
+    document.getElementById("editUrl").value = url;
+    document.getElementById("editPrice").value = price;
+    document.getElementById("deleteGiftBtn").onclick = () => confirmDeleteGift(id, title);
+    new bootstrap.Modal(document.getElementById("editGiftModal")).show();
+}
+
+function submitEditGift() {
+    const id = document.getElementById("editGiftId").value;
+    const title = document.getElementById("editTitle").value.trim();
+    const errEl = document.getElementById("editGiftError");
+    if (!title) {
+        errEl.textContent = "{% trans 'Name is required.' %}";
+        errEl.classList.remove("d-none");
+        return;
+    }
+    errEl.classList.add("d-none");
+    fetch(giftUrl(URL_EDIT, id), {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "X-CSRFToken": CSRF_TOKEN},
+        body: JSON.stringify({
+            title,
+            description: document.getElementById("editDesc").value.trim(),
+            url: document.getElementById("editUrl").value.trim(),
+            price: document.getElementById("editPrice").value.trim(),
+        }),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) location.reload();
+        else { errEl.textContent = data.error || "Error"; errEl.classList.remove("d-none"); }
+    });
+}
+
+function confirmDeleteGift(id, title) {
+    bootstrap.Modal.getInstance(document.getElementById("editGiftModal"))?.hide();
+    document.getElementById("deleteGiftName").textContent = title;
+    document.getElementById("deleteGiftForm").action = giftUrl(URL_DELETE, id);
+    new bootstrap.Modal(document.getElementById("deleteGiftModal")).show();
+}
+
+function toggleHidden(giftId, btn) {
+    fetch(giftUrl(URL_HIDE, giftId), {
+        method: "POST",
+        headers: {"X-CSRFToken": CSRF_TOKEN},
+    })
+    .then(r => r.json())
+    .then(data => { if (data.success) location.reload(); });
+}
+
+function copyShareUrl() {
+    const val = document.getElementById("shareUrl").value;
+    navigator.clipboard.writeText(val).then(() => {
+        document.getElementById("copyIcon").className = "bi bi-check2";
+        document.getElementById("copySuccess").classList.remove("d-none");
+        setTimeout(() => {
+            document.getElementById("copyIcon").className = "bi bi-clipboard";
+            document.getElementById("copySuccess").classList.add("d-none");
+        }, 2000);
+    });
+}
+
+{% if not is_owner and not has_identity %}
+document.addEventListener("DOMContentLoaded", () => {
+    new bootstrap.Modal(document.getElementById("identityModal")).show();
+});
+{% endif %}
+</script>
+{% endblock %}

@@ -1265,3 +1265,310 @@ body {
     .nc-invitation-card { padding: 32px 24px 24px; }
     .nc-invitation-members-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Event List feature
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Event page layout ───────────────────────────────────────── */
+.nc-event-page {
+    width: 100%;
+    max-width: 860px;
+    padding: 0;
+    margin-inline: auto;
+}
+
+/* ── Cover ───────────────────────────────────────────────────── */
+.nc-event-cover {
+    position: relative;
+    height: 160px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: linear-gradient(145deg, oklch(88% 0.09 15), oklch(90% 0.07 30));
+}
+
+.nc-event-cover__img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%; object-fit: cover;
+}
+.nc-event-cover__overlay {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 0 24px 16px;
+    background: linear-gradient(to top, oklch(18% 0.01 60 / 0.3) 0%, transparent 60%);
+}
+.nc-event-cover__badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: white; border-radius: 99px;
+    padding: 3px 10px 3px 8px; font-size: 11px; font-weight: 600;
+    color: var(--nc-text-sub); margin-bottom: 6px;
+    width: fit-content;
+}
+.nc-event-cover__title {
+    font-family: 'Lora', serif;
+    font-size: 24px; font-weight: 500;
+    color: white; letter-spacing: -0.03em; line-height: 1.2;
+    text-shadow: 0 1px 8px oklch(0% 0 0 / 0.25);
+    margin: 0;
+}
+
+/* ── Info strip ──────────────────────────────────────────────── */
+.nc-event-info-strip {
+    background: var(--nc-white);
+    border-bottom: 1px solid var(--nc-border);
+    padding: 16px 24px;
+    display: flex; align-items: flex-start; gap: 24px;
+    flex-wrap: wrap;
+}
+.nc-event-info-strip__desc { flex: 1; min-width: 180px; }
+.nc-event-info-strip__meta { flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; min-width: 160px; }
+.nc-event-info-strip__owner-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+.nc-event-info-label {
+    font-size: 10.5px; font-weight: 600;
+    color: var(--nc-text-muted);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 4px;
+}
+.nc-event-info-text { font-size: 13px; color: var(--nc-text-sub); line-height: 1.55; margin: 0; }
+.nc-event-info-row { display: flex; flex-direction: column; gap: 4px; }
+.nc-event-info-date { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; }
+
+/* ── Members button ──────────────────────────────────────────── */
+.nc-event-members-btn {
+    background: none; border: none; cursor: pointer; padding: 0;
+    display: flex; align-items: center; gap: 6px;
+}
+.nc-event-members-avatars { display: flex; }
+.nc-event-avatar {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--nc-accent); border: 2px solid var(--nc-white);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 600; font-size: 9px;
+    flex-shrink: 0;
+}
+.nc-event-avatar-sm {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--nc-accent);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: white; font-weight: 600; font-size: 8px;
+    flex-shrink: 0;
+}
+.nc-event-members-see { font-size: 11.5px; color: var(--nc-text-muted); text-decoration: underline; text-underline-offset: 2px; }
+
+/* ── Wishlist section ────────────────────────────────────────── */
+.nc-event-wishlist { padding: 16px 24px; }
+.nc-event-wishlist__header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px; gap: 12px;
+}
+/* ── Filter bar (visitors) ───────────────────────────────────── */
+.nc-event-filter-bar {
+    display: flex; gap: 6px; flex-wrap: wrap;
+}
+.nc-event-filter-btn {
+    background: none; border: 1px solid var(--nc-border); border-radius: 99px;
+    padding: 4px 14px; font-size: 12px; font-weight: 500; cursor: pointer;
+    color: var(--nc-text-muted); transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.nc-event-filter-btn:hover { background: var(--nc-bg-sub); color: var(--nc-text); }
+.nc-event-filter-btn.active {
+    background: var(--nc-accent); border-color: var(--nc-accent);
+    color: #fff;
+}
+
+/* ── Owner hint ──────────────────────────────────────────────── */
+.nc-event-owner-hint {
+    display: flex; align-items: center; gap: 8px;
+    border-radius: 9px; border: 1px solid; padding: 8px 14px;
+    margin-bottom: 12px; font-size: 12px;
+}
+
+/* ── Identity banner ─────────────────────────────────────────── */
+.nc-event-identity-banner {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--nc-bg-sub); border: 1px solid var(--nc-border);
+    border-radius: 9px; padding: 8px 12px;
+    margin-bottom: 12px; font-size: 12.5px; color: var(--nc-text-sub);
+}
+
+/* ── Gift list card ──────────────────────────────────────────── */
+.nc-event-gift-list {
+    background: var(--nc-white);
+    border-radius: 13px;
+    border: 1px solid var(--nc-border);
+    overflow: hidden;
+}
+.nc-event-gift-divider { height: 1px; background: var(--nc-border); margin: 0 20px; }
+.nc-event-gift-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    transition: background 0.12s;
+}
+.nc-event-gift-row:hover { background: oklch(98.5% 0.008 60); }
+.nc-event-gift-row--hidden { opacity: 0.55; }
+
+.nc-event-gift-icon {
+    width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+}
+.nc-event-gift-body { flex: 1; min-width: 0; }
+.nc-event-gift-title { font-size: 13.5px; font-weight: 500; color: var(--nc-text); }
+.nc-event-gift-desc { font-size: 11.5px; color: var(--nc-text-muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nc-event-gift-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 4px; }
+.nc-event-gift-price { font-size: 11px; font-weight: 600; color: var(--nc-text-muted); }
+.nc-event-gift-link { font-size: 11px; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 2px; }
+.nc-event-gift-link:hover { text-decoration: underline; }
+.nc-event-reserved-by { font-size: 11px; color: var(--nc-sage); font-weight: 500; display: inline-flex; align-items: center; gap: 3px; }
+
+.nc-event-hidden-badge {
+    display: inline-block;
+    font-size: 9.5px; font-weight: 600;
+    background: var(--nc-bg-sub); color: var(--nc-text-muted);
+    border: 1px solid var(--nc-border);
+    padding: 1px 6px; border-radius: 99px;
+    margin-left: 6px; vertical-align: middle;
+}
+
+/* ── Gift actions ────────────────────────────────────────────── */
+.nc-event-gift-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+
+.nc-event-icon-btn {
+    width: 28px; height: 28px; border-radius: 7px;
+    border: 1px solid var(--nc-border); background: transparent;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--nc-text-muted); font-size: 13px;
+    transition: all 0.12s;
+}
+.nc-event-icon-btn:hover { background: var(--nc-bg-sub); color: var(--nc-text-sub); }
+.nc-event-icon-btn--active { border-color: var(--nc-border-strong); background: var(--nc-bg-sub); color: var(--nc-text-sub); }
+.nc-event-icon-btn--danger:hover { color: oklch(50% 0.2 15); border-color: oklch(85% 0.06 15); background: oklch(96% 0.03 15); }
+.nc-event-icon-btn--sm { width: 20px; height: 20px; border-radius: 5px; font-size: 10px; border-color: transparent; }
+
+.nc-event-reserve-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 14px; border-radius: 99px;
+    border: 1.5px solid var(--nc-border);
+    background: transparent; color: var(--nc-text-sub);
+    font-size: 12px; font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer; transition: all 0.14s; white-space: nowrap;
+}
+.nc-event-reserve-btn:hover { border-color: currentColor; }
+.nc-event-reserve-btn--mine {
+    font-size: 11.5px;
+}
+.nc-event-taken-label {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11.5px; color: var(--nc-text-muted); font-weight: 500;
+}
+.nc-event-empty-gifts {
+    padding: 40px 24px; text-align: center;
+    color: var(--nc-text-muted); display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.nc-event-empty-gifts p { margin: 0; font-size: 13px; }
+
+/* ── Identity modal participant list ─────────────────────────── */
+.nc-event-participant-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.nc-event-participant-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px 5px 6px; border-radius: 99px;
+    border: 1px solid var(--nc-border); background: var(--nc-bg-sub);
+    font-size: 13px; font-weight: 500; color: var(--nc-text);
+    cursor: pointer; transition: all 0.12s;
+}
+.nc-event-participant-chip:hover { border-color: var(--nc-accent); background: var(--nc-accent-light); }
+.nc-event-or-divider {
+    display: flex; align-items: center; gap: 10px;
+    margin: 12px 0; color: var(--nc-text-muted); font-size: 12px;
+}
+.nc-event-or-divider::before, .nc-event-or-divider::after {
+    content: ""; flex: 1; height: 1px; background: var(--nc-border);
+}
+
+/* ── Create modal type grid ──────────────────────────────────── */
+.nc-create-type-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin-bottom: 8px;
+}
+.nc-create-type-card {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+    padding: 14px; border-radius: 12px;
+    border: 1.5px solid var(--nc-border); background: var(--nc-bg-sub);
+    cursor: pointer; text-align: left; transition: all 0.14s;
+}
+.nc-create-type-card:hover { border-color: var(--nc-accent); background: var(--nc-accent-light); }
+.nc-create-type-icon { font-size: 22px; }
+.nc-create-type-label { font-size: 13px; font-weight: 600; color: var(--nc-text); }
+.nc-create-type-desc { font-size: 11px; color: var(--nc-text-muted); line-height: 1.4; }
+
+/* ── Dashboard event list cards ──────────────────────────────── */
+.nc-group-card-wrap { position: relative; }
+.nc-group-card-leave { position: absolute; top: 8px; right: 8px; margin: 0; }
+.nc-group-card-leave-btn {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--nc-bg-sub); border: 1px solid var(--nc-border);
+    color: var(--nc-text-muted); font-size: 14px; cursor: pointer;
+    opacity: 0; transition: opacity 0.15s, background 0.15s;
+}
+.nc-group-card-wrap:hover .nc-group-card-leave-btn { opacity: 1; }
+.nc-group-card-leave-btn:hover { background: var(--nc-bg); color: var(--nc-text); }
+.nc-group-card--event { background: var(--nc-white); }
+.nc-event-card-avatar {
+    width: 48px; height: 48px; border-radius: 14px;
+    background: var(--nc-accent-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin-bottom: 8px;
+}
+
+/* ── Cover photo upload button ───────────────────────────────── */
+.nc-event-cover__upload-btn {
+    position: absolute; bottom: 12px; right: 12px; z-index: 3;
+}
+.nc-event-cover__upload-btn label {
+    cursor: pointer; backdrop-filter: blur(4px);
+    background: rgba(255,255,255,0.75); border-color: rgba(255,255,255,0.6);
+}
+.nc-event-cover__upload-btn label:hover { background: rgba(255,255,255,0.95); }
+
+/* ── Owner reservation info (hidden by default, toggled via JS) ─ */
+.nc-event-res-info {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 4px;
+    margin-right: 6px;
+}
+.nc-event-reserved-by--excl { color: var(--nc-accent); }
+
+/* ── Reserve exclusivity modal ───────────────────────────────── */
+/* (uses existing nc-btn styles — no extra CSS needed) */
+
+/* ── Event list gifts in view_list ───────────────────────────── */
+.nc-event-list-group__header {
+    padding: 10px 20px 6px;
+    background: var(--nc-bg-sub);
+}
+.nc-event-list-group__link {
+    font-size: 12px; font-weight: 600; color: var(--nc-text-sub);
+    text-decoration: none; display: flex; align-items: center; gap: 4px;
+}
+.nc-event-list-group__link:hover { color: var(--nc-accent); }
+.nc-event-list-gift-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 20px; font-size: 13px;
+}
+.nc-event-list-gift-row--hidden { opacity: 0.5; }
+.nc-event-list-gift-title { flex: 1; }
+.nc-event-list-gift-price { font-size: 11px; font-weight: 600; color: var(--nc-text-muted); }
+
+/* ── Dark mode adjustments ───────────────────────────────────── */
+[data-bs-theme="dark"] .nc-event-gift-row:hover { background: oklch(21% 0.015 60); }
+[data-bs-theme="dark"] .nc-event-cover__badge { background: oklch(28% 0.015 60); color: var(--nc-text-sub); }
+
+@media (max-width: 640px) {
+    .nc-event-info-strip { flex-direction: column; }
+    .nc-event-info-strip__meta { min-width: unset; }
+    .nc-event-cover__title { font-size: 19px; }
+    .nc-event-gift-desc { display: none; }
+    .nc-create-type-grid { grid-template-columns: 1fr; }
+}

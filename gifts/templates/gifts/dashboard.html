@@ -104,26 +104,96 @@
         </div>
     {% endif %}
 
+    <!-- Event lists (owned) -->
+    {% if user_event_lists %}
+        <div class="nc-section-label">{% trans "My event lists" %} · {{ user_event_lists.count }}</div>
+        <div class="nc-groups-grid">
+            {% for event in user_event_lists %}
+                <a href="{% url 'event_detail' token=event.access_token %}" class="nc-group-card nc-group-card--event">
+                    <div class="nc-event-card-avatar">🎁</div>
+                    <div class="nc-group-card__name">{{ event.name }}</div>
+                    <div class="nc-group-card__meta">
+                        {% if event.event_date %}{{ event.event_date|date:"j M Y" }}{% else %}—{% endif %}
+                    </div>
+                </a>
+            {% endfor %}
+            <button type="button" class="nc-group-card--new"
+                    data-bs-toggle="modal" data-bs-target="#createGroupModal">
+                <i class="bi bi-plus-lg" style="font-size:18px"></i>
+                <span>{% trans "New" %}</span>
+            </button>
+        </div>
+    {% endif %}
+
+    <!-- Event lists (participating as visitor) -->
+    {% if participating_event_lists %}
+        <div class="nc-section-label">{% trans "Event lists I'm following" %} · {{ participating_event_lists.count }}</div>
+        <div class="nc-groups-grid">
+            {% for event in participating_event_lists %}
+                <div class="nc-group-card-wrap">
+                    <a href="{% url 'event_detail' token=event.access_token %}" class="nc-group-card nc-group-card--event">
+                        <div class="nc-event-card-avatar">🎁</div>
+                        <div class="nc-group-card__name">{{ event.name }}</div>
+                        <div class="nc-group-card__meta">
+                            {{ event.owner.nickname }}{% if event.event_date %} · {{ event.event_date|date:"j M Y" }}{% endif %}
+                        </div>
+                    </a>
+                    <form method="post" action="{% url 'leave_event_list' token=event.access_token %}" class="nc-group-card-leave">
+                        {% csrf_token %}
+                        <button type="submit" class="nc-group-card-leave-btn"
+                                title="{% trans 'Remove from my dashboard' %}">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
 </div>
 {% endblock %}
 
 {% block extra_body %}
 
-    <!-- Modal: Create Group -->
+    <!-- Modal: Create (2-step: type picker → details) -->
     <div class="modal fade" id="createGroupModal" tabindex="-1" aria-labelledby="createGroupModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content shadow-lg">
+            <div class="modal-content shadow-lg border-0 rounded-4">
                 <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold" id="createGroupModalLabel">{% trans "Create a new group" %}</h5>
+                    <h5 class="modal-title fw-bold" id="createGroupModalLabel">{% trans "Create" %}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form method="post" action="{% url 'create_group' %}">
+
+                <!-- Step 1: type picker -->
+                <div id="createStep1" class="modal-body pb-0">
+                    <p class="text-muted small mb-3">{% trans "What do you want to create?" %}</p>
+                    <div class="nc-create-type-grid">
+                        <button type="button" class="nc-create-type-card" onclick="selectCreateType('classic')">
+                            <span class="nc-create-type-icon">👥</span>
+                            <span class="nc-create-type-label">{% trans "Classic group" %}</span>
+                            <span class="nc-create-type-desc">{% trans "Private group, share gift lists with your circle" %}</span>
+                        </button>
+                        <button type="button" class="nc-create-type-card" onclick="selectCreateType('event')">
+                            <span class="nc-create-type-icon">🎁</span>
+                            <span class="nc-create-type-label">{% trans "Event list" %}</span>
+                            <span class="nc-create-type-desc">{% trans "Public list, anyone with the link can reserve" %}</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="createStep1Footer" class="modal-footer border-0 pt-2 pb-3"></div>
+
+                <!-- Step 2a: Classic group form -->
+                <form id="createStep2Classic" class="d-none" method="post" action="{% url 'create_group' %}">
                     {% csrf_token %}
                     <div class="modal-body">
+                        <button type="button" class="btn btn-link btn-sm p-0 mb-3 text-muted"
+                                onclick="backToStep1()">
+                            <i class="bi bi-arrow-left me-1"></i>{% trans "Back" %}
+                        </button>
                         <div class="mb-3">
                             <label for="id_name" class="form-label">{% trans "Group Name" %}</label>
                             <input type="text" name="name" class="form-control rounded-pill p-3" id="id_name"
-                                   required placeholder="ex: Famille Smith">
+                                   required placeholder="{% trans 'e.g. Smith Family' %}">
                         </div>
                         <p class="text-muted small mb-0">
                             <i class="bi bi-info-circle me-1"></i>
@@ -136,6 +206,37 @@
                         </button>
                     </div>
                 </form>
+
+                <!-- Step 2b: Event list form -->
+                <form id="createStep2Event" class="d-none" method="post" action="{% url 'create_event_list' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <button type="button" class="btn btn-link btn-sm p-0 mb-3 text-muted"
+                                onclick="backToStep1()">
+                            <i class="bi bi-arrow-left me-1"></i>{% trans "Back" %}
+                        </button>
+                        <div class="mb-3">
+                            <label for="eventNameInput" class="form-label" id="eventNameLabel">{% trans "List name" %}</label>
+                            <input type="text" name="name" class="form-control rounded-pill p-3"
+                                   id="eventNameInput" required placeholder="">
+                        </div>
+                        <div class="mb-3">
+                            <label for="eventDateInput" class="form-label" id="eventDateLabel">{% trans "Date" %} <span class="text-muted small">({% trans "optional" %})</span></label>
+                            <input type="date" name="event_date" class="form-control" id="eventDateInput">
+                        </div>
+                        <div class="mb-1">
+                            <label for="eventDescInput" class="form-label">{% trans "Description" %} <span class="text-muted small">({% trans "optional" %})</span></label>
+                            <textarea name="description" class="form-control" id="eventDescInput"
+                                      rows="2" placeholder="{% trans 'A short message for your guests…' %}"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold">
+                            {% trans "Create list" %}
+                        </button>
+                    </div>
+                </form>
+
             </div>
         </div>
     </div>
@@ -170,6 +271,32 @@
 
 {% block extra_js %}
     <script>
+        /* 2-step create modal */
+        function selectCreateType(type) {
+            document.getElementById('createStep1').classList.add('d-none');
+            document.getElementById('createStep1Footer').classList.add('d-none');
+            if (type === 'classic') {
+                document.getElementById('createStep2Classic').classList.remove('d-none');
+            } else {
+                document.getElementById('createStep2Event').classList.remove('d-none');
+            }
+        }
+
+        function backToStep1() {
+            document.getElementById('createStep2Classic').classList.add('d-none');
+            document.getElementById('createStep2Event').classList.add('d-none');
+            document.getElementById('createStep1').classList.remove('d-none');
+            document.getElementById('createStep1Footer').classList.remove('d-none');
+        }
+
+        /* Reset modal on close */
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('createGroupModal');
+            if (modal) {
+                modal.addEventListener('hidden.bs.modal', backToStep1);
+            }
+        });
+
         /* Emoji rain */
         document.getElementById('emoji-trigger').addEventListener('click', function () {
             const emojis = {{ rain_emojis|safe }};

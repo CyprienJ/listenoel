@@ -91,6 +91,8 @@ class Gift(models.Model):
     managed_member = models.ForeignKey(
         "ManagedMember", blank=True, null=True, on_delete=models.CASCADE, related_name="gifts"
     )
+    event_list = models.ForeignKey("EventList", blank=True, null=True, on_delete=models.CASCADE, related_name="gifts")
+    is_hidden = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.title} ({self.owner.nickname})"
@@ -140,3 +142,57 @@ class BalanceSettlement(models.Model):
     payee = models.ForeignKey(User, on_delete=models.CASCADE, related_name="settlements_received")
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     created_at = models.DateTimeField(default=timezone.now)
+
+
+def get_event_image_path(instance, filename):
+    ext = filename.split(".")[-1]
+    filename = f"{uuid.uuid4()}.{ext}"
+    return os.path.join("events", str(instance.id), filename)
+
+
+class EventList(models.Model):
+    name = models.CharField(max_length=200)
+    owner = models.ForeignKey("User", on_delete=models.CASCADE, related_name="event_lists")
+    description = models.TextField(blank=True)
+    event_date = models.DateField(null=True, blank=True)
+    image = ResizedImageField(
+        size=[1200, 400], crop=["middle", "center"], upload_to=get_event_image_path, quality=75, blank=True, null=True
+    )
+    access_token = models.CharField(max_length=12, unique=True, blank=True)
+    participants = models.ManyToManyField("User", blank=True, related_name="participating_event_lists")
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.access_token:
+            self.access_token = uuid.uuid4().hex[:8].upper()
+        super().save(*args, **kwargs)
+
+
+class GuestReservation(models.Model):
+    gift = models.ForeignKey("Gift", on_delete=models.CASCADE, related_name="guest_reservations")
+    reserver_user = models.ForeignKey(
+        "User", on_delete=models.SET_NULL, null=True, blank=True, related_name="event_reservations"
+    )
+    reserver_name = models.CharField(max_length=100)
+    session_key = models.CharField(max_length=40, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    exclusivity = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["gift", "reserver_user"],
+                condition=models.Q(reserver_user__isnull=False),
+                name="unique_user_event_reservation",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.reserver_name} → {self.gift.title}"
