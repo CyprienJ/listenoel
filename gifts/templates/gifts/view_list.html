@@ -98,6 +98,43 @@
         </div>
     {% endif %}
 
+    {# ── Event list gifts section (owner only) ── #}
+    {% if event_gifts_by_event %}
+    <div class="nc-wish-card">
+        <div class="nc-wish-card__header">
+            <div class="d-flex align-items-center gap-2">
+                <span class="nc-wish-badge" style="background:var(--nc-accent-light);color:var(--nc-accent)">
+                    <i class="bi bi-calendar-heart" style="font-size:12px"></i> {% trans "Event lists" %}
+                </span>
+                <span class="nc-wish-count">{% for g in event_gifts_by_event %}{{ g.gifts|length }}{% if not forloop.last %}+{% endif %}{% endfor %}</span>
+            </div>
+        </div>
+        {% for group in event_gifts_by_event %}
+        <div class="nc-event-list-group">
+            <div class="nc-event-list-group__header">
+                <a href="{% url 'event_detail' token=group.event.access_token %}"
+                   class="nc-event-list-group__link">
+                    🎁 {{ group.event.name }}
+                    {% if group.event.event_date %}
+                        <span class="text-muted small ms-1">· {{ group.event.event_date|date:"j M Y" }}</span>
+                    {% endif %}
+                    <i class="bi bi-arrow-right ms-1" style="font-size:11px"></i>
+                </a>
+            </div>
+            {% for gift in group.gifts %}
+            <div class="nc-event-list-gift-row{% if gift.is_hidden %} nc-event-list-gift-row--hidden{% endif %}">
+                <span class="nc-event-list-gift-title">{{ gift.title }}</span>
+                {% if gift.price %}<span class="nc-event-list-gift-price">{{ gift.price }} €</span>{% endif %}
+                {% if gift.is_hidden %}<span class="nc-event-hidden-badge ms-1">{% trans "Hidden" %}</span>{% endif %}
+            </div>
+            {% if not forloop.last %}<div class="nc-wish-divider"></div>{% endif %}
+            {% endfor %}
+        </div>
+        {% if not forloop.last %}<div class="nc-wish-divider" style="height:4px;background:var(--nc-bg-sub)"></div>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
     {% include "gifts/includes/_add_gift_modal.html" %}
 {% endblock %}
 

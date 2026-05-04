@@ -22,7 +22,7 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
-from .models import BalanceSettlement, Gift, Group, Reservation, User
+from .models import BalanceSettlement, EventList, Gift, Group, Reservation, User
 
 OFFER_MODAL_CONTENT_PATH = "gifts/includes/_offer_modal_content.html"
 RESERVE_MODAL_MODEL_PATH = "gifts/includes/_reserve_modal_content.html"
@@ -133,12 +133,16 @@ def welcome(request):
 @login_required
 def dashboard(request):
     user_groups = request.user.gift_groups.all()
+    user_event_lists = EventList.objects.filter(owner=request.user)
+    participating_event_lists = EventList.objects.filter(participants=request.user).exclude(owner=request.user)
     current_emoji_set = emojis()
     return render(
         request,
         "gifts/dashboard.html",
         {
             "user_groups": user_groups,
+            "user_event_lists": user_event_lists,
+            "participating_event_lists": participating_event_lists,
             "greeting_emoji": random.choice(current_emoji_set),
             "rain_emojis": current_emoji_set,
         },
@@ -173,6 +177,23 @@ def view_list(request: HttpRequest, user_id: int):
             return render(request, "gifts/user_not_found.html", status=403)
 
     all_gifts_query: QuerySet[Gift] = Gift.objects.filter(owner=target_user, offered=False).order_by("created_at")
+
+    # Event gifts are only shown to the owner in a separate section
+    event_gifts_by_event: list = []
+    if is_owner:
+        from itertools import groupby as _groupby
+
+        event_qs = (
+            all_gifts_query.filter(event_list__isnull=False)
+            .select_related("event_list")
+            .order_by("event_list_id", "created_at")
+        )
+        for _eid, grp in _groupby(event_qs, key=lambda g: g.event_list_id):
+            gift_group = list(grp)
+            event_gifts_by_event.append({"event": gift_group[0].event_list, "gifts": gift_group})
+        all_gifts_query = all_gifts_query.filter(event_list__isnull=True)
+    else:
+        all_gifts_query = all_gifts_query.filter(event_list__isnull=True)
 
     if from_group_id and not is_owner:
         all_gifts_query = all_gifts_query.filter(
@@ -229,6 +250,7 @@ def view_list(request: HttpRequest, user_id: int):
             "group": group,
             "gifts": gifts,
             "surprises": surprises,
+            "event_gifts_by_event": event_gifts_by_event,
             "is_owner": is_owner,
             "from_group_id": from_group_id,
             "user_groups": user_groups,
