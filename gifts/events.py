@@ -7,6 +7,7 @@ from decimal import Decimal, InvalidOperation
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
@@ -99,6 +100,7 @@ def event_detail(request, token):
             "total_gifts": len(gifts_list),
             "hidden_count": event.gifts.filter(is_hidden=True).count() if is_owner else 0,
             "reserved_count": sum(1 for g in gifts_list if g["my_reservation"] or g["other_reservations"]),
+            "has_my_reservations": any(g["my_reservation"] for g in gifts_list),
         },
     )
 
@@ -316,16 +318,27 @@ def regenerate_event_token(request, token):
 
 
 @login_required
-@require_POST
 def event_photo_upload(request, token):
     event = _get_event_or_404(token)
     err = _check_owner(request, event)
     if err:
         return err
-    if "image" in request.FILES:
-        event.image = request.FILES["image"]
-        event.save()
-    return redirect("event_detail", token=event.access_token)
+    if request.method == "POST":
+        uploaded = request.FILES.get("photo")
+        if not uploaded:
+            return JsonResponse({"success": False, "error": "No file"}, status=400)
+        event.image = uploaded
+        event.save(update_fields=["image"])
+        return JsonResponse({"success": True})
+    return render(
+        request,
+        "photos/photo_upload.html",
+        {
+            "context_type": "event",
+            "event_obj": event,
+            "back_url": reverse("event_detail", args=[token]),
+        },
+    )
 
 
 @login_required

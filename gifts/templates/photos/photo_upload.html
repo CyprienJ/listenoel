@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% if context_type == "profile" %}{% trans "Profile photo" %}{% else %}{% trans "Group photo" %}{% endif %} – Nos cadeaux{% endblock %}
+{% block title %}{% if context_type == "profile" %}{% trans "Profile photo" %}{% elif context_type == "event" %}{% trans "Event photo" %}{% else %}{% trans "Group photo" %}{% endif %} – Nos cadeaux{% endblock %}
 
 {% block main_class %}{% endblock %}
 
@@ -165,17 +165,19 @@ input.pu-range[type=range]:active::-webkit-slider-thumb { cursor: grabbing; }
 
     <a href="{{ back_url }}" class="pu-back-link">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      {% if context_type == "profile" %}{% trans "My Profile" %}{% else %}{{ group.name }}{% endif %}
+      {% if context_type == "profile" %}{% trans "My Profile" %}{% elif context_type == "event" %}{{ event_obj.name }}{% else %}{{ group.name }}{% endif %}
     </a>
 
     <div style="text-align:center; margin-bottom:28px;">
       <div class="pu-label">
-        {% if context_type == "profile" %}{% trans "Profile photo" %}{% else %}{% trans "Group photo" %}{% endif %}
+        {% if context_type == "profile" %}{% trans "Profile photo" %}{% elif context_type == "event" %}{% trans "Event photo" %}{% else %}{% trans "Group photo" %}{% endif %}
       </div>
       <h1 class="pu-title" style="font-size:26px;">{% trans "Choose a photo" %}</h1>
       <p class="pu-subtitle">
         {% if context_type == "profile" %}
           {% trans "Your avatar visible to other members." %}
+        {% elif context_type == "event" %}
+          {% trans "The cover image for your event list." %}
         {% else %}
           {% trans "The image that represents your group." %}
         {% endif %}
@@ -208,7 +210,7 @@ input.pu-range[type=range]:active::-webkit-slider-thumb { cursor: grabbing; }
 
     <div style="text-align:center; margin-bottom:24px;">
       <div class="pu-label">
-        {% if context_type == "profile" %}{% trans "Profile photo" %}{% else %}{% trans "Group photo" %}{% endif %}
+        {% if context_type == "profile" %}{% trans "Profile photo" %}{% elif context_type == "event" %}{% trans "Event photo" %}{% else %}{% trans "Group photo" %}{% endif %}
       </div>
       <h1 class="pu-title" style="font-size:24px;">{% trans "Frame your photo" %}</h1>
       <p class="pu-subtitle" style="font-size:13px;">
@@ -307,6 +309,8 @@ input.pu-range[type=range]:active::-webkit-slider-thumb { cursor: grabbing; }
       <p class="pu-subtitle" style="margin-bottom:28px;line-height:1.6;">
         {% if context_type == "profile" %}
           {% trans "Your profile photo has been updated and is now visible to other members." %}
+        {% elif context_type == "event" %}
+          {% trans "Your event cover photo has been updated." %}
         {% else %}
           {% trans "Your group photo has been updated and is now visible to all members." %}
         {% endif %}
@@ -319,6 +323,11 @@ input.pu-range[type=range]:active::-webkit-slider-thumb { cursor: grabbing; }
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
             </svg>
             {% trans "View my profile" %}
+          {% elif context_type == "event" %}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            {% trans "View the event" %}
           {% else %}
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>

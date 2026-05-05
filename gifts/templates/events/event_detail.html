@@ -20,15 +20,11 @@
         <h1 class="nc-event-cover__title">{{ event.name }}</h1>
     </div>
     {% if is_owner %}
-    <form method="post" action="{% url 'event_photo_upload' token=event.access_token %}"
-          enctype="multipart/form-data" class="nc-event-cover__upload-btn">
-        {% csrf_token %}
-        <label class="nc-btn nc-btn--ghost nc-btn--sm" title="{% trans 'Change cover photo' %}">
-            <i class="bi bi-camera-fill"></i>
-            <input type="file" name="image" accept="image/*" style="display:none"
-                   onchange="this.form.submit()">
-        </label>
-    </form>
+    <a href="{% url 'event_photo_upload' token=event.access_token %}"
+       class="nc-btn nc-btn--ghost nc-btn--sm nc-event-cover__upload-btn"
+       title="{% trans 'Change cover photo' %}">
+        <i class="bi bi-camera-fill"></i>
+    </a>
     {% endif %}
 </div>
 
@@ -79,13 +75,6 @@
     {% endif %}
 </div>
 
-<!-- ── MESSAGES ──────────────────────────────────────────────────────────── -->
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} border-0 shadow-sm mx-3 mt-3 mb-0">{{ message }}</div>
-    {% endfor %}
-{% endif %}
-
 <!-- ── WISHLIST ───────────────────────────────────────────────────────────── -->
 <div class="nc-event-wishlist">
     <div class="nc-event-wishlist__header">
@@ -93,7 +82,10 @@
         <div class="nc-event-filter-bar">
             <button type="button" class="nc-event-filter-btn active" onclick="setFilter('all', this)">{% trans "All" %}</button>
             <button type="button" class="nc-event-filter-btn" onclick="setFilter('available', this)">{% trans "Available" %}</button>
-            <button type="button" class="nc-event-filter-btn" onclick="setFilter('reserved', this)">{% trans "Reserved" %}</button>
+            <button type="button" class="nc-event-filter-btn" onclick="setFilter('unavailable', this)">{% trans "Unavailable" %}</button>
+            {% if has_my_reservations %}
+            <button type="button" class="nc-event-filter-btn" onclick="setFilter('mine', this)">{% trans "Reserved by me" %}</button>
+            {% endif %}
         </div>
         {% endif %}
         <div class="d-flex align-items-center gap-2 ms-auto">
@@ -143,15 +135,9 @@
         {% with gift=item.gift my_res=item.my_reservation other_res=item.other_reservations %}
         <div class="nc-event-gift-row {% if gift.is_hidden %}nc-event-gift-row--hidden{% endif %}"
              id="gift-row-{{ gift.id }}"
-             data-reserved="{% if item.my_reservation or item.other_reservations %}true{% else %}false{% endif %}">
-            <div class="nc-event-gift-icon {% if my_res %}nc-event-gift-icon--mine{% elif other_res %}nc-event-gift-icon--taken{% endif %}">
-                {% if my_res %}
-                    <i class="bi bi-check2 nc-event-check-mine"></i>
-                {% elif other_res %}
-                    <i class="bi bi-check2 nc-event-check-taken"></i>
-                {% else %}
-                    <i class="bi bi-gift nc-event-gift-icon-color"></i>
-                {% endif %}
+             data-status="{% if item.my_reservation %}mine{% elif item.has_exclusive_other %}exclusive{% elif item.other_reservations %}partial{% else %}free{% endif %}">
+            <div class="nc-event-gift-icon">
+                <i class="bi bi-gift nc-event-gift-icon-color"></i>
             </div>
 
             <div class="nc-event-gift-body">
@@ -165,9 +151,6 @@
                     <div class="nc-event-gift-desc">{{ gift.description }}</div>
                 {% endif %}
                 <div class="nc-event-gift-meta">
-                    {% if gift.price %}
-                        <span class="nc-event-gift-price">{{ gift.price }} €</span>
-                    {% endif %}
                     {% if gift.url %}
                         <a href="{{ gift.url }}" target="_blank" rel="noopener" class="nc-event-gift-link">
                             <i class="bi bi-link-45deg"></i> {% trans "Link" %}
@@ -175,15 +158,22 @@
                     {% endif %}
                     {% if not is_owner %}
                         {% for r in other_res %}
-                            <span class="nc-event-reserved-by">
-                                <i class="bi bi-check2-circle"></i>
-                                {% blocktrans with name=r.reserver_name %}Reserved by {{ name }}{% endblocktrans %}{% if r.exclusivity %} ({% trans "excl." %}){% endif %}
-                            </span>
+                            {% if r.exclusivity %}
+                                <span class="nc-event-reserved-by nc-event-reserved-by--excl">
+                                    <i class="bi bi-lock-fill"></i>
+                                    {{ r.reserver_name }}
+                                </span>
+                            {% else %}
+                                <span class="nc-event-reserved-by nc-event-reserved-by--participating">
+                                    <i class="bi bi-person-check"></i>
+                                    {% blocktrans with name=r.reserver_name %}{{ name }} is joining{% endblocktrans %}
+                                </span>
+                            {% endif %}
                         {% endfor %}
                         {% if my_res %}
                             <span class="nc-event-reserved-by nc-event-reserved-by--mine">
-                                <i class="bi bi-check2-circle"></i>
-                                {% blocktrans with name=my_res.reserver_name %}Reserved by {{ name }}{% endblocktrans %}{% if my_res.exclusivity %} ({% trans "excl." %}){% endif %}
+                                <i class="bi bi-person-check-fill"></i>
+                                {% trans "I'm participating" %}{% if my_res.exclusivity %} ({% trans "excl." %}){% endif %}
                             </span>
                         {% endif %}
                     {% endif %}
@@ -194,7 +184,7 @@
                 {% if is_owner %}
                     <button type="button" class="nc-event-icon-btn"
                             title="{% trans 'Edit' %}"
-                            onclick="openEditGift({{ gift.id }}, '{{ gift.title|escapejs }}', '{{ gift.description|escapejs }}', '{{ gift.url|escapejs }}', '{{ gift.price|default:'' }}')">
+                            onclick="openEditGift({{ gift.id }}, '{{ gift.title|escapejs }}', '{{ gift.description|escapejs }}', '{{ gift.url|escapejs }}')">
                         <i class="bi bi-pencil"></i>
                     </button>
                     <button type="button" class="nc-event-icon-btn {% if gift.is_hidden %}nc-event-icon-btn--active{% endif %}"
@@ -334,19 +324,11 @@
                     <textarea id="addDesc" class="form-control" rows="2"
                               placeholder="{% trans 'Size, color, details…' %}"></textarea>
                 </div>
-                <div class="mb-3">
+                <div class="mb-1">
                     <label for="addUrl" class="form-label">{% trans "Link" %}</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
                         <input type="url" id="addUrl" class="form-control" placeholder="https://…">
-                    </div>
-                </div>
-                <div class="mb-1">
-                    <label for="addPrice" class="form-label">{% trans "Estimated price" %}</label>
-                    <div class="input-group">
-                        <input type="number" id="addPrice" class="form-control"
-                               placeholder="0.00" min="0" step="0.01">
-                        <span class="input-group-text">€</span>
                     </div>
                 </div>
                 <div id="addGiftError" class="text-danger small d-none mt-2"></div>
@@ -377,19 +359,11 @@
                     <label for="editDesc" class="form-label">{% trans "Details" %}</label>
                     <textarea id="editDesc" class="form-control" rows="2"></textarea>
                 </div>
-                <div class="mb-3">
+                <div class="mb-1">
                     <label for="editUrl" class="form-label">{% trans "Link" %}</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
                         <input type="url" id="editUrl" class="form-control" placeholder="https://…">
-                    </div>
-                </div>
-                <div class="mb-1">
-                    <label for="editPrice" class="form-label">{% trans "Estimated price" %}</label>
-                    <div class="input-group">
-                        <input type="number" id="editPrice" class="form-control"
-                               placeholder="0.00" min="0" step="0.01">
-                        <span class="input-group-text">€</span>
                     </div>
                 </div>
                 <div id="editGiftError" class="text-danger small d-none mt-2"></div>
@@ -679,11 +653,13 @@ function setFilter(filter, btn) {
     document.querySelectorAll(".nc-event-filter-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     document.querySelectorAll(".nc-event-gift-row").forEach(row => {
-        const reserved = row.dataset.reserved === "true";
+        const status = row.dataset.status;
         let visible;
         if (filter === "all") visible = true;
-        else if (filter === "available") visible = !reserved;
-        else visible = reserved;
+        else if (filter === "available") visible = status === "free" || status === "partial";
+        else if (filter === "unavailable") visible = status === "exclusive";
+        else if (filter === "mine") visible = status === "mine";
+        else visible = true;
         row.classList.toggle("d-none", !visible);
     });
     document.querySelectorAll(".nc-event-gift-divider").forEach(d => {
@@ -721,7 +697,6 @@ function submitAddGift() {
             title,
             description: document.getElementById("addDesc").value.trim(),
             url: document.getElementById("addUrl").value.trim(),
-            price: document.getElementById("addPrice").value.trim(),
         }),
     })
     .then(r => r.json())
@@ -731,12 +706,11 @@ function submitAddGift() {
     });
 }
 
-function openEditGift(id, title, desc, url, price) {
+function openEditGift(id, title, desc, url) {
     document.getElementById("editGiftId").value = id;
     document.getElementById("editTitle").value = title;
     document.getElementById("editDesc").value = desc;
     document.getElementById("editUrl").value = url;
-    document.getElementById("editPrice").value = price;
     document.getElementById("deleteGiftBtn").onclick = () => confirmDeleteGift(id, title);
     new bootstrap.Modal(document.getElementById("editGiftModal")).show();
 }
@@ -758,7 +732,6 @@ function submitEditGift() {
             title,
             description: document.getElementById("editDesc").value.trim(),
             url: document.getElementById("editUrl").value.trim(),
-            price: document.getElementById("editPrice").value.trim(),
         }),
     })
     .then(r => r.json())
