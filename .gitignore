@@ -3,3 +3,4 @@ uv.lock
 staticfiles
 db.sqlite3
 CLAUDE.md
+media

@@ -1478,9 +1478,11 @@ class EventTokenAndPhotoTest(TestCase):
         img = make_image()
         response = self.client.post(
             reverse("event_photo_upload", kwargs={"token": self.event.access_token}),
-            {"image": img},
+            {"photo": img},
         )
-        self.assertRedirects(response, reverse("event_detail", kwargs={"token": self.event.access_token}))
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        self.assertTrue(data["success"])
         self.event.refresh_from_db()
         self.assertTrue(bool(self.event.image))
 

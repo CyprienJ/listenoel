@@ -10,7 +10,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
 from gifts.forms import GroupForm
-from gifts.models import Group, ManagedMember, User
+from gifts.models import EventList, Group, ManagedMember, User
 
 NOT_A_MEMBER = "You are not a member of this group."
 
@@ -39,6 +39,9 @@ def create_group(request):
 @login_required
 @require_GET
 def join_group(request, token=None):
+    # Redirect to event detail if the token belongs to an event list
+    if EventList.objects.filter(access_token=token).exists():
+        return redirect("event_detail", token=token)
 
     if request.user in Group.objects.get(group_token=token).members.all():
         messages.info(

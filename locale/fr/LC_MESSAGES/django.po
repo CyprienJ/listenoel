@@ -379,10 +379,8 @@ msgstr ""
 
 #: gifts/templates/events/event_detail.html:18
 #: gifts/templates/gifts/dashboard.html:178
-#, fuzzy
-#| msgid "My event lists"
 msgid "Event list"
-msgstr "Mes listes d'événement"
+msgstr "Liste d'événement"
 
 #: gifts/templates/events/event_detail.html:26
 #, fuzzy
@@ -611,7 +609,7 @@ msgstr "Supprimer ce souhait ?"
 
 #: gifts/templates/events/event_detail.html:439
 msgid "Delete this event list?"
-msgstr "Supprimer cette liste ?"
+msgstr "Supprimer cette liste d'événement ?"
 
 #: gifts/templates/events/event_detail.html:440
 msgid "All wishes and reservations will be permanently deleted."
@@ -1542,10 +1540,8 @@ msgid "Invisible for"
 msgstr "Invisible pour"
 
 #: gifts/templates/gifts/view_list.html:107
-#, fuzzy
-#| msgid "My event lists"
 msgid "Event lists"
-msgstr "Mes listes d'événement"
+msgstr "Listes d'événement"
 
 #: gifts/templates/gifts/welcome.html:12
 msgid "Gift lists, reinvented"
@@ -2249,6 +2245,39 @@ msgstr "Données de remboursement invalides."
 #: gifts/views.py:911
 msgid "Settlement recorded."
 msgstr "Remboursement enregistré."
+
+#: gifts/templates/events/event_detail.html
+msgid "Unavailable"
+msgstr "Indisponible"
+
+#: gifts/templates/events/event_detail.html
+msgid "Reserved by me"
+msgstr "Réservé par moi"
+
+#: gifts/templates/events/event_detail.html
+#, python-format
+msgid "%(name)s is joining"
+msgstr "%(name)s participe"
+
+#: gifts/templates/events/event_detail.html
+msgid "I'm participating"
+msgstr "Je participe"
+
+#: gifts/templates/photos/photo_upload.html
+msgid "Event photo"
+msgstr "Photo de l'événement"
+
+#: gifts/templates/photos/photo_upload.html
+msgid "The cover image for your event list."
+msgstr "L'image de couverture de votre liste d'événement."
+
+#: gifts/templates/photos/photo_upload.html
+msgid "Your event cover photo has been updated."
+msgstr "La photo de couverture a été mise à jour."
+
+#: gifts/templates/photos/photo_upload.html
+msgid "View the event"
+msgstr "Voir l'événement"
 
 #~ msgid "Participants"
 #~ msgstr "Participants"

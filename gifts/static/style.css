@@ -1539,6 +1539,8 @@ body {
     margin-right: 6px;
 }
 .nc-event-reserved-by--excl { color: var(--nc-accent); }
+.nc-event-reserved-by--participating { color: var(--nc-sage); }
+.nc-event-reserved-by--mine { color: var(--nc-sage); font-weight: 600; }
 
 /* ── Reserve exclusivity modal ───────────────────────────────── */
 /* (uses existing nc-btn styles — no extra CSS needed) */
