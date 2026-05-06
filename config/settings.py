@@ -35,6 +35,8 @@ ALLOWED_HOSTS = ["noscadeaux.fr", "www.noscadeaux.fr", "127.0.0.1"]
 # Application definition
 
 INSTALLED_APPS = [
+    "unfold",
+    "unfold.contrib.filters",
     "gifts",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -171,3 +173,34 @@ SECURE_SSL_REDIRECT = not DEBUG and "test" not in sys.argv
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+UNFOLD = {
+    "SITE_TITLE": "nosCadeaux Admin",
+    "SITE_HEADER": "nosCadeaux",
+    "SITE_SYMBOL": "redeem",
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": True,
+    "COLORS": {
+        "font": {
+            "subtle-light": "107 114 128",
+            "subtle-dark": "156 163 175",
+            "default-light": "75 85 99",
+            "default-dark": "209 213 219",
+            "important-light": "17 24 39",
+            "important-dark": "243 244 246",
+        },
+        "primary": {
+            "50": "255 241 242",
+            "100": "255 228 230",
+            "200": "254 205 211",
+            "300": "253 164 175",
+            "400": "251 113 133",
+            "500": "244 63 94",
+            "600": "225 29 72",
+            "700": "190 18 60",
+            "800": "159 18 57",
+            "900": "136 19 55",
+            "950": "76 5 25",
+        },
+    },
+}

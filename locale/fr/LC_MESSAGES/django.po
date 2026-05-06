@@ -1653,10 +1653,6 @@ msgid "Notifications"
 msgstr "Notifications"
 
 #: gifts/templates/gifts/welcome.html:168
-#, fuzzy
-#| msgid ""
-#| "Subscribe to a member’s list to get notified by email when they add a new "
-#| "wish."
 msgid ""
 "Subscribe to a member's list to get notified by email when they add a new "
 "wish."
