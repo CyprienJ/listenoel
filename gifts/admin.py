@@ -1,45 +1,163 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.utils.html import format_html
 from django.utils.translation import gettext as _
+from unfold.admin import ModelAdmin, TabularInline
+from unfold.contrib.filters.admin import RangeDateFilter
 
-from .models import BalanceSettlement, Gift, Group, Reservation, User
+from .models import (
+    BalanceSettlement,
+    EventList,
+    Gift,
+    Group,
+    GuestReservation,
+    ManagedMember,
+    Reservation,
+    User,
+)
+
+
+class ReservationInline(TabularInline):
+    model = Reservation
+    extra = 0
+    fields = ("reserver", "exclusivity", "amount_paid", "created_at")
+    readonly_fields = ("created_at",)
+
+
+class GuestReservationInline(TabularInline):
+    model = GuestReservation
+    extra = 0
+    fields = ("reserver_user", "reserver_name", "exclusivity", "created_at")
+    readonly_fields = ("created_at",)
+
+
+class ManagedMemberInline(TabularInline):
+    model = ManagedMember
+    extra = 0
+    fields = ("name", "color", "user")
 
 
 @admin.register(User)
-class UserAdmin(BaseUserAdmin):
-    list_display = ("username", "nickname", "email", "is_staff", "is_active", "is_verified")
-    search_fields = ("username", "nickname", "email")
-    ordering = ("username",)
-
+class UserAdmin(BaseUserAdmin, ModelAdmin):
+    list_display = ("email", "nickname", "is_staff", "is_active", "is_verified", "is_managed", "avatar_preview")
+    list_filter = ("is_staff", "is_active", "is_verified", "is_managed")
+    search_fields = ("email", "nickname")
+    ordering = ("email",)
     list_editable = ("is_verified",)
-    fieldsets = BaseUserAdmin.fieldsets + ((_("More information"), {"fields": ("nickname", "is_verified")}),)
+
+    fieldsets = BaseUserAdmin.fieldsets + (
+        (
+            _("More information"),
+            {"fields": ("nickname", "is_verified", "is_managed", "avatar", "subscriptions")},
+        ),
+    )
+    filter_horizontal = ("subscriptions", "groups", "user_permissions")
+
+    @admin.display(description=_("Avatar"))
+    def avatar_preview(self, obj):
+        if obj.avatar:
+            return format_html(
+                '<img src="{}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">', obj.avatar.url
+            )
+        return "—"
 
 
 @admin.register(Group)
-class GroupAdmin(admin.ModelAdmin):
-    list_display = ("name", "member_count")
+class GroupAdmin(ModelAdmin):
+    list_display = ("name", "group_token", "created_by", "created_at", "member_count", "show_history", "show_balance")
+    list_filter = ("show_history", "show_balance")
+    search_fields = ("name", "description", "group_token")
+    readonly_fields = ("group_token", "created_at")
     filter_horizontal = ("members",)
+    inlines = [ManagedMemberInline]
 
+    fieldsets = (
+        (None, {"fields": ("name", "description", "image", "group_token")}),
+        (_("Members"), {"fields": ("created_by", "members")}),
+        (_("Options"), {"fields": ("show_history", "show_balance")}),
+        (_("Dates"), {"fields": ("created_at",)}),
+    )
+
+    @admin.display(description=_("Members"))
     def member_count(self, obj):
         return obj.members.count()
 
-    member_count.short_description = "Member count"
-
 
 @admin.register(Gift)
-class GiftAdmin(admin.ModelAdmin):
-    list_display = ("title", "owner", "created_by", "created_at", "price")
-    list_filter = ("owner", "created_by")
-    search_fields = ("title", "description")
+class GiftAdmin(ModelAdmin):
+    list_display = ("title", "owner", "created_by", "price", "offered", "is_hidden", "created_at")
+    list_filter = ("offered", "is_hidden", ("created_at", RangeDateFilter))
+    search_fields = ("title", "description", "owner__nickname", "owner__email")
+    readonly_fields = ("created_at", "offered_at")
+    date_hierarchy = "created_at"
+    filter_horizontal = ("visible_in", "expense_split")
+    inlines = [ReservationInline, GuestReservationInline]
+
+    fieldsets = (
+        (None, {"fields": ("title", "description", "url", "price")}),
+        (_("Ownership"), {"fields": ("owner", "created_by", "managed_member")}),
+        (_("Visibility"), {"fields": ("visible_in", "is_hidden")}),
+        (_("Event"), {"fields": ("event_list",)}),
+        (_("Reservation"), {"fields": ("group_reserved_on",)}),
+        (_("Status"), {"fields": ("offered", "offered_at", "actual_cost", "expense_split")}),
+        (_("Dates"), {"fields": ("created_at",)}),
+    )
 
 
 @admin.register(Reservation)
-class ReservationAdmin(admin.ModelAdmin):
-    list_display = ("gift", "created_at", "reserver")
+class ReservationAdmin(ModelAdmin):
+    list_display = ("gift", "reserver", "exclusivity", "amount_paid", "created_at")
+    list_filter = ("exclusivity", ("created_at", RangeDateFilter))
+    search_fields = ("gift__title", "reserver__nickname", "reserver__email")
+    readonly_fields = ("created_at",)
 
 
 @admin.register(BalanceSettlement)
-class BalanceSettlementAdmin(admin.ModelAdmin):
+class BalanceSettlementAdmin(ModelAdmin):
     list_display = ("group", "payer", "payee", "amount", "created_at")
+    list_filter = ("group", ("created_at", RangeDateFilter))
+    search_fields = ("payer__nickname", "payee__nickname", "group__name")
+    readonly_fields = ("created_at",)
+
+
+@admin.register(ManagedMember)
+class ManagedMemberAdmin(ModelAdmin):
+    list_display = ("name", "group", "color_preview", "user", "created_at")
     list_filter = ("group",)
-    search_fields = ("payer__nickname", "payee__nickname")
+    search_fields = ("name", "group__name")
+    readonly_fields = ("created_at",)
+
+    @admin.display(description=_("Color"))
+    def color_preview(self, obj):
+        return format_html(
+            '<span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:{};"></span> {}',
+            obj.color,
+            obj.color,
+        )
+
+
+@admin.register(EventList)
+class EventListAdmin(ModelAdmin):
+    list_display = ("name", "owner", "event_date", "access_token", "participant_count", "created_at")
+    list_filter = (("event_date", RangeDateFilter),)
+    search_fields = ("name", "description", "owner__nickname", "owner__email")
+    readonly_fields = ("access_token", "created_at")
+    filter_horizontal = ("participants",)
+
+    fieldsets = (
+        (None, {"fields": ("name", "description", "image", "event_date", "access_token")}),
+        (_("Owner & participants"), {"fields": ("owner", "participants")}),
+        (_("Dates"), {"fields": ("created_at",)}),
+    )
+
+    @admin.display(description=_("Participants"))
+    def participant_count(self, obj):
+        return obj.participants.count()
+
+
+@admin.register(GuestReservation)
+class GuestReservationAdmin(ModelAdmin):
+    list_display = ("gift", "reserver_name", "reserver_user", "exclusivity", "created_at")
+    list_filter = ("exclusivity", ("created_at", RangeDateFilter))
+    search_fields = ("reserver_name", "reserver_user__nickname", "gift__title")
+    readonly_fields = ("created_at", "session_key")
