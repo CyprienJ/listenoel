@@ -37,13 +37,14 @@
                 <div class="position-relative" style="width:340px; height:320px;">
                     <!-- Decorative cards stacked -->
                     <div class="card border-0 shadow rounded-4 p-4 position-absolute"
-                         style="width:280px; top:0; left:30px; transform:rotate(-4deg); background:var(--bs-primary); color:white;">
+                         style="width:280px; top:0; left:30px; transform:rotate(-4deg); background:var(--bs-primary);">
                         <div class="d-flex align-items-center gap-3">
-                            <i class="bi bi-gift-fill fs-3"></i>
+                            <i class="bi bi-calculator fs-3 text-success"></i>
                             <div>
-                                <div class="fw-bold">{% trans "New bicycle" %}</div>
-                                <div class="opacity-75 small">{% trans "Reserved by Alice" %} ✓</div>
+                                <div class="fw-bold">{% trans "Balance" %}</div>
+                                <div class="text-muted small">Bob → Alice : 12.50 €</div>
                             </div>
+
                         </div>
                     </div>
                     <div class="card border-0 shadow rounded-4 p-4 position-absolute"
@@ -59,10 +60,10 @@
                     <div class="card border-0 shadow rounded-4 p-4 position-absolute"
                          style="width:280px; top:150px; left:40px; transform:rotate(-1deg);">
                         <div class="d-flex align-items-center gap-3">
-                            <i class="bi bi-calculator fs-3 text-success"></i>
+                            <i class="bi bi-gift-fill fs-3"></i>
                             <div>
-                                <div class="fw-bold">{% trans "Balance" %}</div>
-                                <div class="text-muted small">Bob → Alice : 12.50 €</div>
+                                <div class="fw-bold">{% trans "New bicycle" %}</div>
+                                <div class="opacity-75 small">{% trans "Reserved by Alice" %} ✓</div>
                             </div>
                         </div>
                     </div>
