@@ -22,7 +22,7 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
-from .models import BalanceSettlement, EventList, Gift, Group, Reservation, User
+from .models import BalanceSettlement, EventList, Gift, Group, Reservation, Subscription, User
 
 OFFER_MODAL_CONTENT_PATH = "gifts/includes/_offer_modal_content.html"
 RESERVE_MODAL_MODEL_PATH = "gifts/includes/_reserve_modal_content.html"
@@ -241,6 +241,13 @@ def view_list(request: HttpRequest, user_id: int):
             else:
                 surprises.append(item)
 
+    subscription = None
+    rss_url = None
+    if not is_owner:
+        subscription = Subscription.objects.filter(subscriber=request.user, owner=target_user).first()
+        if subscription and subscription.rss_enabled:
+            rss_url = request.build_absolute_uri(reverse("subscription_feed", args=[subscription.feed_token]))
+
     return render(
         request,
         "gifts/view_list.html",
@@ -254,7 +261,9 @@ def view_list(request: HttpRequest, user_id: int):
             "is_owner": is_owner,
             "from_group_id": from_group_id,
             "user_groups": user_groups,
-            "is_subscribed": request.user.subscriptions.filter(id=target_user.id).exists() if not is_owner else False,
+            "is_subscribed": subscription is not None,
+            "subscription": subscription,
+            "rss_url": rss_url,
         },
     )
 
@@ -269,29 +278,46 @@ def toggle_subscription(request, user_id):
     if not Group.objects.filter(members=request.user).filter(members=target_user).exists():
         return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
-    if request.user.subscriptions.filter(id=target_user.id).exists():
-        request.user.subscriptions.remove(target_user)
+    subscription = Subscription.objects.filter(subscriber=request.user, owner=target_user).first()
+    delivery = request.POST.get("delivery")
+
+    if request.POST.get("action") == "unsubscribe" or (subscription and not delivery):
+        subscription.delete()
         messages.success(request, _("You are no longer subscribed to %(name)s's list") % {"name": target_user.nickname})
     else:
-        request.user.subscriptions.add(target_user)
+        if delivery not in {"email", "rss", "both"}:
+            delivery = "email"
+        Subscription.objects.update_or_create(
+            subscriber=request.user,
+            owner=target_user,
+            defaults={
+                "email_enabled": delivery in {"email", "both"},
+                "rss_enabled": delivery in {"rss", "both"},
+            },
+        )
         messages.success(request, _("You are now subscribed to %(name)s's list") % {"name": target_user.nickname})
 
-    return redirect("view_list", user_id=user_id)
+    # Keep the originating group context (notably ?from_group=...) so the
+    # group sidebar remains rendered after toggling the subscription.
+    return _redirect_to_referer_or(request, "view_list", user_id=user_id)
 
 
-@login_required
-def unsubscribe_token(request, uidb64, token):
+@require_GET
+def unsubscribe_token(request, owner_id, uidb64, token):
     try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        target_user = get_object_or_404(User, id=uid)
+        subscriber_id = force_str(urlsafe_base64_decode(uidb64))
+        subscriber = get_object_or_404(User, id=subscriber_id)
+        owner = get_object_or_404(User, id=owner_id)
 
-        if request.user.subscriptions.filter(id=target_user.id).exists():
-            request.user.subscriptions.remove(target_user)
-            messages.success(
-                request, _("You are no longer subscribed to %(name)s's list") % {"name": target_user.nickname}
-            )
+        if not default_token_generator.check_token(subscriber, token):
+            messages.error(request, _("The unsubscription link is invalid"))
+            return redirect_dashboard()
 
-        return redirect("view_list", user_id=target_user.id)
+        if subscriber.subscriptions.filter(id=owner.id).exists():
+            subscriber.subscriptions.remove(owner)
+            messages.success(request, _("You are no longer subscribed to %(name)s's list") % {"name": owner.nickname})
+
+        return redirect("view_list", user_id=owner.id)
     except (TypeError, ValueError, OverflowError):
         messages.error(request, _("The unsubscription link is invalid"))
         return redirect_dashboard()
@@ -319,40 +345,42 @@ def add_gift(request, owner_id):
             valid_groups = Group.objects.filter(id__in=group_ids, members=request.user)
             gift.visible_in.set(valid_groups)
 
-        if owner == request.user:
-            subscribers = owner.subscribers.all()
-            if subscribers.exists():
-                protocol = "https" if request.is_secure() else "http"
-                domain = get_current_site(request).domain
-                list_url = f"{protocol}://{domain}{reverse('view_list', args=[owner.id])}"
+        subscription_records = owner.subscriber_records.filter(email_enabled=True).select_related("subscriber")
+        if subscription_records.exists():
+            protocol = "https" if request.is_secure() else "http"
+            domain = get_current_site(request).domain
+            list_url = f"{protocol}://{domain}{reverse('view_list', args=[owner.id])}"
 
-                for subscriber in subscribers:
-                    if Group.objects.filter(members=owner).filter(members=subscriber).exists():
-                        gift_groups = gift.visible_in.all()
-                        if gift_groups.exists() and not gift_groups.filter(members=subscriber).exists():
-                            continue
+            for subscription in subscription_records:
+                subscriber = subscription.subscriber
+                if Group.objects.filter(members=owner).filter(members=subscriber).exists():
+                    gift_groups = gift.visible_in.all()
+                    if gift_groups.exists() and not gift_groups.filter(members=subscriber).exists():
+                        continue
 
-                        uid = urlsafe_base64_encode(force_bytes(owner.pk))
-                        token = default_token_generator.make_token(subscriber)
-                        unsubscribe_url = f"{protocol}://{domain}{reverse('unsubscribe_token', args=[uid, token])}"
+                    uid = urlsafe_base64_encode(force_bytes(subscriber.pk))
+                    token = default_token_generator.make_token(subscriber)
+                    unsubscribe_url = (
+                        f"{protocol}://{domain}{reverse('unsubscribe_token', args=[owner.pk, uid, token])}"
+                    )
 
-                        context = {
-                            "subscriber": subscriber,
-                            "owner": owner,
-                            "gift": gift,
-                            "list_url": list_url,
-                            "unsubscribe_url": unsubscribe_url,
-                        }
-                        subject = _("New gift on %(name)s's list!") % {"name": owner.nickname}
-                        html_message = render_to_string("emails/gift_added_notification.html", context)
-                        plain_message = render_to_string("emails/gift_added_notification.txt", context)
-                        send_mail(
-                            subject,
-                            plain_message,
-                            settings.DEFAULT_FROM_EMAIL,
-                            [subscriber.email],
-                            html_message=html_message,
-                        )
+                    context = {
+                        "subscriber": subscriber,
+                        "owner": owner,
+                        "gift": gift,
+                        "list_url": list_url,
+                        "unsubscribe_url": unsubscribe_url,
+                    }
+                    subject = _("New gift on %(name)s's list!") % {"name": owner.nickname}
+                    html_message = render_to_string("emails/gift_added_notification.html", context)
+                    plain_message = render_to_string("emails/gift_added_notification.txt", context)
+                    send_mail(
+                        subject,
+                        plain_message,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [subscriber.email],
+                        html_message=html_message,
+                    )
 
     return _redirect_to_referer_or(request, "view_list", user_id=owner.id)
 

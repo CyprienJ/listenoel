@@ -6,6 +6,7 @@ import tempfile
 from datetime import timedelta
 from decimal import Decimal
 
+from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
@@ -18,7 +19,17 @@ from django.utils.translation import activate, deactivate
 from django.utils.translation import gettext as _
 from PIL import Image
 
-from .models import BalanceSettlement, EventList, Gift, Group, GuestReservation, ManagedMember, Reservation, User
+from .models import (
+    BalanceSettlement,
+    EventList,
+    Gift,
+    Group,
+    GuestReservation,
+    ManagedMember,
+    Reservation,
+    Subscription,
+    User,
+)
 from .views import compute_group_balances
 
 
@@ -315,6 +326,70 @@ class SubscriptionTest(TestCase):
         self.assertRedirects(response, reverse("view_list", args=[self.user1.id]))
         self.assertFalse(self.user2.subscriptions.filter(id=self.user1.id).exists())
 
+    def test_toggle_subscription_preserves_group_context(self):
+        self.client.force_login(self.user2)
+        list_url = reverse("view_list", args=[self.user1.id])
+        group_list_url = f"{list_url}?from_group={self.group.id}"
+
+        response = self.client.post(
+            reverse("toggle_subscription", args=[self.user1.id]),
+            HTTP_REFERER=group_list_url,
+        )
+
+        self.assertRedirects(response, group_list_url)
+
+    def test_rss_only_subscription_disables_email(self):
+        self.client.force_login(self.user2)
+        self.client.post(
+            reverse("toggle_subscription", args=[self.user1.id]),
+            {"delivery": "rss"},
+        )
+        subscription = Subscription.objects.get(subscriber=self.user2, owner=self.user1)
+        self.assertFalse(subscription.email_enabled)
+        self.assertTrue(subscription.rss_enabled)
+
+        self.client.force_login(self.user1)
+        self.client.post(reverse("add_gift", args=[self.user1.id]), {"title": "RSS only"})
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_private_rss_feed_respects_gift_visibility(self):
+        group2 = Group.objects.create(name="Group 1-3")
+        group2.members.add(self.user1, self.user3)
+        public_gift = Gift.objects.create(owner=self.user1, created_by=self.user1, title="Public wish")
+        private_gift = Gift.objects.create(owner=self.user1, created_by=self.user1, title="Private wish")
+        private_gift.visible_in.add(group2)
+        subscription = Subscription.objects.create(
+            subscriber=self.user2,
+            owner=self.user1,
+            email_enabled=False,
+            rss_enabled=True,
+        )
+
+        self.client.logout()
+        response = self.client.get(reverse("subscription_feed", args=[subscription.feed_token]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, public_gift.title)
+        self.assertNotContains(response, private_gift.title)
+        self.assertIn("application/rss+xml", response["Content-Type"])
+
+    def test_unsubscribe_revokes_private_rss_feed(self):
+        subscription = Subscription.objects.create(
+            subscriber=self.user2,
+            owner=self.user1,
+            email_enabled=False,
+            rss_enabled=True,
+        )
+        feed_url = reverse("subscription_feed", args=[subscription.feed_token])
+        self.client.force_login(self.user2)
+
+        self.client.post(
+            reverse("toggle_subscription", args=[self.user1.id]),
+            {"action": "unsubscribe"},
+        )
+
+        self.assertEqual(self.client.get(feed_url).status_code, 404)
+
     def test_subscribe_self(self):
         self.client.force_login(self.user1)
         response = self.client.post(reverse("toggle_subscription", args=[self.user1.id]))
@@ -353,17 +428,30 @@ class SubscriptionTest(TestCase):
     def test_unsubscribe_token(self):
         self.user2.subscriptions.add(self.user1)
 
-        uid = urlsafe_base64_encode(force_bytes(self.user1.pk))
-        token = "dummy-token"
-        url = reverse("unsubscribe_token", args=[uid, token])
+        uid = urlsafe_base64_encode(force_bytes(self.user2.pk))
+        token = default_token_generator.make_token(self.user2)
+        url = reverse("unsubscribe_token", args=[self.user1.pk, uid, token])
 
-        self.client.force_login(self.user2)
-        # Test with GET because button changed to link
+        # Email links work without requiring an authenticated browser session.
         response = self.client.get(url)
-        self.assertRedirects(response, reverse("view_list", args=[self.user1.id]))
+        self.assertRedirects(
+            response,
+            reverse("view_list", args=[self.user1.id]),
+            fetch_redirect_response=False,
+        )
         self.assertFalse(self.user2.subscriptions.filter(id=self.user1.id).exists())
 
-    def test_no_notification_if_not_owner_adding(self):
+    def test_unsubscribe_rejects_invalid_token(self):
+        self.user2.subscriptions.add(self.user1)
+
+        uid = urlsafe_base64_encode(force_bytes(self.user2.pk))
+        url = reverse("unsubscribe_token", args=[self.user1.pk, uid, "invalid-token"])
+
+        self.client.get(url)
+
+        self.assertTrue(self.user2.subscriptions.filter(id=self.user1.id).exists())
+
+    def test_notification_sent_when_subscriber_adds_surprise(self):
         # User2 subscribes to User1
         self.user2.subscriptions.add(self.user1)
 
@@ -371,8 +459,10 @@ class SubscriptionTest(TestCase):
         # User2 add a surprise to User1's list
         self.client.post(reverse("add_gift", args=[self.user1.id]), {"title": "Surprise"})
 
-        # No mail sent because it is a surprise
-        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(len(mail.outbox), 1)
+        notification_mail = mail.outbox[0]
+        self.assertIn(self.user2.email, notification_mail.to)
+        self.assertIn("Surprise", notification_mail.body)
 
     def test_notification_visibility_restriction(self):
         # User2 subscribes to User1

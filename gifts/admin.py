@@ -13,6 +13,7 @@ from .models import (
     GuestReservation,
     ManagedMember,
     Reservation,
+    Subscription,
     User,
 )
 
@@ -48,10 +49,10 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
     fieldsets = BaseUserAdmin.fieldsets + (
         (
             _("More information"),
-            {"fields": ("nickname", "is_verified", "is_managed", "avatar", "subscriptions")},
+            {"fields": ("nickname", "is_verified", "is_managed", "avatar")},
         ),
     )
-    filter_horizontal = ("subscriptions", "groups", "user_permissions")
+    filter_horizontal = ("groups", "user_permissions")
 
     @admin.display(description=_("Avatar"))
     def avatar_preview(self, obj):
@@ -60,6 +61,14 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
                 '<img src="{}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">', obj.avatar.url
             )
         return "—"
+
+
+@admin.register(Subscription)
+class SubscriptionAdmin(ModelAdmin):
+    list_display = ("subscriber", "owner", "email_enabled", "rss_enabled", "created_at")
+    list_filter = ("email_enabled", "rss_enabled")
+    search_fields = ("subscriber__email", "subscriber__nickname", "owner__email", "owner__nickname")
+    readonly_fields = ("feed_token", "created_at")
 
 
 @admin.register(Group)

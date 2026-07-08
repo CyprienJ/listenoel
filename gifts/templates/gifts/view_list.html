@@ -29,16 +29,11 @@
 
         <div class="d-flex align-items-center gap-2">
             {% if not is_owner and not user.is_managed %}
-                <form method="post" action="{% url 'toggle_subscription' user.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="nc-btn nc-btn--outline nc-btn--sm">
-                        {% if is_subscribed %}
-                            <i class="bi bi-bell-slash" style="font-size:14px"></i>
-                        {% else %}
-                            <i class="bi bi-bell" style="font-size:14px"></i>
-                        {% endif %}
-                    </button>
-                </form>
+                <button type="button" class="nc-btn nc-btn--outline nc-btn--sm"
+                        data-bs-toggle="modal" data-bs-target="#subscriptionModal"
+                        title="{% trans 'Notification preferences' %}">
+                    <i class="bi {% if is_subscribed %}bi-bell-fill{% else %}bi-bell{% endif %}" style="font-size:14px"></i>
+                </button>
             {% endif %}
             <button class="nc-btn nc-btn--primary nc-btn--sm"
                     data-bs-toggle="modal" data-bs-target="#addGiftModal">
@@ -46,6 +41,72 @@
             </button>
         </div>
     </div>
+
+    {% if not is_owner and not user.is_managed %}
+        <div class="modal fade" id="subscriptionModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 rounded-5 shadow-lg auth-card">
+                    <div class="modal-header border-0 p-4 pb-0">
+                        <h5 class="modal-title fw-bold text-primary">
+                            <i class="bi bi-bell me-2"></i>{% trans "List notifications" %}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="post" action="{% url 'toggle_subscription' user.id %}">
+                        {% csrf_token %}
+                        <div class="modal-body p-4">
+                            <p class="text-muted small mb-3">
+                                {% blocktrans with name=user.nickname %}Choose how to follow {{ name }}'s list.{% endblocktrans %}
+                            </p>
+                            <div class="d-grid gap-2">
+                                <label class="p-3 bg-body-tertiary rounded-4">
+                                    <input class="form-check-input me-2" type="radio" name="delivery" value="email"
+                                           {% if not subscription or subscription.email_enabled and not subscription.rss_enabled %}checked{% endif %}>
+                                    <i class="bi bi-envelope me-1"></i> {% trans "Email" %}
+                                </label>
+                                <label class="p-3 bg-body-tertiary rounded-4">
+                                    <input class="form-check-input me-2" type="radio" name="delivery" value="rss"
+                                           {% if subscription.rss_enabled and not subscription.email_enabled %}checked{% endif %}>
+                                    <i class="bi bi-rss me-1"></i> {% trans "RSS" %}
+                                </label>
+                                <label class="p-3 bg-body-tertiary rounded-4">
+                                    <input class="form-check-input me-2" type="radio" name="delivery" value="both"
+                                           {% if subscription.email_enabled and subscription.rss_enabled %}checked{% endif %}>
+                                    <i class="bi bi-envelope me-1"></i> + <i class="bi bi-rss mx-1"></i> {% trans "Email and RSS" %}
+                                </label>
+                            </div>
+
+                            {% if rss_url %}
+                                <div class="mt-4">
+                                    <label for="rssFeedUrl" class="form-label small fw-medium">{% trans "Your private RSS URL" %}</label>
+                                    <div class="input-group">
+                                        <input id="rssFeedUrl" class="form-control" type="text" value="{{ rss_url }}" readonly>
+                                        <button class="btn btn-outline-secondary" type="button"
+                                                onclick="navigator.clipboard.writeText(document.getElementById('rssFeedUrl').value)">
+                                            <i class="bi bi-copy"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text">{% trans "Keep this URL private. Anyone who has it can read this feed." %}</div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="modal-footer border-0 p-4 pt-0">
+                            {% if is_subscribed %}
+                                <button type="submit" name="action" value="unsubscribe"
+                                        class="btn btn-outline-danger rounded-pill me-auto">
+                                    {% trans "Unsubscribe" %}
+                                </button>
+                            {% endif %}
+                            <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">
+                                {% trans "Cancel" %}
+                            </button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">{% trans "Save" %}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 
     {# ── Wishes section ── #}
     <div class="nc-wish-card">

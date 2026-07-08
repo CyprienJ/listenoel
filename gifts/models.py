@@ -59,7 +59,15 @@ class User(AbstractUser):
     nickname = models.CharField(max_length=150, blank=False)
     is_verified = models.BooleanField(default=False)
     is_managed = models.BooleanField(default=False)
-    subscriptions = models.ManyToManyField("self", symmetrical=False, related_name="subscribers", blank=True)
+    managed_by = models.ForeignKey("self", on_delete=models.CASCADE, related_name="sub_accounts", blank=True, null=True)
+    subscriptions = models.ManyToManyField(
+        "self",
+        through="Subscription",
+        through_fields=("subscriber", "owner"),
+        symmetrical=False,
+        related_name="subscribers",
+        blank=True,
+    )
     avatar = ResizedImageField(
         size=[200, 200], crop=["middle", "center"], upload_to=get_avatar_path, quality=80, blank=True, null=True
     )
@@ -70,6 +78,23 @@ class User(AbstractUser):
         self.email = self.email.lower()
         self.username = self.email
         super().save(*args, **kwargs)
+
+
+class Subscription(models.Model):
+    subscriber = models.ForeignKey(User, on_delete=models.CASCADE, related_name="subscription_records")
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="subscriber_records")
+    email_enabled = models.BooleanField(default=True)
+    rss_enabled = models.BooleanField(default=False)
+    feed_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=("subscriber", "owner"), name="unique_list_subscription"),
+        ]
+
+    def __str__(self):
+        return f"{self.subscriber.nickname} → {self.owner.nickname}"
 
 
 class Gift(models.Model):
