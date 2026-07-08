@@ -18,7 +18,7 @@ from django.utils.translation import activate, deactivate
 from django.utils.translation import gettext as _
 from PIL import Image
 
-from .models import BalanceSettlement, EventList, Gift, Group, GuestReservation, Reservation, User
+from .models import BalanceSettlement, EventList, Gift, Group, GuestReservation, ManagedMember, Reservation, User
 from .views import compute_group_balances
 
 
@@ -238,6 +238,32 @@ class GiftAccessControlTest(TestCase):
         self.client.force_login(self.user3)
         # User3 does not share a group with User1
         self.assertEqual(self.client.get(reverse("view_list", args=[self.user1.id])).status_code, 403)
+
+    def test_add_gift_modal_title_matches_list_type(self):
+        self.client.force_login(self.user1)
+        own_list = self.client.get(reverse("view_list", args=[self.user1.id]))
+        self.assertContains(own_list, 'data-bs-target="#addGiftModal"')
+        self.assertContains(own_list, _("New wish"))
+
+        self.client.force_login(self.user2)
+        another_users_list = self.client.get(reverse("view_list", args=[self.user1.id]))
+        self.assertContains(another_users_list, 'data-bs-target="#addGiftModal"')
+        self.assertContains(another_users_list, _("New surprise"))
+
+        managed_user = User.objects.create_user(
+            username="managed@test.com",
+            email="managed@test.com",
+            password="password",
+            is_verified=True,
+            is_managed=True,
+            nickname="Managed",
+        )
+        self.group.members.add(managed_user)
+        ManagedMember.objects.create(name="Managed", group=self.group, color="#000000", user=managed_user)
+
+        managed_list = self.client.get(reverse("view_list", args=[managed_user.id]))
+        self.assertContains(managed_list, 'data-bs-target="#addGiftModal"')
+        self.assertContains(managed_list, _("New wish"))
 
     def test_edit_gift_access(self):
         """A user can only edit his gifts or surprises from groups he is in"""
