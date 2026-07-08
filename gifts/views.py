@@ -114,6 +114,54 @@ def _apply_payers(gift, payers):
     return None
 
 
+def _resolve_offer_group(gift, group_id):
+    if gift.group_reserved_on or not group_id:
+        return gift.group_reserved_on, None
+    try:
+        return Group.objects.get(id=int(group_id)), None
+    except Group.DoesNotExist:
+        return None, JsonResponse({"success": False, "error": _(GROUP_NOT_FOUND)}, status=404)
+    except (ValueError, TypeError):
+        return None, JsonResponse({"success": False, "error": _("Invalid group ID.")}, status=400)
+
+
+def _set_actual_cost(gift, actual_cost):
+    if not actual_cost:
+        return None
+    try:
+        gift.actual_cost = Decimal(str(actual_cost).replace(",", "."))
+    except (InvalidOperation, ValueError):
+        return JsonResponse({"success": False, "error": INVALID_AMOUNT_FORMAT}, status=400)
+    return None
+
+
+def _set_offer_group(gift, group_id):
+    if not group_id or gift.group_reserved_on_id:
+        return None
+    try:
+        gift.group_reserved_on = Group.objects.get(id=int(group_id))
+    except (Group.DoesNotExist, ValueError, TypeError):
+        return JsonResponse({"success": False, "error": _(GROUP_NOT_FOUND)}, status=400)
+    return None
+
+
+def _resolve_receive_group(gift, group_id):
+    if gift.group_reserved_on or not group_id or group_id == "none":
+        return gift.group_reserved_on, None
+    try:
+        return Group.objects.get(id=int(group_id)), None
+    except Group.DoesNotExist:
+        return None, JsonResponse({"success": False, "error": _("GROUP_NOT_FOUND")}, status=404)
+    except (ValueError, TypeError):
+        return None, JsonResponse({"success": False, "error": _("Invalid group ID.")}, status=400)
+
+
+def _mark_gift_offered(gift):
+    gift.offered = True
+    gift.offered_at = timezone.now()
+    gift.save()
+
+
 # --- Views ---
 
 
@@ -571,14 +619,9 @@ def offer_gift(request, gift_id):
     group_id = data.get("group_id")
     confirm = data.get("confirm", False)
 
-    offer_group = gift.group_reserved_on
-    if not offer_group and group_id:
-        try:
-            offer_group = Group.objects.get(id=int(group_id))
-        except Group.DoesNotExist:
-            return JsonResponse({"success": False, "error": _(GROUP_NOT_FOUND)}, status=404)
-        except (ValueError, TypeError):
-            return JsonResponse({"success": False, "error": _("Invalid group ID.")}, status=400)
+    offer_group, err = _resolve_offer_group(gift, group_id)
+    if err:
+        return err
     history_disabled = offer_group is not None and not offer_group.show_history
 
     if not confirm:
@@ -593,12 +636,9 @@ def offer_gift(request, gift_id):
         gift.delete()
         return JsonResponse({"success": True})
 
-    actual_cost_str = data.get("actual_cost", "")
-    if actual_cost_str:
-        try:
-            gift.actual_cost = Decimal(str(actual_cost_str).replace(",", "."))
-        except (InvalidOperation, ValueError):
-            return JsonResponse({"success": False, "error": INVALID_AMOUNT_FORMAT}, status=400)
+    err = _set_actual_cost(gift, data.get("actual_cost", ""))
+    if err:
+        return err
 
     err = _apply_payers(gift, data.get("payers", {}))
     if err:
@@ -611,15 +651,11 @@ def offer_gift(request, gift_id):
     res_count = Reservation.objects.filter(gift=gift).count()
     Reservation.objects.filter(gift=gift).update(exclusivity=(res_count == 1))
 
-    if group_id and not gift.group_reserved_on_id:
-        try:
-            gift.group_reserved_on = Group.objects.get(id=int(group_id))
-        except (Group.DoesNotExist, ValueError, TypeError):
-            return JsonResponse({"success": False, "error": _(GROUP_NOT_FOUND)}, status=400)
+    err = _set_offer_group(gift, group_id)
+    if err:
+        return err
 
-    gift.offered = True
-    gift.offered_at = timezone.now()
-    gift.save()
+    _mark_gift_offered(gift)
 
     return JsonResponse({"success": True})
 
@@ -773,14 +809,9 @@ def mark_received(request, gift_id):
     group_id = data.get("group_id")
     reservations = list(Reservation.objects.filter(gift=gift).select_related("reserver").order_by("id"))
 
-    receive_group = gift.group_reserved_on
-    if not receive_group and group_id and group_id != "none":
-        try:
-            receive_group = Group.objects.get(id=int(group_id))
-        except Group.DoesNotExist:
-            return JsonResponse({"success": False, "error": _("GROUP_NOT_FOUND")}, status=404)
-        except (ValueError, TypeError):
-            return JsonResponse({"success": False, "error": _("Invalid group ID.")}, status=400)
+    receive_group, err = _resolve_receive_group(gift, group_id)
+    if err:
+        return err
     history_disabled = receive_group is not None and not receive_group.show_history
 
     if not confirm:
@@ -797,9 +828,7 @@ def mark_received(request, gift_id):
 
     if group_id == "none":
         gift.group_reserved_on = None
-        gift.offered = True
-        gift.offered_at = timezone.now()
-        gift.save()
+        _mark_gift_offered(gift)
         return JsonResponse({"success": True})
 
     if history_disabled:
@@ -812,17 +841,13 @@ def mark_received(request, gift_id):
         except (Group.DoesNotExist, ValueError, TypeError):
             return JsonResponse({"success": False, "error": _("GROUP_NOT_FOUND")}, status=400)
 
-    gift.offered = True
-    gift.offered_at = timezone.now()
-    gift.save()
+    _mark_gift_offered(gift)
 
     return JsonResponse({"success": True})
 
 
-def compute_group_balances(group):
-    members = {m.id: m for m in group.members.all()}
+def _calculate_member_balances(group):
     balances = defaultdict(Decimal)
-
     gifts = (
         Gift.objects.filter(group_reserved_on=group, offered=True, actual_cost__isnull=False)
         .exclude(actual_cost=0)
@@ -843,6 +868,10 @@ def compute_group_balances(group):
     for s in BalanceSettlement.objects.filter(group=group):
         balances[s.payer_id] += s.amount
         balances[s.payee_id] -= s.amount
+    return balances
+
+
+def _build_balance_transactions(balances, members):
 
     pos = [(-v, k) for k, v in balances.items() if v > Decimal("0.01")]
     neg = [(v, k) for k, v in balances.items() if v < Decimal("-0.01")]
@@ -870,6 +899,13 @@ def compute_group_balances(group):
     while pos:
         credit, cid = heapq.heappop(pos)
         transactions.append((None, members.get(cid), credit.quantize(Decimal("0.01"))))
+    return transactions
+
+
+def compute_group_balances(group):
+    members = {member.id: member for member in group.members.all()}
+    balances = _calculate_member_balances(group)
+    transactions = _build_balance_transactions(balances, members)
 
     return (
         {members[uid]: bal.quantize(Decimal("0.01")) for uid, bal in balances.items() if uid in members},

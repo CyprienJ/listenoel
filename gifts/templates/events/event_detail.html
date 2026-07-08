@@ -438,6 +438,7 @@
             <div class="modal-body">
                 <p class="text-muted small mb-3">{% trans "Anyone with this link can view and reserve gifts without an account." %}</p>
                 <div class="input-group">
+                    <label for="shareUrl" class="visually-hidden">{% trans "Share link" %}</label>
                     <input type="text" id="shareUrl" class="form-control" readonly
                            value="{{ request.scheme }}://{{ request.get_host }}{% url 'event_detail' token=event.access_token %}">
                     <button class="btn btn-outline-secondary" type="button" onclick="copyShareUrl()">

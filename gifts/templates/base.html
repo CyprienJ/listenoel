@@ -44,7 +44,8 @@
             <form action="{% url 'set_language' %}" method="post" class="m-0">
                 {% csrf_token %}
                 <input name="next" type="hidden" value="{{ request.get_full_path }}">
-                <select name="language" class="nc-lang-select" onchange="this.form.submit()">
+                <label for="languageSelect" class="visually-hidden">{% trans "Language" %}</label>
+                <select id="languageSelect" name="language" class="nc-lang-select" onchange="this.form.submit()">
                     {% get_available_languages as LANGUAGES %}
                     {% get_language_info_list for LANGUAGES as languages %}
                     {% for language in languages %}
@@ -78,6 +79,7 @@
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2">
                     <li class="px-2 py-1">
+                        <label for="themeSelect" class="visually-hidden">{% trans "Theme" %}</label>
                         <select id="themeSelect" class="form-select form-select-sm" style="font-size:12px">
                             <option value="auto">🖥️ {% trans "Auto" %}</option>
                             <option value="light">☀️ {% trans "Bright" %}</option>
