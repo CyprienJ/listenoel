@@ -4,6 +4,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import path, reverse_lazy
 
 from . import account, events, groups, views
+from .feeds import SubscriptionFeed
 
 urlpatterns = [
     # Default
@@ -116,7 +117,12 @@ urlpatterns = [
     path("event/<str:token>/photo/", events.event_photo_upload, name="event_photo_upload"),
     # Notification
     path("subscribe/<int:user_id>/", views.toggle_subscription, name="toggle_subscription"),
-    path("unsubscribe/<uidb64>/<token>/", views.unsubscribe_token, name="unsubscribe_token"),
+    path("feeds/subscriptions/<uuid:feed_token>/", SubscriptionFeed(), name="subscription_feed"),
+    path(
+        "unsubscribe/<int:owner_id>/<uidb64>/<token>/",
+        views.unsubscribe_token,
+        name="unsubscribe_token",
+    ),
 ]
 
 
