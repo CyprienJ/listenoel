@@ -120,11 +120,13 @@ class Gift(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="gifts")
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    url = models.URLField(blank=True)
+    url = models.URLField(blank=True, max_length=1000)
     created_at = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_gifts")
     visible_in = models.ManyToManyField(Group, related_name="visible_gifts", blank=True)
     price = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
+    currency = models.CharField(max_length=3, default="EUR")
+    image_url = models.URLField(blank=True, max_length=1000)
     offered = models.BooleanField(default=False)
     offered_at = models.DateTimeField(null=True, blank=True)
     actual_cost = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
@@ -148,6 +150,25 @@ class Gift(models.Model):
         except User.DoesNotExist:
             self.created_by = self.owner
         super().save(*args, **kwargs)
+
+
+class ExtensionAuthorizationCode(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="extension_authorization_codes")
+    code_hash = models.CharField(max_length=64, unique=True)
+    code_challenge = models.CharField(max_length=128)
+    redirect_uri = models.URLField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+
+
+class ExtensionAccessToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="extension_access_tokens")
+    token_prefix = models.CharField(max_length=16, unique=True, db_index=True)
+    token_hash = models.CharField(max_length=64)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+    revoked_at = models.DateTimeField(null=True, blank=True)
 
 
 class Reservation(models.Model):

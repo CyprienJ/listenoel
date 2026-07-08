@@ -197,7 +197,7 @@
             {% for gift in group.gifts %}
             <div class="nc-event-list-gift-row{% if gift.is_hidden %} nc-event-list-gift-row--hidden{% endif %}">
                 <span class="nc-event-list-gift-title">{{ gift.title }}</span>
-                {% if gift.price %}<span class="nc-event-list-gift-price">{{ gift.price }} €</span>{% endif %}
+                {% if gift.price %}<span class="nc-event-list-gift-price">{{ gift.price }} {{ gift.currency }}</span>{% endif %}
                 {% if gift.is_hidden %}<span class="nc-event-hidden-badge ms-1">{% trans "Hidden" %}</span>{% endif %}
             </div>
             {% if not forloop.last %}<div class="nc-wish-divider"></div>{% endif %}

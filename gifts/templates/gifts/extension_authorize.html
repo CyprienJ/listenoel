@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 640px">
+    <section class="auth-card rounded-5 shadow-lg p-4 p-md-5">
+        <h1 class="h3 fw-bold mb-3">{% trans "Connect Quick Add" %}</h1>
+        <p class="text-muted mb-4">
+            {% trans "The Firefox extension will be able to add products to your gift list. It cannot manage your account or read your password." %}
+        </p>
+        <p class="text-muted mb-4">
+            {% trans "Product titles, URLs, images, and prices are processed in Firefox and sent to nosCadeaux only when you confirm an addition." %}
+        </p>
+        <p class="small mb-4">
+            {% blocktrans with nickname=request.user.nickname %}You are connecting as {{ nickname }}.{% endblocktrans %}
+        </p>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}">
+            <input type="hidden" name="state" value="{{ state }}">
+            <input type="hidden" name="code_challenge" value="{{ code_challenge }}">
+            <button class="btn btn-primary rounded-pill px-4" type="submit">
+                {% trans "Authorize extension" %}
+            </button>
+        </form>
+    </section>
+</div>
+{% endblock %}

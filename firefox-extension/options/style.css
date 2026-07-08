@@ -1,0 +1,9 @@
+:root { color-scheme: light dark; font: 14px/1.5 system-ui, sans-serif; }
+body { margin: 0; padding: 18px; background: Canvas; color: CanvasText; }
+form { display: grid; gap: 10px; }
+h1 { font-size: 18px; margin: 0 0 8px; }
+label { font-weight: 700; }
+input { border: 1px solid color-mix(in srgb, currentColor 25%, transparent); border-radius: 7px; padding: 9px; background: Canvas; color: CanvasText; }
+p { margin: 0; opacity: .7; font-size: 12px; }
+button { justify-self: start; border: 0; border-radius: 999px; padding: 8px 16px; background: #e11d48; color: white; font-weight: 700; cursor: pointer; }
+#status { color: #b45309; }

@@ -30,7 +30,7 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "DEFAULT_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEV", "False") == "True"
 
-ALLOWED_HOSTS = ["noscadeaux.fr", "www.noscadeaux.fr", "127.0.0.1"]
+ALLOWED_HOSTS = ["noscadeaux.fr", "www.noscadeaux.fr", "127.0.0.1", "localhost"]
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "https://noscadeaux.fr")
 
 # Application definition
@@ -141,7 +141,7 @@ STATICFILES_DIRS = [
     BASE_DIR / "gifts" / "static",
 ]
 SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = "DENY"
 

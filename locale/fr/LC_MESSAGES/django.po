@@ -2275,6 +2275,27 @@ msgstr "La photo de couverture a été mise à jour."
 msgid "View the event"
 msgstr "Voir l'événement"
 
+#: gifts/templates/gifts/extension_authorize.html
+msgid "Connect Quick Add"
+msgstr "Connecter l'ajout rapide"
+
+#: gifts/templates/gifts/extension_authorize.html
+msgid "The Firefox extension will be able to add products to your gift list. It cannot manage your account or read your password."
+msgstr "L'extension Firefox pourra ajouter des produits à votre liste de cadeaux. Elle ne peut pas gérer votre compte ni lire votre mot de passe."
+
+#: gifts/templates/gifts/extension_authorize.html
+#, python-format
+msgid "You are connecting as %(nickname)s."
+msgstr "Vous vous connectez en tant que %(nickname)s."
+
+#: gifts/templates/gifts/extension_authorize.html
+msgid "Authorize extension"
+msgstr "Autoriser l'extension"
+
+#: gifts/templates/gifts/extension_authorize.html
+msgid "Product titles, URLs, images, and prices are processed in Firefox and sent to nosCadeaux only when you confirm an addition."
+msgstr "Les titres, URL, images et prix des produits sont traités dans Firefox et envoyés à nosCadeaux uniquement lorsque vous confirmez un ajout."
+
 #~ msgid "Participants"
 #~ msgstr "Participants"
 

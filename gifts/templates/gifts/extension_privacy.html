@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Quick Add privacy policy{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 760px">
+    <article class="auth-card rounded-5 shadow-lg p-4 p-md-5">
+        <h1 class="h2 fw-bold mb-4">Quick Add privacy policy</h1>
+        <p><strong>Last updated:</strong> 8 July 2026</p>
+
+        <h2 class="h4 mt-4">Data handled by the extension</h2>
+        <p>
+            Quick Add reads the active shop page only after you click its toolbar button and grant access to that
+            shop. It extracts candidate product titles, URLs, images, prices, currencies, and product metadata.
+        </p>
+        <p>
+            Extraction and review happen locally in Firefox. Product information is sent to nosCadeaux only after
+            you click “Add to my list.” Pages that you scan but do not add are not sent to nosCadeaux.
+        </p>
+
+        <h2 class="h4 mt-4">Account connection</h2>
+        <p>
+            The extension uses an authorization code and a scoped access token to connect to your nosCadeaux
+            account. It never receives or stores your password. The token is stored in Firefox extension storage;
+            the server stores only its cryptographic hash.
+        </p>
+
+        <h2 class="h4 mt-4">Purpose and retention</h2>
+        <p>
+            Submitted product information is stored as a gift in your nosCadeaux account and remains there until
+            you edit or delete it. You can revoke the extension token with the Disconnect button. Temporary
+            authorization codes expire after five minutes and cannot be reused.
+        </p>
+
+        <h2 class="h4 mt-4">Sharing</h2>
+        <p>
+            Quick Add does not sell product or browsing data and does not use it for advertising. Product data is
+            shared through nosCadeaux only according to the gift-list and group visibility settings you select.
+        </p>
+
+        <h2 class="h4 mt-4">Permissions</h2>
+        <p>
+            Access to shop pages is requested one shop at a time. You can review or revoke these permissions in
+            Firefox’s Add-ons Manager. Disconnecting removes the extension’s local account token and revokes it on
+            the nosCadeaux server when reachable.
+        </p>
+    </article>
+</div>
+{% endblock %}

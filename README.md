@@ -21,6 +21,10 @@ Une application web Django moderne pour organiser et partager des listes de cade
 - 📧 **Notifications email** : Recevez une notification quand un membre choisis ajoute quelque chose à ça liste
 - 🌍 **Interface multilingue** : Support français et anglais
 - 🔐 **Authentification sécurisée** : Système complet de gestion d'utilisateurs
+- 🦊 **Ajout rapide Firefox** : Extraction d'un produit depuis une boutique avec validation avant ajout
+
+Le prototype de l'extension Firefox et ses instructions de développement se trouvent dans
+[`firefox-extension/`](firefox-extension/).
 
 ---
 ## 🛠 Stack Technique
