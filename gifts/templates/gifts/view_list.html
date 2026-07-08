@@ -40,12 +40,10 @@
                     </button>
                 </form>
             {% endif %}
-            {% if is_owner or user.is_managed %}
-                <button class="nc-btn nc-btn--primary nc-btn--sm"
-                        data-bs-toggle="modal" data-bs-target="#addGiftModal">
-                    <i class="bi bi-plus-lg"></i> {% trans "Add" %}
-                </button>
-            {% endif %}
+            <button class="nc-btn nc-btn--primary nc-btn--sm"
+                    data-bs-toggle="modal" data-bs-target="#addGiftModal">
+                <i class="bi bi-plus-lg"></i> {% trans "Add" %}
+            </button>
         </div>
     </div>
 
