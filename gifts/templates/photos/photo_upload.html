@@ -201,6 +201,7 @@ input.pu-range[type=range]:active::-webkit-slider-thumb { cursor: grabbing; }
         JPG, PNG, WEBP — {% trans "max 10 MB" %}
       </div>
     </div>
+    <label for="file-input" class="visually-hidden">{% trans "Choose an image" %}</label>
     <input type="file" id="file-input" accept="image/*" style="display:none;">
 
   </div>
@@ -240,6 +241,7 @@ input.pu-range[type=range]:active::-webkit-slider-thumb { cursor: grabbing; }
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--nc-text-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/>
         </svg>
+        <label for="zoom-range" class="visually-hidden">{% trans "Zoom" %}</label>
         <input type="range" id="zoom-range" class="pu-range" min="0.1" max="5" step="any" value="1">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--nc-text-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -451,9 +453,9 @@ input.pu-range[type=range]:active::-webkit-slider-thumb { cursor: grabbing; }
         ox = 0; oy = 0;
         zoomRange.value = zoom;
         // Set preview img.src here once — updateTransform never touches src
-        document.querySelectorAll('.pu-preview-bubble[data-size]').forEach(el => {
+        for (const el of document.querySelectorAll('.pu-preview-bubble[data-size]')) {
           ensurePreviewImg(el).src = e.target.result;
-        });
+        }
         updateTransform();
         showStep('crop');
       };
