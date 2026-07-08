@@ -293,6 +293,8 @@ def toggle_subscription(request, user_id):
             defaults={
                 "email_enabled": delivery in {"email", "both"},
                 "rss_enabled": delivery in {"rss", "both"},
+                "birthday_reminder": request.POST.get("birthday_reminder") == "on",
+                "christmas_reminder": request.POST.get("christmas_reminder") == "on",
             },
         )
         messages.success(request, _("You are now subscribed to %(name)s's list") % {"name": target_user.nickname})

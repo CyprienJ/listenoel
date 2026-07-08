@@ -57,6 +57,7 @@ class User(AbstractUser):
     )
 
     nickname = models.CharField(max_length=150, blank=False)
+    birthday = models.DateField(blank=True, null=True)
     is_verified = models.BooleanField(default=False)
     is_managed = models.BooleanField(default=False)
     managed_by = models.ForeignKey("self", on_delete=models.CASCADE, related_name="sub_accounts", blank=True, null=True)
@@ -85,6 +86,8 @@ class Subscription(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="subscriber_records")
     email_enabled = models.BooleanField(default=True)
     rss_enabled = models.BooleanField(default=False)
+    birthday_reminder = models.BooleanField(default=False)
+    christmas_reminder = models.BooleanField(default=False)
     feed_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -95,6 +98,22 @@ class Subscription(models.Model):
 
     def __str__(self):
         return f"{self.subscriber.nickname} → {self.owner.nickname}"
+
+
+class ReminderDelivery(models.Model):
+    EVENT_CHOICES = (("birthday", _("Birthday")), ("christmas", _("Christmas")))
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, related_name="reminder_deliveries")
+    event = models.CharField(max_length=10, choices=EVENT_CHOICES)
+    event_year = models.PositiveSmallIntegerField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("subscription", "event", "event_year"),
+                name="unique_subscription_event_reminder",
+            )
+        ]
 
 
 class Gift(models.Model):

@@ -76,6 +76,20 @@
                                 </label>
                             </div>
 
+                            <hr class="my-4">
+                            <p class="small fw-medium mb-2">{% trans "Email me one month before" %}</p>
+                            <div class="d-grid gap-2">
+                                <label class="p-3 bg-body-tertiary rounded-4">
+                                    <input class="form-check-input me-2" type="checkbox" name="birthday_reminder" {% if subscription.birthday_reminder %}checked{% endif %} {% if not user.birthday %}disabled{% endif %}>
+                                    <i class="bi bi-cake2 me-1"></i> {% trans "Their birthday" %}
+                                    {% if not user.birthday %}<span class="small text-muted">({% trans "birthday not provided" %})</span>{% endif %}
+                                </label>
+                                <label class="p-3 bg-body-tertiary rounded-4">
+                                    <input class="form-check-input me-2" type="checkbox" name="christmas_reminder" {% if subscription.christmas_reminder %}checked{% endif %}>
+                                    <i class="bi bi-gift me-1"></i> {% trans "Christmas" %}
+                                </label>
+                            </div>
+
                             {% if rss_url %}
                                 <div class="mt-4">
                                     <label for="rssFeedUrl" class="form-label small fw-medium">{% trans "Your private RSS URL" %}</label>

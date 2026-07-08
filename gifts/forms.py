@@ -36,9 +36,11 @@ class GroupForm(forms.ModelForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ["nickname", "email", "avatar"]
+        fields = ["nickname", "email", "birthday", "avatar"]
         labels = {
             "nickname": _("Nickname"),
             "email": _("Email"),
+            "birthday": _("Birthday"),
             "avatar": _("Profile picture"),
         }
+        widgets = {"birthday": forms.DateInput(attrs={"type": "date"})}

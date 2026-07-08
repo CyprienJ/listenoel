@@ -40,7 +40,16 @@ class ManagedMemberInline(TabularInline):
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin, ModelAdmin):
-    list_display = ("email", "nickname", "is_staff", "is_active", "is_verified", "is_managed", "avatar_preview")
+    list_display = (
+        "email",
+        "nickname",
+        "birthday",
+        "is_staff",
+        "is_active",
+        "is_verified",
+        "is_managed",
+        "avatar_preview",
+    )
     list_filter = ("is_staff", "is_active", "is_verified", "is_managed")
     search_fields = ("email", "nickname")
     ordering = ("email",)
@@ -49,7 +58,7 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
     fieldsets = BaseUserAdmin.fieldsets + (
         (
             _("More information"),
-            {"fields": ("nickname", "is_verified", "is_managed", "avatar")},
+            {"fields": ("nickname", "birthday", "is_verified", "is_managed", "avatar")},
         ),
     )
     filter_horizontal = ("groups", "user_permissions")
@@ -65,8 +74,16 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
 
 @admin.register(Subscription)
 class SubscriptionAdmin(ModelAdmin):
-    list_display = ("subscriber", "owner", "email_enabled", "rss_enabled", "created_at")
-    list_filter = ("email_enabled", "rss_enabled")
+    list_display = (
+        "subscriber",
+        "owner",
+        "email_enabled",
+        "rss_enabled",
+        "birthday_reminder",
+        "christmas_reminder",
+        "created_at",
+    )
+    list_filter = ("email_enabled", "rss_enabled", "birthday_reminder", "christmas_reminder")
     search_fields = ("subscriber__email", "subscriber__nickname", "owner__email", "owner__nickname")
     readonly_fields = ("feed_token", "created_at")
 
