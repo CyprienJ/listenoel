@@ -27,6 +27,13 @@
                     </div>
                 {% endif %}
 
+                {% if item.gift.price %}
+                    <div class="mb-4">
+                        <span class="small text-uppercase fw-bold text-muted d-block">{% trans "Estimated price" %}</span>
+                        <span class="fs-5 fw-semibold">{{ item.gift.price }} {{ item.gift.currency }}</span>
+                    </div>
+                {% endif %}
+
                 {% if item.gift.url %}
                     <div class="mb-4">
                         <label for="gift_url" class="small text-uppercase fw-bold text-muted mb-2 d-block">{% trans "Link" %}</label>

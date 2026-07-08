@@ -10,7 +10,9 @@
                 {% csrf_token %}
                 <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label for="priceInput" class="form-label fw-medium">{% trans "Estimated price (€)" %}</label>
+                        <label for="priceInput" class="form-label fw-medium">
+                            {% trans "Estimated price" %} ({{ item.gift.currency }})
+                        </label>
                         <input type="number" step="0.01" name="price"
                                class="form-control rounded-4 auth-input"
                                value="{{ item.gift.price|default:'' }}"
