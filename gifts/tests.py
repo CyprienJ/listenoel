@@ -3,7 +3,7 @@ import json
 import os
 import shutil
 import tempfile
-from datetime import timedelta
+from datetime import date, timedelta
 from decimal import Decimal
 
 from django.contrib.auth.tokens import default_token_generator
@@ -351,6 +351,50 @@ class SubscriptionTest(TestCase):
         self.client.force_login(self.user1)
         self.client.post(reverse("add_gift", args=[self.user1.id]), {"title": "RSS only"})
         self.assertEqual(len(mail.outbox), 0)
+
+    def test_event_reminder_preferences_are_saved(self):
+        self.user1.birthday = date(1990, 8, 8)
+        self.user1.save()
+        self.client.force_login(self.user2)
+
+        self.client.post(
+            reverse("toggle_subscription", args=[self.user1.id]),
+            {"delivery": "email", "birthday_reminder": "on", "christmas_reminder": "on"},
+        )
+
+        subscription = Subscription.objects.get(subscriber=self.user2, owner=self.user1)
+        self.assertTrue(subscription.birthday_reminder)
+        self.assertTrue(subscription.christmas_reminder)
+
+    @override_settings(PUBLIC_BASE_URL="https://example.test")
+    def test_birthday_reminder_is_sent_once_one_month_before(self):
+        self.user1.birthday = date(1990, 8, 8)
+        self.user1.save()
+        Gift.objects.create(owner=self.user1, created_by=self.user1, title="Birthday gift")
+        Subscription.objects.create(
+            subscriber=self.user2,
+            owner=self.user1,
+            birthday_reminder=True,
+        )
+
+        call_command("send_event_reminders", date="2026-07-08")
+        call_command("send_event_reminders", date="2026-07-08")
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("Birthday gift", mail.outbox[0].body)
+        self.assertIn("https://example.test", mail.outbox[0].body)
+
+    def test_christmas_reminder_is_sent_on_november_25(self):
+        Subscription.objects.create(
+            subscriber=self.user2,
+            owner=self.user1,
+            christmas_reminder=True,
+        )
+
+        call_command("send_event_reminders", date="2026-11-25")
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("Christmas", mail.outbox[0].subject)
 
     def test_private_rss_feed_respects_gift_visibility(self):
         group2 = Group.objects.create(name="Group 1-3")

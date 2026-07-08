@@ -31,6 +31,7 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "DEFAULT_SECRET_KEY")
 DEBUG = os.environ.get("DEV", "False") == "True"
 
 ALLOWED_HOSTS = ["noscadeaux.fr", "www.noscadeaux.fr", "127.0.0.1"]
+PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "https://noscadeaux.fr")
 
 # Application definition
 
