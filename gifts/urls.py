@@ -9,6 +9,7 @@ from .feeds import SubscriptionFeed
 urlpatterns = [
     # Default
     path("", views.welcome, name="welcome"),
+    path("privacy/", views.privacy, name="privacy"),
     path("dashboard/", views.dashboard, name="dashboard"),
     # Auth
     path("login/", auth_views.LoginView.as_view(), name="login"),

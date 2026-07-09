@@ -2296,6 +2296,98 @@ msgstr "Autoriser l'extension"
 msgid "Product titles, URLs, images, and prices are processed in Firefox and sent to nosCadeaux only when you confirm an addition."
 msgstr "Les titres, URL, images et prix des produits sont traités dans Firefox et envoyés à nosCadeaux uniquement lorsque vous confirmez un ajout."
 
+#: gifts/templates/base.html:94 gifts/templates/gifts/privacy.html:10
+msgid "Privacy"
+msgstr "Confidentialité"
+
+#: gifts/templates/gifts/privacy.html:4 gifts/templates/gifts/privacy.html:12
+msgid "Privacy policy"
+msgstr "Politique de confidentialité"
+
+#: gifts/templates/gifts/privacy.html:13
+msgid "Last updated:"
+msgstr "Dernière mise à jour :"
+
+#: gifts/templates/gifts/privacy.html:15
+msgid "Data stored by nosCadeaux"
+msgstr "Données enregistrées par nosCadeaux"
+
+#: gifts/templates/gifts/privacy.html:17
+msgid "nosCadeaux stores only the information needed to run your account and gift lists:"
+msgstr ""
+"nosCadeaux enregistre uniquement les informations nécessaires au fonctionnement "
+"de votre compte et de vos listes de cadeaux :"
+
+#: gifts/templates/gifts/privacy.html:20
+msgid "your email address, nickname, password hash, optional birthday, and optional profile picture;"
+msgstr ""
+"votre adresse email, votre pseudo, le hash de votre mot de passe, votre date "
+"d'anniversaire facultative et votre photo de profil facultative ;"
+
+#: gifts/templates/gifts/privacy.html:21
+msgid "your groups, event lists, and the members who can access them;"
+msgstr "vos groupes, vos listes d'événements et les membres qui peuvent y accéder ;"
+
+#: gifts/templates/gifts/privacy.html:22
+msgid "the gifts you add, including titles, descriptions, links, prices, images, reservations, contributions, and history;"
+msgstr ""
+"les cadeaux que vous ajoutez, avec leurs titres, descriptions, liens, prix, "
+"images, réservations, participations et historique ;"
+
+#: gifts/templates/gifts/privacy.html:23
+msgid "notification preferences and technical tokens used for email verification, password reset, RSS feeds, and the browser extension."
+msgstr ""
+"vos préférences de notification et les jetons techniques utilisés pour la "
+"vérification d'email, la réinitialisation du mot de passe, les flux RSS et "
+"l'extension de navigateur."
+
+#: gifts/templates/gifts/privacy.html:26
+msgid "How the data is used"
+msgstr "Utilisation des données"
+
+#: gifts/templates/gifts/privacy.html:28
+msgid "We use this data only to provide the service: displaying lists, managing groups and reservations, sending the notifications you request, securing accounts, and keeping the browser extension connected when you choose to use it."
+msgstr ""
+"Ces données servent uniquement à fournir le service : afficher les listes, gérer "
+"les groupes et les réservations, envoyer les notifications que vous demandez, "
+"sécuriser les comptes et garder l'extension de navigateur connectée lorsque "
+"vous choisissez de l'utiliser."
+
+#: gifts/templates/gifts/privacy.html:31
+msgid "We do not sell your data, rent it, use it for advertising, build marketing profiles from it, or share it with third parties for their own purposes."
+msgstr ""
+"Nous ne vendons pas vos données, ne les louons pas, ne les utilisons pas pour "
+"la publicité, ne créons pas de profils marketing à partir de celles-ci et ne "
+"les partageons pas avec des tiers pour leurs propres finalités."
+
+#: gifts/templates/gifts/privacy.html:34
+msgid "Account deletion"
+msgstr "Suppression du compte"
+
+#: gifts/templates/gifts/privacy.html:36
+msgid "When you delete your account, the data attached to that account is deleted immediately from nosCadeaux, including your profile, gifts, reservations, subscriptions, extension tokens, and event lists you own."
+msgstr ""
+"Lorsque vous supprimez votre compte, les données liées à ce compte sont "
+"immédiatement supprimées de nosCadeaux, notamment votre profil, vos cadeaux, "
+"vos réservations, vos abonnements, vos jetons d'extension et les listes "
+"d'événements dont vous êtes propriétaire."
+
+#: gifts/templates/gifts/privacy.html:39
+msgid "If you belonged to shared groups, those groups may continue to exist for the remaining members, but your account is removed from them."
+msgstr ""
+"Si vous apparteniez à des groupes partagés, ces groupes peuvent continuer "
+"d'exister pour les autres membres, mais votre compte en est retiré."
+
+#: gifts/templates/gifts/privacy.html:42
+msgid "Contact"
+msgstr "Contact"
+
+#: gifts/templates/gifts/privacy.html:44
+msgid "For any privacy question or deletion request, you can contact me by email at"
+msgstr ""
+"Pour toute question de confidentialité ou demande de suppression, vous pouvez "
+"me contacter par email à"
+
 #~ msgid "Participants"
 #~ msgstr "Participants"
 
