@@ -178,6 +178,11 @@ def welcome(request):
     return render(request, "gifts/welcome.html")
 
 
+@require_GET
+def privacy(request):
+    return render(request, "gifts/privacy.html", {"contact_email": "cyprien.jorant@pm.me"})
+
+
 @login_required
 def dashboard(request):
     user_groups = request.user.gift_groups.all()

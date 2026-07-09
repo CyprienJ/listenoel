@@ -114,6 +114,7 @@ class AccessControlTest(TestCase):
         self.assertEqual(self.client.get(reverse("login")).status_code, 200)
         self.assertEqual(self.client.get(reverse("register")).status_code, 200)
         self.assertEqual(self.client.get(reverse("welcome")).status_code, 200)
+        self.assertContains(self.client.get(reverse("privacy")), _("Privacy policy"))
 
         # Redirect to login by @login_required
         protected_urls = [
@@ -148,6 +149,7 @@ class AccessControlTest(TestCase):
         # Authorized access for unverified users
         self.assertEqual(self.client.get(reverse("verify_email_sent")).status_code, 200)
         self.assertEqual(self.client.get(reverse("account")).status_code, 200)
+        self.assertContains(self.client.get(reverse("privacy")), _("Privacy policy"))
 
         # URLs blocked by middleware and redirected to verify_email_sent
         self.assertRedirects(self.client.get(reverse("dashboard")), reverse("verify_email_sent"))
