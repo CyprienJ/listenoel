@@ -35,3 +35,7 @@ Le prototype de l'extension Firefox et ses instructions de développement se tro
 - **Gestionnaire de paquets** : UV
 - **Déploiement** : Docker + Nginx + Gunicorn
 - **CI/CD** : GitHub Actions
+
+## Notes de développement
+
+- À chaque ajout ou modification de texte visible par les utilisateurs, penser à mettre à jour les traductions Django (`locale/*/LC_MESSAGES/django.po`) puis recompiler les messages.

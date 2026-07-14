@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nos Cadeaux\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-15 08:45+0000\n"
+"POT-Creation-Date: 2026-07-15 09:07+0000\n"
 "PO-Revision-Date: 2026-07-15 00:00+0200\n"
 "Last-Translator: Nos Cadeaux\n"
 "Language-Team: French\n"
@@ -359,7 +359,7 @@ msgstr "Administration"
 msgid "Log out"
 msgstr "Se déconnecter"
 
-#: gifts/templates/base.html:126 gifts/templates/gifts/welcome.html:27
+#: gifts/templates/base.html:126 gifts/templates/gifts/welcome.html:25
 #: gifts/templates/registration/login.html:53
 #: gifts/templates/registration/password_reset_complete.html:16
 msgid "Log in"
@@ -522,7 +522,7 @@ msgstr ""
 "listes, veuillez cliquer sur le lien de vérification ci-dessous :"
 
 #: gifts/templates/events/event_detail.html:18
-#: gifts/templates/gifts/dashboard.html:178
+#: gifts/templates/gifts/dashboard.html:353
 msgid "Event list"
 msgstr "Liste d'événement"
 
@@ -559,7 +559,7 @@ msgstr "Partager"
 msgid "All"
 msgstr "Tout"
 
-#: gifts/templates/events/event_detail.html:84 gifts/views.py:78
+#: gifts/templates/events/event_detail.html:84 gifts/views.py:79
 msgid "Available"
 msgstr "Disponible"
 
@@ -572,6 +572,7 @@ msgid "Reserved by me"
 msgstr "Réservé par moi"
 
 #: gifts/templates/events/event_detail.html:95
+#: gifts/templates/gifts/dashboard.html:59
 msgid "Add a wish"
 msgstr "Ajouter un souhait"
 
@@ -649,11 +650,11 @@ msgstr "Transférer vers ma liste"
 msgid "Delete"
 msgstr "Supprimer"
 
-#: gifts/templates/events/event_detail.html:212 gifts/views.py:88
+#: gifts/templates/events/event_detail.html:212 gifts/views.py:89
 msgid "Reserved by you"
 msgstr "Réservé par vous"
 
-#: gifts/templates/events/event_detail.html:216 gifts/views.py:93
+#: gifts/templates/events/event_detail.html:216 gifts/views.py:94
 msgid "Reserved exclusively"
 msgstr "Réservé exclusivement"
 
@@ -816,13 +817,13 @@ msgstr "Modifier les informations"
 
 #: gifts/templates/events/event_detail.html:520
 #: gifts/templates/events/event_detail.html:525
-#: gifts/templates/gifts/dashboard.html:224
-#: gifts/templates/gifts/dashboard.html:228
+#: gifts/templates/gifts/dashboard.html:399
+#: gifts/templates/gifts/dashboard.html:403
 msgid "optional"
 msgstr "optionnel"
 
 #: gifts/templates/events/event_detail.html:525
-#: gifts/templates/gifts/dashboard.html:228
+#: gifts/templates/gifts/dashboard.html:403
 #: gifts/templates/gifts/includes/_add_gift_modal.html:27
 #: gifts/templates/gifts/includes/_edit_gift.html:35
 #: gifts/templates/gifts/includes/_edit_gift.html:36
@@ -832,7 +833,7 @@ msgid "Description"
 msgstr "Description"
 
 #: gifts/templates/events/event_detail.html:527
-#: gifts/templates/gifts/dashboard.html:230
+#: gifts/templates/gifts/dashboard.html:405
 msgid "A short message for your guests…"
 msgstr "Un court message pour vos invités…"
 
@@ -852,7 +853,7 @@ msgstr "Je le prends en exclusivité"
 msgid "Please enter your name."
 msgstr "Veuillez entrer votre prénom."
 
-#: gifts/templates/gifts/balance.html:4 gifts/templates/gifts/welcome.html:44
+#: gifts/templates/gifts/balance.html:4 gifts/templates/gifts/welcome.html:65
 #: gifts/templates/groups/group_detail.html:51
 msgid "Balance"
 msgstr "Solde"
@@ -871,7 +872,7 @@ msgstr ""
 msgid "Group settings"
 msgstr "Paramètres du groupe"
 
-#: gifts/templates/gifts/balance.html:29 gifts/templates/gifts/welcome.html:152
+#: gifts/templates/gifts/balance.html:29
 #: gifts/templates/groups/includes/_group_modals.html:55
 msgid "Financial balance"
 msgstr "Équilibre financier"
@@ -882,6 +883,7 @@ msgid "My balance"
 msgstr "Mon solde"
 
 #: gifts/templates/gifts/balance.html:63
+#: gifts/templates/gifts/dashboard.html:181
 msgid "Balances"
 msgstr "Soldes"
 
@@ -1058,7 +1060,7 @@ msgid "Join"
 msgstr "Rejoindre"
 
 #: gifts/templates/gifts/dashboard.html:33
-#: gifts/templates/gifts/dashboard.html:163
+#: gifts/templates/gifts/dashboard.html:338
 msgid "Create"
 msgstr "Créer"
 
@@ -1080,111 +1082,221 @@ msgid_plural "%(count)s groups"
 msgstr[0] "%(count)s groupe"
 msgstr[1] "%(count)s groupes"
 
-#: gifts/templates/gifts/dashboard.html:58
+#: gifts/templates/gifts/dashboard.html:64
+msgid "Create event list"
+msgstr "Créer une liste d’événement"
+
+#: gifts/templates/gifts/dashboard.html:68
+#: gifts/templates/gifts/dashboard.html:272
+#: gifts/templates/gifts/dashboard.html:424
+msgid "Join a group"
+msgstr "Rejoindre un groupe"
+
+#: gifts/templates/gifts/dashboard.html:73
+msgid "Firefox extension"
+msgstr "Extension Firefox"
+
+#: gifts/templates/gifts/dashboard.html:80
+msgid "active wishes"
+msgstr "souhaits actifs"
+
+#: gifts/templates/gifts/dashboard.html:84
+#: gifts/templates/gifts/includes/_gift_table.html:59
+#: gifts/templates/gifts/includes/_wish_row.html:51
+msgid "groups"
+msgstr "groupes"
+
+#: gifts/templates/gifts/dashboard.html:88
+msgid "current reservations"
+msgstr "réservations en cours"
+
+#: gifts/templates/gifts/dashboard.html:92
+msgid "event lists"
+msgstr "listes d’événement"
+
+#: gifts/templates/gifts/dashboard.html:100
+msgid "Getting started"
+msgstr "Premiers pas"
+
+#: gifts/templates/gifts/dashboard.html:101
+msgid "Set up your first gift space"
+msgstr "Configurez votre premier espace cadeaux"
+
+#: gifts/templates/gifts/dashboard.html:105
+msgid "Create or join a group"
+msgstr "Créer ou rejoindre un groupe"
+
+#: gifts/templates/gifts/dashboard.html:106
+msgid "Add a few ideas to your list"
+msgstr "Ajouter quelques idées à votre liste"
+
+#: gifts/templates/gifts/dashboard.html:107
+msgid "Invite people to reserve gifts secretly"
+msgstr "Inviter des proches à réserver des cadeaux en secret"
+
+#: gifts/templates/gifts/dashboard.html:116
+msgid "Upcoming"
+msgstr "À venir"
+
+#: gifts/templates/gifts/dashboard.html:117
+msgid "Dates to watch"
+msgstr "Dates à surveiller"
+
+#: gifts/templates/gifts/dashboard.html:137
+msgid "Today"
+msgstr "Aujourd’hui"
+
+#: gifts/templates/gifts/dashboard.html:139
+#, python-format
+msgid "in %(days)s day"
+msgid_plural "in %(days)s days"
+msgstr[0] "dans %(days)s jour"
+msgstr[1] "dans %(days)s jours"
+
+#: gifts/templates/gifts/dashboard.html:146
+msgid "No upcoming event or birthday in your groups."
+msgstr "Aucun événement ou anniversaire à venir dans vos groupes."
+
+#: gifts/templates/gifts/dashboard.html:154
+msgid "Reservations"
+msgstr "Réservations"
+
+#: gifts/templates/gifts/dashboard.html:155
+msgid "Gifts you reserved"
+msgstr "Cadeaux que vous avez réservés"
+
+#: gifts/templates/gifts/dashboard.html:165
+msgid "exclusive"
+msgstr "exclusif"
+
+#: gifts/templates/gifts/dashboard.html:169
+msgid "You have no active reservation yet."
+msgstr "Vous n’avez pas encore de réservation active."
+
+#: gifts/templates/gifts/dashboard.html:182
+msgid "Money to settle"
+msgstr "Remboursements à régler"
+
+#: gifts/templates/gifts/dashboard.html:193
+#, python-format
+msgid "You should receive %(amount)s EUR"
+msgstr "Vous devriez recevoir %(amount)s EUR"
+
+#: gifts/templates/gifts/dashboard.html:195
+#, python-format
+msgid "You owe %(amount)s EUR"
+msgstr "Vous devez %(amount)s EUR"
+
+#: gifts/templates/gifts/dashboard.html:197
+msgid "Suggested repayments available"
+msgstr "Remboursements suggérés disponibles"
+
+#: gifts/templates/gifts/dashboard.html:211
+msgid "Recent activity"
+msgstr "Activité récente"
+
+#: gifts/templates/gifts/dashboard.html:212
+msgid "New wishes in your groups"
+msgstr "Nouveaux souhaits dans vos groupes"
+
+#: gifts/templates/gifts/dashboard.html:233
 msgid "My groups"
 msgstr "Mes groupes"
 
-#: gifts/templates/gifts/dashboard.html:74
-#: gifts/templates/gifts/welcome.html:56
+#: gifts/templates/gifts/dashboard.html:249
 msgid "members"
 msgstr "membres"
 
-#: gifts/templates/gifts/dashboard.html:82
-#: gifts/templates/gifts/dashboard.html:123
+#: gifts/templates/gifts/dashboard.html:257
+#: gifts/templates/gifts/dashboard.html:298
 msgid "New"
 msgstr "Nouveau"
 
-#: gifts/templates/gifts/dashboard.html:90
+#: gifts/templates/gifts/dashboard.html:265
 msgid "No groups yet"
 msgstr "Aucun groupe pour l'instant"
 
-#: gifts/templates/gifts/dashboard.html:92
+#: gifts/templates/gifts/dashboard.html:267
 msgid "Create or join a group to start sharing your gift ideas."
 msgstr ""
 "Créez ou rejoignez un groupe pour commencer à partager vos idées de cadeaux."
 
-#: gifts/templates/gifts/dashboard.html:97
-#: gifts/templates/gifts/dashboard.html:249
-msgid "Join a group"
-msgstr "Rejoindre un groupe"
-
-#: gifts/templates/gifts/dashboard.html:101
-#: gifts/templates/gifts/welcome.html:188
+#: gifts/templates/gifts/dashboard.html:276
 msgid "Create a group"
 msgstr "Créer un groupe"
 
-#: gifts/templates/gifts/dashboard.html:109
+#: gifts/templates/gifts/dashboard.html:284
 msgid "My event lists"
 msgstr "Mes listes d'événement"
 
-#: gifts/templates/gifts/dashboard.html:130
+#: gifts/templates/gifts/dashboard.html:305
 msgid "Event lists I'm following"
 msgstr "Listes d'événements que je suis"
 
-#: gifts/templates/gifts/dashboard.html:144
+#: gifts/templates/gifts/dashboard.html:319
 msgid "Remove from my dashboard"
 msgstr "Retirer du tableau de bord"
 
-#: gifts/templates/gifts/dashboard.html:169
+#: gifts/templates/gifts/dashboard.html:344
 msgid "What do you want to create?"
 msgstr "Que voulez-vous créer ?"
 
-#: gifts/templates/gifts/dashboard.html:173
+#: gifts/templates/gifts/dashboard.html:348
 msgid "Classic group"
 msgstr "Groupe classique"
 
-#: gifts/templates/gifts/dashboard.html:174
+#: gifts/templates/gifts/dashboard.html:349
 msgid "Private group, share gift lists with your circle"
 msgstr "Groupe privé, partagez vos listes avec votre cercle"
 
-#: gifts/templates/gifts/dashboard.html:179
+#: gifts/templates/gifts/dashboard.html:354
 msgid "Public list, anyone with the link can reserve"
 msgstr "Liste publique, accessible à tous avec le lien"
 
-#: gifts/templates/gifts/dashboard.html:191
-#: gifts/templates/gifts/dashboard.html:216
+#: gifts/templates/gifts/dashboard.html:366
+#: gifts/templates/gifts/dashboard.html:391
 #: gifts/templates/registration/change_password.html:62
 msgid "Back"
 msgstr "Retour"
 
-#: gifts/templates/gifts/dashboard.html:194
+#: gifts/templates/gifts/dashboard.html:369
 #: gifts/templates/groups/includes/_group_modals.html:16
 msgid "Group Name"
 msgstr "Nom du groupe"
 
-#: gifts/templates/gifts/dashboard.html:196
+#: gifts/templates/gifts/dashboard.html:371
 msgid "e.g. Smith Family"
 msgstr "ex. Famille Martin"
 
-#: gifts/templates/gifts/dashboard.html:200
+#: gifts/templates/gifts/dashboard.html:375
 msgid "Once created, you will get a unique code to share."
 msgstr "Une fois créé, vous obtiendrez un code unique à partager."
 
-#: gifts/templates/gifts/dashboard.html:205
+#: gifts/templates/gifts/dashboard.html:380
 msgid "Create Group"
 msgstr "Créer un groupe"
 
-#: gifts/templates/gifts/dashboard.html:219
+#: gifts/templates/gifts/dashboard.html:394
 msgid "List name"
 msgstr "Nom de la liste"
 
-#: gifts/templates/gifts/dashboard.html:224
+#: gifts/templates/gifts/dashboard.html:399
 msgid "Date"
 msgstr "Date"
 
-#: gifts/templates/gifts/dashboard.html:235
+#: gifts/templates/gifts/dashboard.html:410
 msgid "Create list"
 msgstr "Créer la liste"
 
-#: gifts/templates/gifts/dashboard.html:254
+#: gifts/templates/gifts/dashboard.html:429
 msgid "Group Code"
 msgstr "Code du groupe"
 
-#: gifts/templates/gifts/dashboard.html:263
+#: gifts/templates/gifts/dashboard.html:438
 msgid "See group"
 msgstr "Voir le groupe"
 
-#: gifts/templates/gifts/dashboard.html:330
+#: gifts/templates/gifts/dashboard.html:505
 msgid "Please enter a valid code."
 msgstr "Merci d'utiliser un code valide."
 
@@ -1222,7 +1334,7 @@ msgstr "Autoriser l'extension"
 msgid "History"
 msgstr "Historique"
 
-#: gifts/templates/gifts/history.html:9 gifts/templates/gifts/welcome.html:137
+#: gifts/templates/gifts/history.html:9 gifts/templates/gifts/welcome.html:102
 #: gifts/templates/groups/includes/_group_modals.html:43
 msgid "Gift history"
 msgstr "Historique des cadeaux"
@@ -1369,11 +1481,6 @@ msgstr "Exclusif à un groupe"
 #: gifts/templates/gifts/includes/_wish_row.html:63
 msgid "Exclusive"
 msgstr "Exclusif"
-
-#: gifts/templates/gifts/includes/_gift_table.html:59
-#: gifts/templates/gifts/includes/_wish_row.html:51
-msgid "groups"
-msgstr "groupes"
 
 #: gifts/templates/gifts/includes/_gift_table.html:68
 #, python-format
@@ -1550,7 +1657,7 @@ msgid "Open participation"
 msgstr "Ouvrir la participation"
 
 #: gifts/templates/gifts/includes/_reserve_modal_content.html:52
-#: gifts/views.py:104
+#: gifts/views.py:105
 msgid "Participate"
 msgstr "Participer"
 
@@ -1853,169 +1960,245 @@ msgid "Invisible for"
 msgstr "Invisible pour"
 
 #: gifts/templates/gifts/view_list.html:180
+#: gifts/templates/gifts/welcome.html:132
 msgid "Event lists"
 msgstr "Listes d'événement"
 
-#: gifts/templates/gifts/welcome.html:12
-msgid "Gift lists, reinvented"
-msgstr "Les listes de cadeaux, réinventées"
+#: gifts/templates/gifts/welcome.html:11
+msgid "Shared gift lists for real families and groups"
+msgstr "Listes de cadeaux partagées pour les familles et les groupes"
 
-#: gifts/templates/gifts/welcome.html:15
-msgid "Organize gifts."
-msgstr "Organisez vos cadeaux."
-
-#: gifts/templates/gifts/welcome.html:16
-msgid "No more duplicates."
-msgstr "Fini les doublons."
-
-#: gifts/templates/gifts/welcome.html:19
+#: gifts/templates/gifts/welcome.html:17
 msgid ""
-"Share wish lists with your close ones, secretly reserve gifts, track the "
-"history of received gifts, and balance contributions among group members."
+"Create private circles, share wish lists, coordinate secret reservations, "
+"and keep group expenses clear from the first idea to the final thank-you."
 msgstr ""
-"Partagez des listes de vœux avec vos proches, réservez des cadeaux en "
-"secret, suivez l’historique des cadeaux offerts et équilibrez les "
-"contributions entre membres."
+"Créez des cercles privés, partagez des listes de souhaits, coordonnez des "
+"réservations secrètes et gardez les dépenses du groupe claires, de la "
+"première idée au dernier remerciement."
 
-#: gifts/templates/gifts/welcome.html:24
-msgid "Get started"
-msgstr "Commencer"
+#: gifts/templates/gifts/welcome.html:22
+msgid "Create an account"
+msgstr "Créer un compte"
 
-#: gifts/templates/gifts/welcome.html:31
+#: gifts/templates/gifts/welcome.html:29
 msgid "Go to dashboard"
-msgstr "Retour à l’accueil"
+msgstr "Aller au tableau de bord"
 
-#: gifts/templates/gifts/welcome.html:55
+#: gifts/templates/gifts/welcome.html:41
 msgid "Family group"
-msgstr "Famille"
+msgstr "Groupe famille"
 
-#: gifts/templates/gifts/welcome.html:65
-msgid "New bicycle"
-msgstr "Nouveau vélo"
+#: gifts/templates/gifts/welcome.html:42
+msgid "6 members"
+msgstr "6 membres"
+
+#: gifts/templates/gifts/welcome.html:50
+msgid "Noise-cancelling headphones"
+msgstr "Casque à réduction de bruit"
+
+#: gifts/templates/gifts/welcome.html:51
+msgid "Reserved by Lea"
+msgstr "Réservé par Léa"
+
+#: gifts/templates/gifts/welcome.html:53
+msgid "Secret"
+msgstr "Secret"
+
+#: gifts/templates/gifts/welcome.html:58
+msgid "Birthday list"
+msgstr "Liste d’anniversaire"
+
+#: gifts/templates/gifts/welcome.html:59
+msgid "Open event link"
+msgstr "Lien d’événement ouvert"
 
 #: gifts/templates/gifts/welcome.html:66
-msgid "Reserved by Alice"
-msgstr "Réservé par Alice"
+msgid "Nina owes Sam 12.50 EUR"
+msgstr "Nina doit 12,50 EUR à Sam"
 
-#: gifts/templates/gifts/welcome.html:79
-msgid "Everything you need for stress-free gifting"
-msgstr "Tout ce qu’il faut pour offrir sans stress"
+#: gifts/templates/gifts/welcome.html:75
+msgid "What you can do"
+msgstr "Ce que vous pouvez faire"
 
-#: gifts/templates/gifts/welcome.html:80
-msgid "One tool for the whole group, from wish to thank-you."
-msgstr "Un seul outil pour tout le groupe, du vœu au merci."
+#: gifts/templates/gifts/welcome.html:76
+msgid "One place for every gift workflow"
+msgstr "Un seul endroit pour organiser tous vos cadeaux"
 
-#: gifts/templates/gifts/welcome.html:92
+#: gifts/templates/gifts/welcome.html:82
 msgid "Private groups"
 msgstr "Groupes privés"
 
-#: gifts/templates/gifts/welcome.html:94
+#: gifts/templates/gifts/welcome.html:83
 msgid ""
-"Create a group for your family, friends, or colleagues. Join via an invite "
-"link. No one can stumble in uninvited."
+"Create spaces for family, friends, colleagues, or any circle. Members join "
+"with a private invitation code."
 msgstr ""
-"Créez un groupe pour votre famille, vos amis ou vos collègues. On rejoint "
-"via un lien d’invitation. Personne ne peut s’y glisser sans autorisation."
+"Créez des espaces pour la famille, les amis, les collègues ou n’importe quel "
+"cercle. Les membres rejoignent avec un code d’invitation privé."
 
-#: gifts/templates/gifts/welcome.html:107
+#: gifts/templates/gifts/welcome.html:87
 msgid "Wish lists"
 msgstr "Listes de vœux"
 
-#: gifts/templates/gifts/welcome.html:109
+#: gifts/templates/gifts/welcome.html:88
 msgid ""
-"Everyone in the group has a wish list. Add ideas anytime : title, "
-"description, link, and / or price."
+"Add ideas with links, descriptions, estimated prices, and visibility by "
+"group."
 msgstr ""
-"Chaque membre du groupe a sa propre liste de vœux. Ajoutez vos idées quand "
-"vous voulez : titre, description, lien et / ou prix."
+"Ajoutez des idées avec des liens, des descriptions, des prix estimés et une "
+"visibilité par groupe."
 
-#: gifts/templates/gifts/welcome.html:122
+#: gifts/templates/gifts/welcome.html:92
+msgid "Surprises"
+msgstr "Surprises"
+
+#: gifts/templates/gifts/welcome.html:93
+msgid ""
+"Add gift ideas to someone else's list without showing them to the recipient."
+msgstr ""
+"Ajoutez des idées de cadeaux à la liste de quelqu’un sans les montrer au "
+"destinataire."
+
+#: gifts/templates/gifts/welcome.html:97
 msgid "Secret reservations"
 msgstr "Réservations secrètes"
 
-#: gifts/templates/gifts/welcome.html:124
+#: gifts/templates/gifts/welcome.html:98
 msgid ""
-"Reserve a gift so others know it's taken, but the recipient never finds out. "
-"No more double gifts!"
+"Reserve alone or join a shared gift so the group avoids duplicates while the "
+"recipient stays unaware."
 msgstr ""
-"Réservez un cadeau pour que les autres sachent qu’il est pris, mais le "
-"destinataire n’en saura jamais rien. Fini les cadeaux en double !"
+"Réservez seul ou participez à un cadeau commun pour éviter les doublons, "
+"sans que le destinataire le sache."
 
-#: gifts/templates/gifts/welcome.html:139
+#: gifts/templates/gifts/welcome.html:103
 msgid ""
-"Once a gift is offered, it moves to the group history. Never offer the same "
-"thing twice, even years later."
+"Move offered gifts into group history and keep a memory of what has already "
+"been given."
 msgstr ""
-"Une fois un cadeau offert, il passe dans l’historique du groupe. Ne "
-"recommencez jamais le même cadeau, même des années plus tard."
+"Déplacez les cadeaux offerts dans l’historique du groupe et gardez une trace "
+"de ce qui a déjà été donné."
 
-#: gifts/templates/gifts/welcome.html:154
+#: gifts/templates/gifts/welcome.html:107
+msgid "Shared expenses"
+msgstr "Dépenses partagées"
+
+#: gifts/templates/gifts/welcome.html:108
 msgid ""
-"Log who paid what for each gift and split costs between participants. See at "
-"a glance who owes whom"
+"Record actual costs, who paid, who participates, and see who should "
+"reimburse whom."
 msgstr ""
-"Enregistrez qui a payé quoi pour chaque cadeau et répartissez les coûts "
-"entre les participants. Voyez en un coup d’œil qui doit quoi à qui"
+"Enregistrez les coûts réels, qui a payé, qui participe, et voyez qui doit "
+"rembourser qui."
 
-#: gifts/templates/gifts/welcome.html:167
+#: gifts/templates/gifts/welcome.html:112
 msgid "Notifications"
 msgstr "Notifications"
 
-#: gifts/templates/gifts/welcome.html:169
+#: gifts/templates/gifts/welcome.html:113
 msgid ""
-"Subscribe to a member's list to get notified by email when they add a new "
-"wish."
+"Follow a list by email, RSS, or both, with optional birthday and Christmas "
+"reminders."
 msgstr ""
-"Abonnez-vous à la liste d’un membre pour être notifié par e-mail quand il "
-"ajoute un nouveau vœu."
+"Suivez une liste par email, RSS, ou les deux, avec des rappels optionnels "
+"pour les anniversaires et Noël."
 
-#: gifts/templates/gifts/welcome.html:182
-msgid "How it works"
-msgstr "Comment ça marche"
+#: gifts/templates/gifts/welcome.html:117
+msgid "Managed members"
+msgstr "Membres gérés"
 
-#: gifts/templates/gifts/welcome.html:189
-msgid "Invite your family or friends with a simple link."
-msgstr "Invitez votre famille ou vos amis avec un simple lien."
-
-#: gifts/templates/gifts/welcome.html:194
-msgid "Add your wishes"
-msgstr "Ajoutez vos vœux"
-
-#: gifts/templates/gifts/welcome.html:195
-msgid "Each member fills in their own list whenever inspiration strikes."
-msgstr "Chaque membre remplit sa liste au fil des inspirations."
-
-#: gifts/templates/gifts/welcome.html:200
-msgid "Reserve &amp; offer"
-msgstr "Réservez &amp; offrez"
-
-#: gifts/templates/gifts/welcome.html:201
-msgid "Pick a gift, reserve it discreetly, then mark it as offered when done."
-msgstr ""
-"Choisissez un cadeau, réservez-le discrètement, puis marquez-le comme offert."
-
-#: gifts/templates/gifts/welcome.html:206
-msgid "Settle up"
-msgstr "Soldez les comptes"
-
-#: gifts/templates/gifts/welcome.html:207
+#: gifts/templates/gifts/welcome.html:118
 msgid ""
-"Use the balance tab to track costs and settle debts between group members."
+"Create and manage lists for children or relatives who do not need their own "
+"account."
 msgstr ""
-"Utilisez l’onglet solde pour suivre les dépenses et régler les dettes entre "
-"membres."
+"Créez et gérez des listes pour des enfants ou des proches qui n’ont pas "
+"besoin de leur propre compte."
 
-#: gifts/templates/gifts/welcome.html:216
-msgid "Ready to get started?"
-msgstr "Prêt à commencer ?"
+#: gifts/templates/gifts/welcome.html:125
+msgid "Beyond classic groups"
+msgstr "Au-delà des groupes classiques"
 
-#: gifts/templates/gifts/welcome.html:217
-msgid "Free, private, and no ads."
-msgstr "Gratuit, privé, sans publicité."
+#: gifts/templates/gifts/welcome.html:126
+msgid "Event links and quick capture are built in"
+msgstr "Liens d’événement et ajout rapide sont intégrés"
 
-#: gifts/templates/gifts/welcome.html:219
-msgid "Create an account"
-msgstr "Créer un compte"
+#: gifts/templates/gifts/welcome.html:133
+msgid ""
+"Create a public list for a birthday, wedding, baby shower, or office party. "
+"Anyone with the link can identify themselves and reserve a gift."
+msgstr ""
+"Créez une liste publique pour un anniversaire, un mariage, une naissance ou "
+"un événement au bureau. Toute personne avec le lien peut s’identifier et "
+"réserver un cadeau."
+
+#: gifts/templates/gifts/welcome.html:139
+msgid "Firefox quick add"
+msgstr "Ajout rapide Firefox"
+
+#: gifts/templates/gifts/welcome.html:140
+msgid ""
+"Capture a product from a shop page, review the extracted title, price, "
+"image, and link, then add it to the right list."
+msgstr ""
+"Capturez un produit depuis une page boutique, vérifiez le titre, le prix, "
+"l’image et le lien extraits, puis ajoutez-le à la bonne liste."
+
+#: gifts/templates/gifts/welcome.html:145
+msgid "Install the Firefox extension"
+msgstr "Installer l’extension Firefox"
+
+#: gifts/templates/gifts/welcome.html:155
+msgid "Create or join"
+msgstr "Créer ou rejoindre"
+
+#: gifts/templates/gifts/welcome.html:156
+msgid "Start a private group or open an event list."
+msgstr "Lancez un groupe privé ou ouvrez une liste d’événement."
+
+#: gifts/templates/gifts/welcome.html:160
+msgid "Add ideas"
+msgstr "Ajouter des idées"
+
+#: gifts/templates/gifts/welcome.html:161
+msgid "Build lists for yourself, others, or managed members."
+msgstr "Créez des listes pour vous, pour d’autres ou pour des membres gérés."
+
+#: gifts/templates/gifts/welcome.html:165
+msgid "Coordinate"
+msgstr "Coordonner"
+
+#: gifts/templates/gifts/welcome.html:166
+msgid "Reserve secretly, join shared gifts, and avoid duplicate presents."
+msgstr ""
+"Réservez en secret, participez à des cadeaux communs et évitez les doublons."
+
+#: gifts/templates/gifts/welcome.html:170
+msgid "Close the loop"
+msgstr "Boucler l’organisation"
+
+#: gifts/templates/gifts/welcome.html:171
+msgid "Mark gifts offered, keep history, and settle shared costs."
+msgstr ""
+"Marquez les cadeaux comme offerts, conservez l’historique et soldez les "
+"dépenses partagées."
+
+#: gifts/templates/gifts/welcome.html:177
+msgid "Start with one group"
+msgstr "Commencez avec un groupe"
+
+#: gifts/templates/gifts/welcome.html:178
+msgid ""
+"Create a private space, invite your people, and let everyone build their "
+"list at their own pace."
+msgstr ""
+"Créez un espace privé, invitez vos proches et laissez chacun remplir sa "
+"liste à son rythme."
+
+#: gifts/templates/gifts/welcome.html:180
+msgid "Get started"
+msgstr "Commencer"
 
 #: gifts/templates/groups/group_detail.html:27
 msgid "My list"
@@ -2501,112 +2684,212 @@ msgstr "Déjà inscrit ?"
 msgid "Log in here"
 msgstr "Se connecter"
 
-#: gifts/views.py:34
+#: gifts/views.py:35
 msgid "Invalid amount format."
 msgstr "Format du montant invalide."
 
-#: gifts/views.py:79
+#: gifts/views.py:80
 msgid "Reserve"
 msgstr "Réserver"
 
-#: gifts/views.py:83
+#: gifts/views.py:84
 msgid "Reserved in another group"
 msgstr "Réservé dans un autre groupe"
 
-#: gifts/views.py:84
+#: gifts/views.py:85
 msgid "Reserved elsewhere"
 msgstr "Réservé ailleurs"
 
-#: gifts/views.py:89
+#: gifts/views.py:90
 msgid "My reservation"
 msgstr "Ma réservation"
 
-#: gifts/views.py:94
+#: gifts/views.py:95
 msgid "View reservation"
 msgstr "Voir la réservation"
 
-#: gifts/views.py:98
+#: gifts/views.py:99
 msgid "You participate"
 msgstr "Vous participez"
 
-#: gifts/views.py:99
+#: gifts/views.py:100
 msgid "My participation"
 msgstr "Ma participation"
 
-#: gifts/views.py:103
+#: gifts/views.py:104
 msgid "Participation open"
 msgstr "Participation ouverte"
 
-#: gifts/views.py:154
+#: gifts/views.py:155
 msgid "This gift is already reserved in another group"
 msgstr "Ce cadeau est déjà réservé dans un autre groupe"
 
-#: gifts/views.py:230 gifts/views.py:261
+#: gifts/views.py:231 gifts/views.py:262
 msgid "Invalid group ID."
 msgstr "Identifiant de groupe invalide."
 
-#: gifts/views.py:259 gifts/views.py:976
+#: gifts/views.py:260 gifts/views.py:1046
 msgid "GROUP_NOT_FOUND"
 msgstr "Groupe introuvable."
 
-#: gifts/views.py:432
+#: gifts/views.py:502
 msgid "You cannot subscribe to yourself"
 msgstr "Vous ne pouvez pas vous abonner à vous-même"
 
-#: gifts/views.py:442 gifts/views.py:476
+#: gifts/views.py:512 gifts/views.py:546
 #, python-format
 msgid "You are no longer subscribed to %(name)s's list"
 msgstr "Vous n'êtes plus abonné à la liste de %(name)s"
 
-#: gifts/views.py:456
+#: gifts/views.py:526
 #, python-format
 msgid "You are now subscribed to %(name)s's list"
 msgstr "Vous êtes maintenant abonné à la liste de %(name)s"
 
-#: gifts/views.py:471 gifts/views.py:480
+#: gifts/views.py:541 gifts/views.py:550
 msgid "The unsubscription link is invalid"
 msgstr "Le lien de désabonnement est invalide"
 
-#: gifts/views.py:532
+#: gifts/views.py:602
 #, python-format
 msgid "New gift on %(name)s's list!"
 msgstr "Nouveau cadeau sur la liste de %(name)s !"
 
-#: gifts/views.py:607
+#: gifts/views.py:677
 msgid "Estimated price updated!"
 msgstr "Prix estimé mis à jour!"
 
-#: gifts/views.py:609
+#: gifts/views.py:679
 msgid "Invalid price format."
 msgstr "Format du prix invalide"
 
-#: gifts/views.py:647
+#: gifts/views.py:717
 msgid "The gift owner cannot reserve this gift"
 msgstr "Le propriétaire du cadeau ne peut pas le réserver"
 
-#: gifts/views.py:746
+#: gifts/views.py:816
 msgid "You cannot mark your own gift as offered"
 msgstr "Vous ne pouvez pas marquer votre propre cadeau comme offert"
 
-#: gifts/views.py:865
+#: gifts/views.py:935
 msgid "Gift put back in the list."
 msgstr "Cadeau remis dans la liste."
 
-#: gifts/views.py:882
+#: gifts/views.py:952
 msgid "Gift deleted."
 msgstr "Cadeau supprimé."
 
-#: gifts/views.py:936
+#: gifts/views.py:1006
 msgid "Only the gift owner can mark it as received"
 msgstr "Seul le propriétaire du cadeau peut le marquer comme reçu"
 
-#: gifts/views.py:1106
+#: gifts/views.py:1176
 msgid "Invalid settlement data."
 msgstr "Données de remboursement invalides."
 
-#: gifts/views.py:1109
+#: gifts/views.py:1179
 msgid "Settlement recorded."
 msgstr "Remboursement enregistré."
+
+#~ msgid "Gift lists, reinvented"
+#~ msgstr "Les listes de cadeaux, réinventées"
+
+#~ msgid "Organize gifts."
+#~ msgstr "Organisez vos cadeaux."
+
+#~ msgid "No more duplicates."
+#~ msgstr "Fini les doublons."
+
+#~ msgid ""
+#~ "Share wish lists with your close ones, secretly reserve gifts, track the "
+#~ "history of received gifts, and balance contributions among group members."
+#~ msgstr ""
+#~ "Partagez des listes de vœux avec vos proches, réservez des cadeaux en "
+#~ "secret, suivez l’historique des cadeaux offerts et équilibrez les "
+#~ "contributions entre membres."
+
+#~ msgid "New bicycle"
+#~ msgstr "Nouveau vélo"
+
+#~ msgid "Reserved by Alice"
+#~ msgstr "Réservé par Alice"
+
+#~ msgid "Everything you need for stress-free gifting"
+#~ msgstr "Tout ce qu’il faut pour offrir sans stress"
+
+#~ msgid "One tool for the whole group, from wish to thank-you."
+#~ msgstr "Un seul outil pour tout le groupe, du vœu au merci."
+
+#~ msgid ""
+#~ "Everyone in the group has a wish list. Add ideas anytime : title, "
+#~ "description, link, and / or price."
+#~ msgstr ""
+#~ "Chaque membre du groupe a sa propre liste de vœux. Ajoutez vos idées "
+#~ "quand vous voulez : titre, description, lien et / ou prix."
+
+#~ msgid ""
+#~ "Reserve a gift so others know it's taken, but the recipient never finds "
+#~ "out. No more double gifts!"
+#~ msgstr ""
+#~ "Réservez un cadeau pour que les autres sachent qu’il est pris, mais le "
+#~ "destinataire n’en saura jamais rien. Fini les cadeaux en double !"
+
+#~ msgid ""
+#~ "Once a gift is offered, it moves to the group history. Never offer the "
+#~ "same thing twice, even years later."
+#~ msgstr ""
+#~ "Une fois un cadeau offert, il passe dans l’historique du groupe. Ne "
+#~ "recommencez jamais le même cadeau, même des années plus tard."
+
+#~ msgid ""
+#~ "Log who paid what for each gift and split costs between participants. See "
+#~ "at a glance who owes whom"
+#~ msgstr ""
+#~ "Enregistrez qui a payé quoi pour chaque cadeau et répartissez les coûts "
+#~ "entre les participants. Voyez en un coup d’œil qui doit quoi à qui"
+
+#~ msgid ""
+#~ "Subscribe to a member's list to get notified by email when they add a new "
+#~ "wish."
+#~ msgstr ""
+#~ "Abonnez-vous à la liste d’un membre pour être notifié par e-mail quand il "
+#~ "ajoute un nouveau vœu."
+
+#~ msgid "How it works"
+#~ msgstr "Comment ça marche"
+
+#~ msgid "Invite your family or friends with a simple link."
+#~ msgstr "Invitez votre famille ou vos amis avec un simple lien."
+
+#~ msgid "Add your wishes"
+#~ msgstr "Ajoutez vos vœux"
+
+#~ msgid "Each member fills in their own list whenever inspiration strikes."
+#~ msgstr "Chaque membre remplit sa liste au fil des inspirations."
+
+#~ msgid "Reserve &amp; offer"
+#~ msgstr "Réservez &amp; offrez"
+
+#~ msgid ""
+#~ "Pick a gift, reserve it discreetly, then mark it as offered when done."
+#~ msgstr ""
+#~ "Choisissez un cadeau, réservez-le discrètement, puis marquez-le comme "
+#~ "offert."
+
+#~ msgid "Settle up"
+#~ msgstr "Soldez les comptes"
+
+#~ msgid ""
+#~ "Use the balance tab to track costs and settle debts between group members."
+#~ msgstr ""
+#~ "Utilisez l’onglet solde pour suivre les dépenses et régler les dettes "
+#~ "entre membres."
+
+#~ msgid "Ready to get started?"
+#~ msgstr "Prêt à commencer ?"
+
+#~ msgid "Free, private, and no ads."
+#~ msgstr "Gratuit, privé, sans publicité."
 
 #~ msgid ""
 #~ "You can reserve this gift and have exclusivity, or allow other user to "
@@ -2653,9 +2936,6 @@ msgstr "Remboursement enregistré."
 #~ msgid "List owner"
 #~ msgstr "Propriétaire de la liste"
 
-#~ msgid "No reservations yet."
-#~ msgstr "Aucune réservation pour l'instant."
-
 #~ msgid "Wedding date"
 #~ msgstr "Date du mariage"
 
@@ -2689,9 +2969,6 @@ msgstr "Remboursement enregistré."
 #~ msgstr ""
 #~ "Aucune dépense enregistrée. Marquez des cadeaux comme offerts avec des "
 #~ "montants pour commencer."
-
-#~ msgid "Create a new group"
-#~ msgstr "Créer un nouveau groupe"
 
 #~ msgid "Managed by the group"
 #~ msgstr "Géré par le groupe"
