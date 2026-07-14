@@ -1,7 +1,8 @@
 [project]
-name = "pythonproject"
-version = "0.1.0"
-description = "Add your description here"
+name = "nosCadeaux"
+version = "1.0"
+description = "A website to manage a gift list"
+license = "AGPL-3.0-or-later"
 requires-python = ">=3.12"
 dependencies = [
     "beautifulsoup4>=4.14.3",
