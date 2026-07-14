@@ -27,6 +27,7 @@ from .models import BalanceSettlement, EventList, Gift, Group, Reservation, Subs
 OFFER_MODAL_CONTENT_PATH = "gifts/includes/_offer_modal_content.html"
 RESERVE_MODAL_MODEL_PATH = "gifts/includes/_reserve_modal_content.html"
 EDIT_AMOUNTS_PATH = "gifts/includes/_edit_offered_amounts_content.html"
+USER_NOT_FOUND_TEMPLATE = "gifts/user_not_found.html"
 ACCESS_REFUSED_MSG = "You don't have access to this list"
 METHOD_NOT_AUTHORIZED_MESSAGE = "Method {} not authorized"
 GROUP_NOT_FOUND = "Group not found."
@@ -65,6 +66,110 @@ def _check_gift_access(request, gift):
     return None
 
 
+def _reservation_state(gift, reservations, user, group_id=None):
+    user_res = next((r for r in reservations if r.reserver_id == user.id), None)
+    exclusive_res = next((r for r in reservations if r.exclusivity), None)
+    participant_count = len(reservations)
+    group_id_str = str(group_id) if group_id else ""
+    reserved_group_id = str(gift.group_reserved_on_id) if gift.group_reserved_on_id else ""
+    reserved_elsewhere = bool(group_id_str and reserved_group_id and reserved_group_id != group_id_str)
+
+    if not reservations:
+        status = "available"
+        label = _("Available")
+        action_label = _("Reserve")
+        icon = "bi-lock"
+    elif reserved_elsewhere:
+        status = "reserved_other_group"
+        label = _("Reserved in another group")
+        action_label = _("Reserved elsewhere")
+        icon = "bi-lock-fill"
+    elif exclusive_res and user_res:
+        status = "reserved_by_me_exclusive"
+        label = _("Reserved by you")
+        action_label = _("My reservation")
+        icon = "bi-person-check-fill"
+    elif exclusive_res:
+        status = "reserved_by_other_exclusive"
+        label = _("Reserved exclusively")
+        action_label = _("View reservation")
+        icon = "bi-lock-fill"
+    elif user_res:
+        status = "participating_by_me"
+        label = _("You participate")
+        action_label = _("My participation")
+        icon = "bi-people-fill"
+    else:
+        status = "participating_by_others"
+        label = _("Participation open")
+        action_label = _("Participate")
+        icon = "bi-people"
+
+    return {
+        "status": status,
+        "label": label,
+        "action_label": action_label,
+        "icon": icon,
+        "participant_count": participant_count,
+        "exclusive_reservation": exclusive_res,
+        "is_reserved": bool(reservations),
+        "is_exclusive": exclusive_res is not None,
+        "is_mine": user_res is not None,
+        "reserved_elsewhere": reserved_elsewhere,
+        "can_open": not reserved_elsewhere,
+        "can_join": status in {"available", "participating_by_others"},
+        "can_offer": user_res is not None,
+    }
+
+
+def _gift_item(request, gift, reservations, group_id, other_members=None):
+    user_res = next((r for r in reservations if r.reserver_id == request.user.id), None)
+    participant_ids = {r.reserver_id for r in reservations}
+    other_non_participants = []
+    if other_members is not None:
+        other_non_participants = [m for m in other_members if m.id not in participant_ids]
+
+    return {
+        "current_user": request.user,
+        "gift": gift,
+        "reservations": reservations,
+        "num_reservations": len(reservations),
+        "user_reservation": user_res,
+        "other_non_participant": other_non_participants,
+        "group_id": group_id,
+        "reservation_state": _reservation_state(gift, reservations, request.user, group_id),
+    }
+
+
+def _get_reservation_group(request, gift, group_id):
+    try:
+        group = Group.objects.get(id=int(group_id))
+    except (Group.DoesNotExist, TypeError, ValueError):
+        return None, JsonResponse({"success": False, "error": _(GROUP_NOT_FOUND)}, status=400)
+
+    if not group.members.filter(id=request.user.id).exists() or not group.members.filter(id=gift.owner_id).exists():
+        return None, HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+
+    if gift.group_reserved_on_id and gift.group_reserved_on_id != group.id:
+        return None, JsonResponse(
+            {"success": False, "error": _("This gift is already reserved in another group")},
+            status=409,
+        )
+
+    return group, None
+
+
+def _reservation_group_for_gift(gift, common_groups):
+    if gift.group_reserved_on_id:
+        return next((g for g in common_groups if g.id == gift.group_reserved_on_id), None)
+
+    visible_group_ids = {group.id for group in gift.visible_in.all()}
+    if visible_group_ids:
+        return next((g for g in common_groups if g.id in visible_group_ids), None)
+
+    return common_groups[0] if common_groups else None
+
+
 def _render_reservation_modal(request, gift, group_id, reservations, extra_exclude_ids=None):
     user_res = next((r for r in reservations if r.reserver_id == request.user.id), None)
     group = get_object_or_404(Group, id=group_id)
@@ -80,6 +185,7 @@ def _render_reservation_modal(request, gift, group_id, reservations, extra_exclu
             "user_reservation": user_res,
             "other_non_participant": other_members,
             "group_id": group_id,
+            "reservation_state": _reservation_state(gift, reservations, request.user, group_id),
         }
     }
     return render(request, RESERVE_MODAL_MODEL_PATH, context)
@@ -215,19 +321,22 @@ def emojis():
 def view_list(request: HttpRequest, user_id: int):
     target_user = User.objects.filter(id=user_id).first()
     if not target_user:
-        return render(request, "gifts/user_not_found.html", status=404)
+        return render(request, USER_NOT_FOUND_TEMPLATE, status=404)
 
     is_owner = request.user.id == target_user.id
     from_group_id = request.GET.get("from_group")
+    common_groups = []
 
     group = None
     if from_group_id:
         group = get_object_or_404(Group, id=from_group_id)
 
     if not is_owner:
-        common_groups = Group.objects.filter(members=request.user).filter(members=target_user).exists()
+        common_groups = list(Group.objects.filter(members=request.user).filter(members=target_user))
         if not common_groups:
-            return render(request, "gifts/user_not_found.html", status=403)
+            return render(request, USER_NOT_FOUND_TEMPLATE, status=403)
+        if group and group.id not in {g.id for g in common_groups}:
+            return render(request, USER_NOT_FOUND_TEMPLATE, status=403)
 
     all_gifts_query: QuerySet[Gift] = Gift.objects.filter(owner=target_user, offered=False).order_by("created_at")
 
@@ -266,7 +375,7 @@ def view_list(request: HttpRequest, user_id: int):
     if is_owner:
         for g in all_gifts:
             if g.created_by == g.owner:
-                gifts.append({"gift": g, "is_reserved": None})
+                gifts.append({"gift": g, "is_reserved": None, "reservation_state": None})
     else:
         all_reservations = Reservation.objects.filter(gift__in=all_gifts).select_related("reserver")
         other_members = []
@@ -275,19 +384,14 @@ def view_list(request: HttpRequest, user_id: int):
 
         for gift in all_gifts:
             gift_reservations = [r for r in all_reservations if r.gift_id == gift.id]
-            user_res = next((r for r in gift_reservations if r.reserver_id == request.user.id), None)
-            participant_ids = {r.reserver_id for r in gift_reservations}
-            other_non_participants = [m for m in other_members if m.id not in participant_ids]
-
-            item = {
-                "current_user": request.user,
-                "gift": gift,
-                "reservations": gift_reservations,
-                "num_reservations": len(gift_reservations),
-                "user_reservation": user_res,
-                "other_non_participant": other_non_participants,
-                "group_id": from_group_id,
-            }
+            reservation_group = group or _reservation_group_for_gift(gift, common_groups)
+            item_group_id = str(reservation_group.id) if reservation_group else None
+            item_other_members = []
+            if reservation_group:
+                item_other_members = reservation_group.members.exclude(id__in=[request.user.id, target_user.id])
+            elif other_members:
+                item_other_members = other_members
+            item = _gift_item(request, gift, gift_reservations, item_group_id, item_other_members)
             # Managed user gifts are always shown as wishes, never as surprises
             if gift.created_by == gift.owner or target_user.is_managed:
                 gifts.append(item)
@@ -532,6 +636,17 @@ def reserve_gift(request: HttpRequest, gift_id: int):
     if not Group.objects.filter(members=request.user).filter(members=gift.owner).exists():
         return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
+    group_id = data.get("group_id")
+    group, err = _get_reservation_group(request, gift, group_id)
+    if err:
+        return err
+
+    if not group.members.filter(id=user.id).exists():
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+
+    if user == gift.owner:
+        return JsonResponse({"success": False, "error": _("The gift owner cannot reserve this gift")}, status=400)
+
     if Reservation.objects.filter(gift=gift, reserver=user).exists():
         return JsonResponse({"success": False, "error": "This person already joined this gift"}, status=409)
 
@@ -539,12 +654,6 @@ def reserve_gift(request: HttpRequest, gift_id: int):
         return JsonResponse({"success": False, "error": "Someone else reserved exclusively this gift"}, status=409)
 
     Reservation.objects.create(gift=gift, reserver=user, exclusivity=exclusivity)
-
-    group_id = data.get("group_id")
-    group = Group.objects.get(id=group_id)
-
-    if not group.members.filter(id=gift.owner.id):
-        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
     gift.group_reserved_on = group
     gift.save()
@@ -564,6 +673,10 @@ def modify_reservation(request: HttpRequest, gift_id: int):
         return err
 
     gift = get_object_or_404(Gift, id=gift_id)
+    group_id = data.get("group_id")
+    group, err = _get_reservation_group(request, gift, group_id)
+    if err:
+        return err
 
     try:
         reservation_user_id_to_modify: User = data.get("reservation_user_id_to_modify")
@@ -581,7 +694,13 @@ def modify_reservation(request: HttpRequest, gift_id: int):
         reservation.save()
 
     reservations = Reservation.objects.filter(gift=gift).select_related("reserver").order_by("id")
-    return _render_reservation_modal(request, gift, data.get("group_id"), reservations)
+    if not reservations:
+        gift.group_reserved_on = None
+        gift.save()
+    elif gift.group_reserved_on_id is None:
+        gift.group_reserved_on = group
+        gift.save()
+    return _render_reservation_modal(request, gift, group_id, reservations)
 
 
 @login_required
@@ -595,8 +714,10 @@ def delete_reservation(request, gift_id):
         return err
 
     gift = get_object_or_404(Gift, id=gift_id)
-    gift.group_reserved_on = None
-    gift.save()
+    group_id = data.get("group_id")
+    group, err = _get_reservation_group(request, gift, group_id)
+    if err:
+        return err
 
     try:
         reservation_user_id_to_delete: User = data.get("reservation_user_id_to_delete")
@@ -607,7 +728,14 @@ def delete_reservation(request, gift_id):
     Reservation.objects.filter(gift=gift, reserver=reservation_user_to_delete).delete()
 
     reservations = Reservation.objects.filter(gift=gift).select_related("reserver").order_by("id")
-    return _render_reservation_modal(request, gift, data.get("group_id"), reservations)
+    if reservations:
+        if gift.group_reserved_on_id is None:
+            gift.group_reserved_on = group
+            gift.save()
+    else:
+        gift.group_reserved_on = None
+        gift.save()
+    return _render_reservation_modal(request, gift, group_id, reservations)
 
 
 @login_required

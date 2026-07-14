@@ -14,6 +14,7 @@
             const container = document.getElementById(`modalContent${giftId}`);
             if (container) {
                 container.innerHTML = newHtml;
+                container.dataset.changed = 'true';
             }
         } else {
             alert("Error updating modal");
@@ -22,7 +23,6 @@
     }
 
     async function reserveGift(url, isExclusive, giftId, userId, groupId) {
-        console.log(groupId)
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -87,5 +87,12 @@
             bootstrap.Modal.getOrCreateInstance(document.getElementById('offerModal')).show();
         }
     }
+
+    document.getElementById('reserveModal{{ item.gift.id }}')?.addEventListener('hidden.bs.modal', function () {
+        const container = document.getElementById('modalContent{{ item.gift.id }}');
+        if (container?.dataset.changed === 'true') {
+            window.location.reload();
+        }
+    });
 
 </script>

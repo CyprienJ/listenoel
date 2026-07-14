@@ -1,10 +1,11 @@
 {% load i18n %}
 {# Params: icon_class (accent|gold), is_surprise (1 or omit), edit_modal_id #}
-<div class="nc-wish-row">
+{% with state=item.reservation_state %}
+<div class="nc-wish-row {% if state %}nc-wish-row--{{ state.status }}{% endif %}">
 
     {# Icon #}
-    <div class="nc-wish-icon {% if item.user_reservation %}nc-wish-icon--sage{% else %}nc-wish-icon--{{ icon_class }}{% endif %}">
-        <i class="bi bi-gift"></i>
+    <div class="nc-wish-icon {% if state.is_mine %}nc-wish-icon--sage{% elif state.is_reserved %}nc-wish-icon--reserved{% else %}nc-wish-icon--{{ icon_class }}{% endif %}">
+        <i class="bi {% if state.icon %}{{ state.icon }}{% else %}bi-gift{% endif %}"></i>
     </div>
 
     {# Name + description #}
@@ -69,9 +70,12 @@
                 {% endif %}
             {% endwith %}
         {% endif %}
-        {% if item.user_reservation %}
-            <span class="nc-wish-meta-chip nc-wish-meta-chip--reserved">
-                <i class="bi bi-check2"></i> {% trans "Reserved by you" %}
+        {% if state %}
+            <span class="nc-wish-status nc-wish-status--{{ state.status }}">
+                <i class="bi {{ state.icon }}"></i> {{ state.label }}
+                {% if state.participant_count > 1 %}
+                    <span class="nc-wish-status__count">{{ state.participant_count }}</span>
+                {% endif %}
             </span>
         {% endif %}
     </div>
@@ -79,23 +83,21 @@
     {# Actions #}
     <div class="nc-wish-actions">
         {% if is_surprise or not is_owner %}
-            {% if not item.user_reservation or item.gift.group_reserved_on.id|stringformat:"s" == from_group_id %}
-                <button class="nc-wish-reserve-btn {% if item.user_reservation %}nc-wish-reserve-btn--reserved{% endif %}"
+            {% if state.can_open %}
+                <button class="nc-wish-reserve-btn nc-wish-reserve-btn--{{ state.status }}"
                         data-bs-toggle="modal"
                         data-bs-target="#reserveModal{{ item.gift.id }}">
-                    {% if item.user_reservation %}
-                        <i class="bi bi-check2"></i> {% trans "Reserved" %}
-                    {% else %}
-                        <i class="bi bi-lock"></i> {% trans "Reserve" %}
-                    {% endif %}
+                    <i class="bi {{ state.icon }}"></i> {{ state.action_label }}
                 </button>
-                <button class="nc-wish-offer-btn"
-                        onclick="offerFromList('{% url 'offer_gift' gift_id=item.gift.id %}', {{ item.gift.group_reserved_on.id|default:from_group_id|default:'null' }})">
-                    <i class="bi bi-gift-fill"></i><span class="nc-btn-label">{% trans "Offered!" %}</span>
-                </button>
+                {% if state.can_offer %}
+                    <button class="nc-wish-offer-btn"
+                            onclick="offerFromList('{% url 'offer_gift' gift_id=item.gift.id %}', {{ item.gift.group_reserved_on.id|default:from_group_id|default:'null' }})">
+                        <i class="bi bi-gift-fill"></i><span class="nc-btn-label">{% trans "Offered!" %}</span>
+                    </button>
+                {% endif %}
             {% else %}
                 <button class="nc-wish-reserve-btn" disabled>
-                    <i class="bi bi-lock-fill"></i> {% trans "Reserved on another group" %}
+                    <i class="bi {{ state.icon }}"></i> {{ state.action_label }}
                 </button>
             {% endif %}
         {% endif %}
@@ -139,3 +141,4 @@
         {% endif %}
     </div>
 </div>
+{% endwith %}

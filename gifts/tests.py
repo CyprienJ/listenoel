@@ -309,6 +309,98 @@ class GiftAccessControlTest(TestCase):
         self.assertTrue(Gift.objects.filter(id=self.gift_user1.id).exists())
 
 
+class ReservationFlowTest(TestCase):
+    def setUp(self):
+        self.user1, self.user2, self.user3 = create_users()
+        self.group = Group.objects.create(name="Group 1-2")
+        self.group.members.add(self.user1, self.user2, self.user3)
+        self.gift = Gift.objects.create(owner=self.user1, created_by=self.user1, title="Shared Gift")
+
+    def _json_post(self, url, payload):
+        return self.client.post(url, data=json.dumps(payload), content_type="application/json")
+
+    def test_list_shows_open_participation_state_for_other_reservations(self):
+        Reservation.objects.create(gift=self.gift, reserver=self.user3)
+        self.gift.group_reserved_on = self.group
+        self.gift.save()
+
+        self.client.force_login(self.user2)
+        response = self.client.get(f"{reverse('view_list', args=[self.user1.id])}?from_group={self.group.id}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "nc-wish-status--participating_by_others")
+        self.assertContains(response, "nc-wish-reserve-btn--participating_by_others")
+
+    def test_list_shows_exclusive_state_for_other_reservation(self):
+        Reservation.objects.create(gift=self.gift, reserver=self.user3, exclusivity=True)
+        self.gift.group_reserved_on = self.group
+        self.gift.save()
+
+        self.client.force_login(self.user2)
+        response = self.client.get(f"{reverse('view_list', args=[self.user1.id])}?from_group={self.group.id}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "nc-wish-status--reserved_by_other_exclusive")
+
+    def test_list_without_group_context_still_sets_reservation_group(self):
+        self.client.force_login(self.user2)
+        response = self.client.get(reverse("view_list", args=[self.user1.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f", {self.group.id})")
+
+    def test_reserve_rejects_user_outside_group(self):
+        outsider = User.objects.create_user(
+            username="outsider@test.com",
+            email="outsider@test.com",
+            password="password",
+            is_verified=True,
+            nickname="Outsider",
+        )
+
+        self.client.force_login(self.user2)
+        response = self._json_post(
+            reverse("reserve_gift", args=[self.gift.id]),
+            {"exclusivity": False, "user_id": outsider.id, "group_id": self.group.id},
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(Reservation.objects.filter(gift=self.gift, reserver=outsider).exists())
+
+    def test_delete_one_participation_keeps_group_when_others_remain(self):
+        Reservation.objects.create(gift=self.gift, reserver=self.user2)
+        Reservation.objects.create(gift=self.gift, reserver=self.user3)
+        self.gift.group_reserved_on = self.group
+        self.gift.save()
+
+        self.client.force_login(self.user2)
+        response = self._json_post(
+            reverse("delete_reservation", args=[self.gift.id]),
+            {"reservation_user_id_to_delete": self.user2.id, "group_id": self.group.id},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.gift.refresh_from_db()
+        self.assertEqual(self.gift.group_reserved_on, self.group)
+        self.assertFalse(Reservation.objects.filter(gift=self.gift, reserver=self.user2).exists())
+        self.assertTrue(Reservation.objects.filter(gift=self.gift, reserver=self.user3).exists())
+
+    def test_delete_last_participation_clears_group(self):
+        Reservation.objects.create(gift=self.gift, reserver=self.user2)
+        self.gift.group_reserved_on = self.group
+        self.gift.save()
+
+        self.client.force_login(self.user2)
+        response = self._json_post(
+            reverse("delete_reservation", args=[self.gift.id]),
+            {"reservation_user_id_to_delete": self.user2.id, "group_id": self.group.id},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.gift.refresh_from_db()
+        self.assertIsNone(self.gift.group_reserved_on)
+
+
 class SubscriptionTest(TestCase):
     def setUp(self):
 

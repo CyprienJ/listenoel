@@ -1071,6 +1071,7 @@ body {
 .nc-wish-icon--accent { background: var(--nc-accent-light); color: var(--nc-accent); }
 .nc-wish-icon--sage   { background: var(--nc-sage-light);   color: var(--nc-sage); }
 .nc-wish-icon--gold   { background: oklch(96% 0.04 80);     color: oklch(68% 0.14 80); }
+.nc-wish-icon--reserved { background: oklch(96% 0.035 80); color: oklch(58% 0.12 72); }
 
 .nc-wish-name-col { flex: 0 1 180px; min-width: 80px; cursor: pointer; }
 .nc-wish-name { font-size: 14px; font-weight: 500; color: var(--nc-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1087,9 +1088,21 @@ body {
 .nc-wish-meta-chip--link { color: var(--nc-accent); font-weight: 500; }
 .nc-wish-meta-chip--link:hover { color: var(--nc-accent); text-decoration: underline; }
 .nc-wish-meta-chip--sage { color: var(--nc-sage); }
-.nc-wish-meta-chip--reserved {
-    background: var(--nc-sage-light); color: var(--nc-sage);
-    padding: 2px 9px; border-radius: 99px; font-weight: 500; font-size: 11px;
+.nc-wish-status {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 2px 9px; border-radius: 99px; font-weight: 600; font-size: 11px;
+    border: 1px solid transparent; white-space: nowrap;
+}
+.nc-wish-status--available { color: var(--nc-text-muted); background: var(--nc-bg-sub); border-color: var(--nc-border); }
+.nc-wish-status--participating_by_others { color: oklch(50% 0.11 230); background: oklch(96% 0.025 230); }
+.nc-wish-status--participating_by_me,
+.nc-wish-status--reserved_by_me_exclusive { color: var(--nc-sage); background: var(--nc-sage-light); }
+.nc-wish-status--reserved_by_other_exclusive,
+.nc-wish-status--reserved_other_group { color: oklch(48% 0.12 55); background: oklch(95% 0.035 70); }
+.nc-wish-status__count {
+    min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.72); font-size: 10px;
 }
 
 .nc-wish-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
@@ -1102,6 +1115,10 @@ body {
 }
 .nc-wish-reserve-btn:hover:not(:disabled) { background: var(--nc-bg-sub); }
 .nc-wish-reserve-btn--reserved { border-color: var(--nc-sage); background: var(--nc-sage-light); color: var(--nc-sage); }
+.nc-wish-reserve-btn--participating_by_me,
+.nc-wish-reserve-btn--reserved_by_me_exclusive { border-color: var(--nc-sage); background: var(--nc-sage-light); color: var(--nc-sage); }
+.nc-wish-reserve-btn--participating_by_others { border-color: oklch(78% 0.06 230); color: oklch(45% 0.12 230); }
+.nc-wish-reserve-btn--reserved_by_other_exclusive { border-color: oklch(82% 0.05 70); color: oklch(48% 0.12 55); }
 .nc-wish-reserve-btn--reserved:hover { background: var(--nc-sage-light); }
 .nc-wish-reserve-btn:disabled { opacity: 0.5; cursor: default; pointer-events: none; }
 
@@ -1125,6 +1142,55 @@ body {
 .show > .nc-wish-more-btn { background: var(--nc-bg-sub); }
 
 .nc-wish-divider { height: 1px; background: var(--nc-border); margin: 0 18px; }
+
+.nc-reservation-summary {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 14px; border-radius: 12px; background: var(--nc-bg-sub);
+    border: 1px solid var(--nc-border); margin-bottom: 16px;
+}
+.nc-reservation-summary__icon {
+    width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--nc-white); color: var(--nc-text-sub);
+}
+.nc-reservation-summary--participating_by_me .nc-reservation-summary__icon,
+.nc-reservation-summary--reserved_by_me_exclusive .nc-reservation-summary__icon {
+    color: var(--nc-sage); background: var(--nc-sage-light);
+}
+.nc-reservation-summary--participating_by_others .nc-reservation-summary__icon {
+    color: oklch(45% 0.12 230); background: oklch(96% 0.025 230);
+}
+.nc-reservation-summary--reserved_by_other_exclusive .nc-reservation-summary__icon,
+.nc-reservation-summary--reserved_other_group .nc-reservation-summary__icon {
+    color: oklch(48% 0.12 55); background: oklch(95% 0.035 70);
+}
+.nc-reservation-summary__title { font-size: 14px; font-weight: 700; color: var(--nc-text); }
+.nc-reservation-summary__text { font-size: 12px; color: var(--nc-text-muted); line-height: 1.45; margin-top: 2px; }
+.nc-reservation-actions {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+    margin-bottom: 18px;
+}
+.nc-reservation-participants {
+    border: 1px solid var(--nc-border); border-radius: 12px;
+    padding: 14px; background: var(--nc-white);
+}
+.nc-reservation-participants__title {
+    font-size: 11px; text-transform: uppercase; font-weight: 700;
+    color: var(--nc-text-muted); margin-bottom: 10px;
+}
+.nc-reservation-person {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 8px 10px; border-radius: 9px; background: var(--nc-bg-sub);
+}
+.nc-reservation-person__name {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 13px; font-weight: 600; color: var(--nc-text);
+}
+.nc-reservation-person__actions { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.nc-reservation-empty {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    min-height: 46px; color: var(--nc-text-muted); font-size: 13px;
+}
 
 .nc-wish-empty { padding: 40px 20px; text-align: center; }
 .nc-wish-empty-title {

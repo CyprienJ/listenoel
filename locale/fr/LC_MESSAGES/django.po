@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nos Cadeaux\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-09 09:04+0000\n"
+"POT-Creation-Date: 2026-07-15 08:45+0000\n"
 "PO-Revision-Date: 2026-07-15 00:00+0200\n"
 "Last-Translator: Nos Cadeaux\n"
 "Language-Team: French\n"
@@ -92,6 +92,8 @@ msgid "Event"
 msgstr "Événement"
 
 #: gifts/admin.py:127
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:5
+#: gifts/templates/gifts/includes/_view_gift.html:50
 msgid "Reservation"
 msgstr "Réservation"
 
@@ -108,6 +110,7 @@ msgid "Owner & participants"
 msgstr "Propriétaire et participants"
 
 #: gifts/admin.py:179
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:83
 msgid "Participants"
 msgstr "Participants"
 
@@ -372,7 +375,8 @@ msgstr "Bonjour %(subscriber_name)s,"
 #: gifts/templates/emails/event_reminder.txt:3
 #, python-format
 msgid "%(owner_name)s's birthday is on %(event_date)s, in two weeks."
-msgstr "L'anniversaire de %(owner_name)s est le %(event_date)s, dans deux semaines."
+msgstr ""
+"L'anniversaire de %(owner_name)s est le %(event_date)s, dans deux semaines."
 
 #: gifts/templates/emails/event_reminder.html:4
 #: gifts/templates/emails/event_reminder.txt:3
@@ -537,8 +541,8 @@ msgid "Edit"
 msgstr "Modifier"
 
 #: gifts/templates/events/event_detail.html:47
-#: gifts/templates/gifts/includes/_gift_table.html:21
-#: gifts/templates/gifts/includes/_wish_row.html:16
+#: gifts/templates/gifts/includes/_gift_table.html:22
+#: gifts/templates/gifts/includes/_wish_row.html:17
 msgid "No description"
 msgstr "Aucune description"
 
@@ -555,7 +559,7 @@ msgstr "Partager"
 msgid "All"
 msgstr "Tout"
 
-#: gifts/templates/events/event_detail.html:84
+#: gifts/templates/events/event_detail.html:84 gifts/views.py:78
 msgid "Available"
 msgstr "Disponible"
 
@@ -604,7 +608,7 @@ msgstr "Masqué"
 #: gifts/templates/events/event_detail.html:363
 #: gifts/templates/gifts/includes/_edit_gift.html:43
 #: gifts/templates/gifts/includes/_edit_gift.html:44
-#: gifts/templates/gifts/includes/_view_gift.html:39
+#: gifts/templates/gifts/includes/_view_gift.html:40
 msgid "Link"
 msgstr "Lien"
 
@@ -639,18 +643,17 @@ msgstr "Transférer vers ma liste"
 #: gifts/templates/events/event_detail.html:399
 #: gifts/templates/events/event_detail.html:422
 #: gifts/templates/gifts/history.html:76
-#: gifts/templates/gifts/includes/_gift_table.html:155
-#: gifts/templates/gifts/includes/_wish_row.html:133
+#: gifts/templates/gifts/includes/_gift_table.html:162
+#: gifts/templates/gifts/includes/_wish_row.html:135
 #: gifts/templates/groups/includes/_group_modals.html:201
 msgid "Delete"
 msgstr "Supprimer"
 
-#: gifts/templates/events/event_detail.html:212
-#: gifts/templates/gifts/includes/_wish_row.html:74
+#: gifts/templates/events/event_detail.html:212 gifts/views.py:88
 msgid "Reserved by you"
 msgstr "Réservé par vous"
 
-#: gifts/templates/events/event_detail.html:216
+#: gifts/templates/events/event_detail.html:216 gifts/views.py:93
 msgid "Reserved exclusively"
 msgstr "Réservé exclusivement"
 
@@ -823,7 +826,7 @@ msgstr "optionnel"
 #: gifts/templates/gifts/includes/_add_gift_modal.html:27
 #: gifts/templates/gifts/includes/_edit_gift.html:35
 #: gifts/templates/gifts/includes/_edit_gift.html:36
-#: gifts/templates/gifts/includes/_view_gift.html:25
+#: gifts/templates/gifts/includes/_view_gift.html:26
 #: gifts/templates/groups/includes/_group_modals.html:22
 msgid "Description"
 msgstr "Description"
@@ -1097,7 +1100,8 @@ msgstr "Aucun groupe pour l'instant"
 
 #: gifts/templates/gifts/dashboard.html:92
 msgid "Create or join a group to start sharing your gift ideas."
-msgstr "Créez ou rejoignez un groupe pour commencer à partager vos idées de cadeaux."
+msgstr ""
+"Créez ou rejoignez un groupe pour commencer à partager vos idées de cadeaux."
 
 #: gifts/templates/gifts/dashboard.html:97
 #: gifts/templates/gifts/dashboard.html:249
@@ -1260,7 +1264,7 @@ msgid "Delete this gift from history?"
 msgstr "Supprimer ce cadeau de l'historique ?"
 
 #: gifts/templates/gifts/history.html:163
-#: gifts/templates/gifts/view_list.html:215 gifts/tests.py:917
+#: gifts/templates/gifts/view_list.html:215 gifts/tests.py:1009
 msgid "An error occurred."
 msgstr "Une erreur s'est produite."
 
@@ -1312,14 +1316,14 @@ msgid "Per person"
 msgstr "Par personne"
 
 #: gifts/templates/gifts/includes/_edit_gift.html:15
-#: gifts/templates/gifts/includes/_reserve_modal_content.html:145
-#: gifts/templates/gifts/includes/_view_gift.html:80
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:135
+#: gifts/templates/gifts/includes/_view_gift.html:89
 msgid "Close"
 msgstr "Fermer"
 
 #: gifts/templates/gifts/includes/_edit_gift.html:69
-#: gifts/templates/gifts/includes/_gift_table.html:143
-#: gifts/templates/gifts/includes/_wish_row.html:123
+#: gifts/templates/gifts/includes/_gift_table.html:150
+#: gifts/templates/gifts/includes/_wish_row.html:125
 msgid "Modify"
 msgstr "Modifier"
 
@@ -1328,7 +1332,7 @@ msgid "Edit price"
 msgstr "Modifier le prix"
 
 #: gifts/templates/gifts/includes/_edit_price_modal.html:14
-#: gifts/templates/gifts/includes/_view_gift.html:32
+#: gifts/templates/gifts/includes/_view_gift.html:33
 msgid "Estimated price"
 msgstr "Prix estimé"
 
@@ -1344,93 +1348,76 @@ msgstr "Modifier le cadeau"
 msgid "Modify the surprise"
 msgstr "Modifier la surprise"
 
-#: gifts/templates/gifts/includes/_gift_table.html:33
-#: gifts/templates/gifts/includes/_wish_row.html:24
+#: gifts/templates/gifts/includes/_gift_table.html:34
+#: gifts/templates/gifts/includes/_wish_row.html:25
 msgid "See link"
 msgstr "Voir le lien"
 
-#: gifts/templates/gifts/includes/_gift_table.html:43
-#: gifts/templates/gifts/includes/_wish_row.html:40
+#: gifts/templates/gifts/includes/_gift_table.html:44
+#: gifts/templates/gifts/includes/_wish_row.html:41
 msgid "All groups"
 msgstr "Tous les groupes"
 
-#: gifts/templates/gifts/includes/_gift_table.html:46
-#: gifts/templates/gifts/includes/_wish_row.html:44
+#: gifts/templates/gifts/includes/_gift_table.html:47
+#: gifts/templates/gifts/includes/_wish_row.html:45
 msgid "Exclusive to one group"
 msgstr "Exclusif à un groupe"
 
-#: gifts/templates/gifts/includes/_gift_table.html:48
-#: gifts/templates/gifts/includes/_gift_table.html:71
-#: gifts/templates/gifts/includes/_wish_row.html:45
-#: gifts/templates/gifts/includes/_wish_row.html:62
+#: gifts/templates/gifts/includes/_gift_table.html:49
+#: gifts/templates/gifts/includes/_gift_table.html:72
+#: gifts/templates/gifts/includes/_wish_row.html:46
+#: gifts/templates/gifts/includes/_wish_row.html:63
 msgid "Exclusive"
 msgstr "Exclusif"
 
-#: gifts/templates/gifts/includes/_gift_table.html:58
-#: gifts/templates/gifts/includes/_wish_row.html:50
+#: gifts/templates/gifts/includes/_gift_table.html:59
+#: gifts/templates/gifts/includes/_wish_row.html:51
 msgid "groups"
 msgstr "groupes"
 
-#: gifts/templates/gifts/includes/_gift_table.html:67
+#: gifts/templates/gifts/includes/_gift_table.html:68
 #, python-format
 msgid "Visible on all of %(name)s's groups"
 msgstr "Visible sur tous les groupes de %(name)s"
 
-#: gifts/templates/gifts/includes/_gift_table.html:68
-#: gifts/templates/gifts/includes/_wish_row.html:58
+#: gifts/templates/gifts/includes/_gift_table.html:69
+#: gifts/templates/gifts/includes/_wish_row.html:59
 msgid "Public"
 msgstr "Publique"
 
-#: gifts/templates/gifts/includes/_gift_table.html:70
-#: gifts/templates/gifts/includes/_wish_row.html:61
+#: gifts/templates/gifts/includes/_gift_table.html:71
+#: gifts/templates/gifts/includes/_wish_row.html:62
 msgid "Exclusive to this group"
 msgstr "Exclusif à ce groupe"
 
-#: gifts/templates/gifts/includes/_gift_table.html:75
-#: gifts/templates/gifts/includes/_wish_row.html:66
+#: gifts/templates/gifts/includes/_gift_table.html:76
+#: gifts/templates/gifts/includes/_wish_row.html:67
 #, python-format
 msgid "Not visible on all of %(name)s's groups"
 msgstr "Non visible sur tous les groupes de %(name)s"
 
-#: gifts/templates/gifts/includes/_gift_table.html:76
-#: gifts/templates/gifts/includes/_wish_row.html:67
+#: gifts/templates/gifts/includes/_gift_table.html:77
+#: gifts/templates/gifts/includes/_wish_row.html:68
 msgid "Private"
 msgstr "Privé"
 
-#: gifts/templates/gifts/includes/_gift_table.html:105
-#: gifts/templates/gifts/includes/_view_gift.html:53
-msgid "My participation"
-msgstr "Ma participation"
-
-#: gifts/templates/gifts/includes/_gift_table.html:107
-#: gifts/templates/gifts/includes/_view_gift.html:55
-#: gifts/templates/gifts/includes/_wish_row.html:89
-msgid "Reserve"
-msgstr "Réserver"
-
-#: gifts/templates/gifts/includes/_gift_table.html:111
+#: gifts/templates/gifts/includes/_gift_table.html:117
 #: gifts/templates/gifts/includes/_offer_modal_content.html:5
-#: gifts/templates/gifts/includes/_reserve_modal_content.html:141
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:131
 msgid "Mark as offered"
 msgstr "Marquer comme offert"
 
-#: gifts/templates/gifts/includes/_gift_table.html:117
-#: gifts/templates/gifts/includes/_view_gift.html:60
-#: gifts/templates/gifts/includes/_wish_row.html:98
-msgid "Reserved on another group"
-msgstr "Reservé sur un autre groupe"
-
-#: gifts/templates/gifts/includes/_gift_table.html:125
+#: gifts/templates/gifts/includes/_gift_table.html:132
 #: gifts/templates/gifts/includes/_mark_received_content.html:3
 msgid "Mark as received"
 msgstr "Marquer comme reçu"
 
-#: gifts/templates/gifts/includes/_gift_table.html:154
-#: gifts/templates/gifts/includes/_wish_row.html:132
+#: gifts/templates/gifts/includes/_gift_table.html:161
+#: gifts/templates/gifts/includes/_wish_row.html:134
 msgid "Delete this gift?"
 msgstr "Supprimer ce cadeau ?"
 
-#: gifts/templates/gifts/includes/_gift_table.html:170
+#: gifts/templates/gifts/includes/_gift_table.html:178
 msgid "No gifts here yet."
 msgstr "Aucun cadeau ici pour l'instant"
 
@@ -1516,96 +1503,106 @@ msgstr "Aucun cadeau offert pour l'instant."
 msgid "No gifts received yet."
 msgstr "Aucun cadeau reçu pour l'instant."
 
-#: gifts/templates/gifts/includes/_reserve_modal_content.html:3
-msgid "Participation"
-msgstr "Participation"
-
-#: gifts/templates/gifts/includes/_reserve_modal_content.html:11
-msgid "No one reserved this gift yet"
-msgstr "Personne n'a reservé ce cadeau pour l'instant"
-
-#: gifts/templates/gifts/includes/_reserve_modal_content.html:12
-msgid ""
-"You can reserve this gift and have exclusivity, or allow other user to "
-"reserve it with you (for instance to share the expense)"
-msgstr ""
-"Vous pouvez réserver ce cadeau et avoir l'exclusivité dessus, ou autoriser "
-"les autres utilisateurs à le réserver avec vous (par exemple pour partager "
-"la dépense)"
-
-#: gifts/templates/gifts/includes/_reserve_modal_content.html:17
-msgid "You have the exclusivity over that gift"
-msgstr "Vous avez l'exclusivité sur ce cadeau"
-
 #: gifts/templates/gifts/includes/_reserve_modal_content.html:20
-msgid "has the exclusivity over that gift"
-msgstr "a l'exclusivité sur ce cadeau"
+msgid ""
+"Choose whether you want to reserve it alone or open it to shared "
+"participation."
+msgstr ""
+"Choisissez si vous voulez le réserver seul ou l'ouvrir à une participation "
+"commune."
 
-#: gifts/templates/gifts/includes/_reserve_modal_content.html:32
-msgid "exclusivity"
-msgstr "Exclusivité"
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:22
+#, python-format
+msgid "One person is already participating. You can join them."
+msgid_plural "%(count)s people are already participating. You can join them."
+msgstr[0] "Une personne participe déjà. Vous pouvez la rejoindre."
+msgstr[1] "%(count)s personnes participent déjà. Vous pouvez les rejoindre."
 
-#: gifts/templates/gifts/includes/_reserve_modal_content.html:40
-msgid "participate"
-msgstr "Participer"
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:24
+msgid ""
+"You are part of the participants. You can keep it shared or make your "
+"reservation exclusive."
+msgstr ""
+"Vous faites partie des participants. Vous pouvez garder une réservation "
+"partagée ou la rendre exclusive."
 
-#: gifts/templates/gifts/includes/_reserve_modal_content.html:48
-msgid "Add someone"
-msgstr "Ajouter quelqu'un"
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:26
+msgid ""
+"You are the only reserver. You can reopen the gift to shared participation."
+msgstr ""
+"Vous êtes le seul à réserver ce cadeau. Vous pouvez le rouvrir à une "
+"participation commune."
 
-#: gifts/templates/gifts/includes/_reserve_modal_content.html:51
-msgid "Choose a member"
-msgstr "Choisir un participant"
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:28
+msgid "This gift is already reserved exclusively."
+msgstr "Ce cadeau est déjà réservé exclusivement."
 
-#: gifts/templates/gifts/includes/_reserve_modal_content.html:58
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:30
+msgid "This gift is attached to another group reservation."
+msgstr "Ce cadeau est rattaché à une réservation dans un autre groupe."
+
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:41
+msgid "Reserve alone"
+msgstr "Réserver seul"
+
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:46
+msgid "Open participation"
+msgstr "Ouvrir la participation"
+
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:52
+#: gifts/views.py:104
 msgid "Participate"
 msgstr "Participer"
 
-#: gifts/templates/gifts/includes/_reserve_modal_content.html:64
-msgid "Exclusivity"
-msgstr "Exclusivité"
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:60
+msgid "Add someone"
+msgstr "Ajouter quelqu'un"
 
-#: gifts/templates/gifts/includes/_reserve_modal_content.html:83
-msgid "This gift has an exclusif reserver"
-msgstr "Ce cadeau est déjà réservé de manière exclusive"
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:63
+msgid "Choose a member"
+msgstr "Choisir un participant"
 
-#: gifts/templates/gifts/includes/_reserve_modal_content.html:94
-msgid "remove exclusivity"
-msgstr "Enlever l'exclusivité"
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:81
+msgid "Exclusive reserver"
+msgstr "Réservation exclusive"
 
-#: gifts/templates/gifts/includes/_reserve_modal_content.html:107
-msgid "Current participants"
-msgstr "Participants actuels"
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:100
+msgid "Make shared"
+msgstr "Rendre partagé"
+
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:106
+msgid "Make exclusive"
+msgstr "Rendre exclusif"
+
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:111
+msgid "Remove participation"
+msgstr "Retirer la participation"
 
 #: gifts/templates/gifts/includes/_reserve_modal_content.html:121
-msgid "make exclusive"
-msgstr "rendre exclusif"
+msgid "No one has reserved this gift yet."
+msgstr "Personne n'a réservé ce cadeau pour l'instant."
 
-#: gifts/templates/gifts/includes/_view_gift.html:7
+#: gifts/templates/gifts/includes/_view_gift.html:8
 msgid "Gift Details"
 msgstr "Détails du cadeau"
 
-#: gifts/templates/gifts/includes/_view_gift.html:18
+#: gifts/templates/gifts/includes/_view_gift.html:19
 msgid "Added on"
 msgstr "Ajouté le"
 
-#: gifts/templates/gifts/includes/_view_gift.html:42
+#: gifts/templates/gifts/includes/_view_gift.html:43
 msgid "See on website"
 msgstr "Voir sur le site web"
 
-#: gifts/templates/gifts/includes/_view_gift.html:73
+#: gifts/templates/gifts/includes/_view_gift.html:82
 msgid "Suggested by"
 msgstr "Suggéré par"
 
-#: gifts/templates/gifts/includes/_wish_row.html:87
-msgid "Reserved"
-msgstr "Réservé"
-
-#: gifts/templates/gifts/includes/_wish_row.html:94
+#: gifts/templates/gifts/includes/_wish_row.html:95
 msgid "Offered!"
 msgstr "Offert !"
 
-#: gifts/templates/gifts/includes/_wish_row.html:106
+#: gifts/templates/gifts/includes/_wish_row.html:108
 msgid "Received!"
 msgstr "Reçu !"
 
@@ -2508,68 +2505,140 @@ msgstr "Se connecter"
 msgid "Invalid amount format."
 msgstr "Format du montant invalide."
 
-#: gifts/views.py:125 gifts/views.py:156
+#: gifts/views.py:79
+msgid "Reserve"
+msgstr "Réserver"
+
+#: gifts/views.py:83
+msgid "Reserved in another group"
+msgstr "Réservé dans un autre groupe"
+
+#: gifts/views.py:84
+msgid "Reserved elsewhere"
+msgstr "Réservé ailleurs"
+
+#: gifts/views.py:89
+msgid "My reservation"
+msgstr "Ma réservation"
+
+#: gifts/views.py:94
+msgid "View reservation"
+msgstr "Voir la réservation"
+
+#: gifts/views.py:98
+msgid "You participate"
+msgstr "Vous participez"
+
+#: gifts/views.py:99
+msgid "My participation"
+msgstr "Ma participation"
+
+#: gifts/views.py:103
+msgid "Participation open"
+msgstr "Participation ouverte"
+
+#: gifts/views.py:154
+msgid "This gift is already reserved in another group"
+msgstr "Ce cadeau est déjà réservé dans un autre groupe"
+
+#: gifts/views.py:230 gifts/views.py:261
 msgid "Invalid group ID."
 msgstr "Identifiant de groupe invalide."
 
-#: gifts/views.py:154 gifts/views.py:848
+#: gifts/views.py:259 gifts/views.py:976
 msgid "GROUP_NOT_FOUND"
 msgstr "Groupe introuvable."
 
-#: gifts/views.py:328
+#: gifts/views.py:432
 msgid "You cannot subscribe to yourself"
 msgstr "Vous ne pouvez pas vous abonner à vous-même"
 
-#: gifts/views.py:338 gifts/views.py:372
+#: gifts/views.py:442 gifts/views.py:476
 #, python-format
 msgid "You are no longer subscribed to %(name)s's list"
 msgstr "Vous n'êtes plus abonné à la liste de %(name)s"
 
-#: gifts/views.py:352
+#: gifts/views.py:456
 #, python-format
 msgid "You are now subscribed to %(name)s's list"
 msgstr "Vous êtes maintenant abonné à la liste de %(name)s"
 
-#: gifts/views.py:367 gifts/views.py:376
+#: gifts/views.py:471 gifts/views.py:480
 msgid "The unsubscription link is invalid"
 msgstr "Le lien de désabonnement est invalide"
 
-#: gifts/views.py:428
+#: gifts/views.py:532
 #, python-format
 msgid "New gift on %(name)s's list!"
 msgstr "Nouveau cadeau sur la liste de %(name)s !"
 
-#: gifts/views.py:503
+#: gifts/views.py:607
 msgid "Estimated price updated!"
 msgstr "Prix estimé mis à jour!"
 
-#: gifts/views.py:505
+#: gifts/views.py:609
 msgid "Invalid price format."
 msgstr "Format du prix invalide"
 
-#: gifts/views.py:618
+#: gifts/views.py:647
+msgid "The gift owner cannot reserve this gift"
+msgstr "Le propriétaire du cadeau ne peut pas le réserver"
+
+#: gifts/views.py:746
 msgid "You cannot mark your own gift as offered"
 msgstr "Vous ne pouvez pas marquer votre propre cadeau comme offert"
 
-#: gifts/views.py:737
+#: gifts/views.py:865
 msgid "Gift put back in the list."
 msgstr "Cadeau remis dans la liste."
 
-#: gifts/views.py:754
+#: gifts/views.py:882
 msgid "Gift deleted."
 msgstr "Cadeau supprimé."
 
-#: gifts/views.py:808
+#: gifts/views.py:936
 msgid "Only the gift owner can mark it as received"
 msgstr "Seul le propriétaire du cadeau peut le marquer comme reçu"
 
-#: gifts/views.py:978
+#: gifts/views.py:1106
 msgid "Invalid settlement data."
 msgstr "Données de remboursement invalides."
 
-#: gifts/views.py:981
+#: gifts/views.py:1109
 msgid "Settlement recorded."
 msgstr "Remboursement enregistré."
+
+#~ msgid ""
+#~ "You can reserve this gift and have exclusivity, or allow other user to "
+#~ "reserve it with you (for instance to share the expense)"
+#~ msgstr ""
+#~ "Vous pouvez réserver ce cadeau et avoir l'exclusivité dessus, ou "
+#~ "autoriser les autres utilisateurs à le réserver avec vous (par exemple "
+#~ "pour partager la dépense)"
+
+#~ msgid "You have the exclusivity over that gift"
+#~ msgstr "Vous avez l'exclusivité sur ce cadeau"
+
+#~ msgid "has the exclusivity over that gift"
+#~ msgstr "a l'exclusivité sur ce cadeau"
+
+#~ msgid "exclusivity"
+#~ msgstr "Exclusivité"
+
+#~ msgid "Exclusivity"
+#~ msgstr "Exclusivité"
+
+#~ msgid "This gift has an exclusif reserver"
+#~ msgstr "Ce cadeau est déjà réservé de manière exclusive"
+
+#~ msgid "remove exclusivity"
+#~ msgstr "Enlever l'exclusivité"
+
+#~ msgid "Current participants"
+#~ msgstr "Participants actuels"
+
+#~ msgid "Reserved"
+#~ msgstr "Réservé"
 
 #, python-format
 #~ msgid "Reserved by %(name)s"
