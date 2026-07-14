@@ -112,6 +112,27 @@ urlpatterns = [
     path("event/<str:token>/gift/<int:gift_id>/reserve/", events.reserve_event_gift, name="reserve_event_gift"),
     path("event/<str:token>/gift/<int:gift_id>/transfer/", events.transfer_event_gift, name="transfer_event_gift"),
     path("event/<str:token>/edit-info/", events.edit_event_info, name="edit_event_info"),
+    path(
+        "event/<str:token>/secret-santa/exclusion/add/",
+        events.add_secret_santa_exclusion,
+        name="add_secret_santa_exclusion",
+    ),
+    path(
+        "event/<str:token>/secret-santa/guest/add/",
+        events.add_secret_santa_guest_participant,
+        name="add_secret_santa_guest_participant",
+    ),
+    path(
+        "event/<str:token>/secret-santa/guest/<int:guest_id>/delete/",
+        events.delete_secret_santa_guest_participant,
+        name="delete_secret_santa_guest_participant",
+    ),
+    path(
+        "event/<str:token>/secret-santa/exclusion/<int:exclusion_id>/delete/",
+        events.delete_secret_santa_exclusion,
+        name="delete_secret_santa_exclusion",
+    ),
+    path("event/<str:token>/secret-santa/draw/", events.draw_secret_santa, name="draw_secret_santa"),
     path("event/<str:token>/leave/", events.leave_event_list, name="leave_event_list"),
     path("event/<str:token>/delete/", events.delete_event_list, name="delete_event_list"),
     path("event/<str:token>/regenerate/", events.regenerate_event_token, name="regenerate_event_token"),

@@ -2456,3 +2456,112 @@ msgstr ""
 #: gifts/views.py:981
 msgid "Settlement recorded."
 msgstr ""
+
+msgid "Event wishlist"
+msgstr "Event wishlist"
+
+msgid "Christmas / Secret Santa"
+msgstr "Christmas / Secret Santa"
+
+msgid "Secret Santa"
+msgstr "Secret Santa"
+
+msgid "Max budget"
+msgstr "Max budget"
+
+msgid "Christmas draw"
+msgstr "Christmas draw"
+
+msgid "Run draw again"
+msgstr "Run draw again"
+
+msgid "Run draw"
+msgstr "Run draw"
+
+msgid "My draw"
+msgstr "My draw"
+
+msgid "View wish list"
+msgstr "View wish list"
+
+msgid "No draw has been run for you yet."
+msgstr "No draw has been run for you yet."
+
+msgid "Log in to see your Secret Santa draw."
+msgstr "Log in to see your Secret Santa draw."
+
+msgid "No participants yet."
+msgstr "No participants yet."
+
+msgid "Exclusions"
+msgstr "Exclusions"
+
+msgid "Who"
+msgstr "Who"
+
+msgid "must not draw"
+msgstr "must not draw"
+
+msgid "whom"
+msgstr "whom"
+
+msgid "both directions"
+msgstr "both directions"
+
+msgid "No exclusions configured."
+msgstr "No exclusions configured."
+
+msgid "Secret Santa name"
+msgstr "Secret Santa name"
+
+msgid "e.g. Family Christmas"
+msgstr "e.g. Family Christmas"
+
+msgid "Draw names, set a budget, manage exclusions"
+msgstr "Draw names, set a budget, manage exclusions"
+
+msgid "Please choose two participants."
+msgstr "Please choose two participants."
+
+msgid "This exclusion is not valid."
+msgstr "This exclusion is not valid."
+
+msgid "Exclusion added. Run the draw again when ready."
+msgstr "Exclusion added. Run the draw again when ready."
+
+msgid "Exclusion deleted. Run the draw again when ready."
+msgstr "Exclusion deleted. Run the draw again when ready."
+
+msgid "The draw is impossible with the current participants and exclusions."
+msgstr "The draw is impossible with the current participants and exclusions."
+
+msgid "Secret Santa draw completed."
+msgstr "Secret Santa draw completed."
+
+msgid "Guest name is required."
+msgstr "Guest name is required."
+
+msgid "Guest participant added."
+msgstr "Guest participant added."
+
+msgid "Guest participant deleted."
+msgstr "Guest participant deleted."
+
+msgid "This participant does not have a wish list."
+msgstr "This participant does not have a wish list."
+
+msgid "Guest"
+msgstr "Guest"
+
+msgid "Guest participants"
+msgstr "Guest participants"
+
+msgid ""
+"Guest participants are included in the draw without having a wish list. They "
+"cannot draw the event owner by default."
+msgstr ""
+"Guest participants are included in the draw without having a wish list. They "
+"cannot draw the event owner by default."
+
+msgid "Guest draws"
+msgstr "Guest draws"
