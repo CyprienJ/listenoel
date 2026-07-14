@@ -20,6 +20,7 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 from gifts.demo import DEMO_EMAIL, is_demo_user
 from gifts.forms import LocalUserCreationForm, UserProfileForm
 from gifts.models import User
+from gifts.photo_presets import is_valid_photo_preset, list_photo_presets
 
 
 def send_verification_email(request, user):
@@ -52,6 +53,8 @@ def account(request):
 
             if "avatar" in request.FILES and old_avatar and os.path.isfile(old_avatar.path):
                 os.remove(old_avatar.path)
+            if "avatar" in request.FILES:
+                user.avatar_preset = ""
 
             if user.email != old_email:
                 user.is_verified = False
@@ -134,6 +137,18 @@ def photo_upload(request):
         )
 
     if request.method == "POST":
+        preset = request.POST.get("preset", "")
+        if preset:
+            if not is_valid_photo_preset("profile", preset):
+                return JsonResponse({"success": False, "error": _("Invalid preset photo.")}, status=400)
+            old = request.user.avatar
+            if old and os.path.isfile(old.path):
+                os.remove(old.path)
+            request.user.avatar = None
+            request.user.avatar_preset = preset
+            request.user.save(update_fields=["avatar", "avatar_preset"])
+            return JsonResponse({"success": True, "url": request.user.display_avatar_url})
+
         uploaded = request.FILES.get("photo")
         if not uploaded:
             return JsonResponse({"success": False, "error": "No file"}, status=400)
@@ -141,13 +156,15 @@ def photo_upload(request):
         if old and os.path.isfile(old.path):
             os.remove(old.path)
         request.user.avatar = uploaded
-        request.user.save(update_fields=["avatar"])
+        request.user.avatar_preset = ""
+        request.user.save(update_fields=["avatar", "avatar_preset"])
         return JsonResponse({"success": True})
     return render(
         request,
         "photos/photo_upload.html",
         {
             "context_type": "profile",
+            "photo_presets": list_photo_presets("profile"),
             "back_url": reverse("account"),
         },
     )

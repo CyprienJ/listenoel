@@ -62,9 +62,9 @@
                 <button class="nc-user-pill dropdown-toggle" type="button" data-bs-toggle="dropdown"
                         aria-expanded="false">
                     {% if user.is_authenticated %}
-                        {% if request.user.avatar %}
+                        {% if request.user.display_avatar_url %}
                             <div class="nc-avatar">
-                                <img src="{{ request.user.avatar.url }}" alt="{{ request.user.nickname }}">
+                                <img src="{{ request.user.display_avatar_url }}" alt="{{ request.user.nickname }}">
                             </div>
                         {% else %}
                             <div class="nc-avatar">{{ request.user.nickname|first|upper }}</div>

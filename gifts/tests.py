@@ -713,9 +713,11 @@ class GroupImageTest(TestCase):
         self.group = Group.objects.create(name="Photo Group", created_by=self.user)
         self.group.members.add(self.user, self.member)
         self.media_dir = tempfile.mkdtemp()
+        self.static_dir = tempfile.mkdtemp()
 
     def tearDown(self):
         shutil.rmtree(self.media_dir, ignore_errors=True)
+        shutil.rmtree(self.static_dir, ignore_errors=True)
 
     def test_upload_image_as_member(self):
         """A member can upload a group image."""
@@ -795,14 +797,47 @@ class GroupImageTest(TestCase):
         self.assertFalse(self.group.image)
         self.assertEqual(self.group.name, "Photo Group")
 
+    def test_choose_group_preset_stores_reference_without_copy(self):
+        """Choosing a preset stores its static path instead of copying a media file."""
+        preset_path = "gifts/presets/group/family.jpg"
+        os.makedirs(os.path.join(self.static_dir, "gifts", "presets", "group"), exist_ok=True)
+        with open(os.path.join(self.static_dir, preset_path), "wb") as preset_file:
+            preset_file.write(b"preset")
+
+        self.client.force_login(self.member)
+        with override_settings(STATICFILES_DIRS=[self.static_dir], MEDIA_ROOT=self.media_dir):
+            response = self.client.post(reverse("photo_upload_group", args=[self.group.id]), {"preset": preset_path})
+
+        self.assertEqual(response.status_code, 200)
+        self.group.refresh_from_db()
+        self.assertFalse(self.group.image)
+        self.assertEqual(self.group.image_preset, preset_path)
+        self.assertEqual(os.listdir(self.media_dir), [])
+
+    def test_upload_group_image_clears_preset(self):
+        """Uploading a custom group image takes priority over a previous preset."""
+        self.group.image_preset = "gifts/presets/group/family.jpg"
+        self.group.save(update_fields=["image_preset"])
+
+        self.client.force_login(self.member)
+        with override_settings(MEDIA_ROOT=self.media_dir):
+            response = self.client.post(reverse("photo_upload_group", args=[self.group.id]), {"photo": make_image()})
+
+        self.assertEqual(response.status_code, 200)
+        self.group.refresh_from_db()
+        self.assertTrue(self.group.image)
+        self.assertEqual(self.group.image_preset, "")
+
 
 class AvatarUploadTest(TestCase):
     def setUp(self):
         self.user, self.other, _ = create_users()
         self.media_dir = tempfile.mkdtemp()
+        self.static_dir = tempfile.mkdtemp()
 
     def tearDown(self):
         shutil.rmtree(self.media_dir, ignore_errors=True)
+        shutil.rmtree(self.static_dir, ignore_errors=True)
 
     def test_upload_avatar(self):
         """User can upload an avatar from the account page."""
@@ -892,6 +927,37 @@ class AvatarUploadTest(TestCase):
 
             with PILImage.open(self.user.avatar.path) as img:
                 self.assertEqual(img.size, (200, 200))
+
+    def test_choose_avatar_preset_stores_reference_without_copy(self):
+        """Choosing a preset stores its static path instead of copying a media file."""
+        preset_path = "gifts/presets/profile/smile.png"
+        os.makedirs(os.path.join(self.static_dir, "gifts", "presets", "profile"), exist_ok=True)
+        with open(os.path.join(self.static_dir, preset_path), "wb") as preset_file:
+            preset_file.write(b"preset")
+
+        self.client.force_login(self.user)
+        with override_settings(STATICFILES_DIRS=[self.static_dir], MEDIA_ROOT=self.media_dir):
+            response = self.client.post(reverse("photo_upload_profile"), {"preset": preset_path})
+
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.avatar)
+        self.assertEqual(self.user.avatar_preset, preset_path)
+        self.assertEqual(os.listdir(self.media_dir), [])
+
+    def test_upload_avatar_clears_preset(self):
+        """Uploading a custom avatar takes priority over a previous preset."""
+        self.user.avatar_preset = "gifts/presets/profile/smile.png"
+        self.user.save(update_fields=["avatar_preset"])
+
+        self.client.force_login(self.user)
+        with override_settings(MEDIA_ROOT=self.media_dir):
+            response = self.client.post(reverse("photo_upload_profile"), {"photo": make_image()})
+
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.avatar)
+        self.assertEqual(self.user.avatar_preset, "")
 
 
 class OfferGiftTest(TestCase):

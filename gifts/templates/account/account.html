@@ -14,8 +14,8 @@
                             {% csrf_token %}
 
                             <div class="mb-4 text-center">
-                                {% if request.user.avatar %}
-                                    <img src="{{ request.user.avatar.url }}"
+                                {% if request.user.display_avatar_url %}
+                                    <img src="{{ request.user.display_avatar_url }}"
                                          alt="{{ request.user.nickname }}"
                                          class="rounded-circle border shadow-sm"
                                          style="width: 100px; height: 100px; object-fit: cover;">

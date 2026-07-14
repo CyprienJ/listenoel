@@ -12,6 +12,7 @@ from django.views.decorators.http import require_GET, require_POST
 from gifts.demo import demo_scope_forbidden_response, has_same_demo_scope
 from gifts.forms import GroupForm
 from gifts.models import EventList, Group, ManagedMember, User
+from gifts.photo_presets import is_valid_photo_preset, list_photo_presets
 
 NOT_A_MEMBER = "You are not a member of this group."
 
@@ -197,6 +198,7 @@ def edit_group(request, group_id):
             if group.image and os.path.isfile(group.image.path):
                 os.remove(group.image.path)
             group.image = new_image
+            group.image_preset = ""
 
         group.description = new_description
 
@@ -219,6 +221,18 @@ def edit_group(request, group_id):
 def group_photo_upload(request, group_id):
     group = get_object_or_404(Group, pk=group_id, members=request.user)
     if request.method == "POST":
+        preset = request.POST.get("preset", "")
+        if preset:
+            if not is_valid_photo_preset("group", preset):
+                return JsonResponse({"success": False, "error": _("Invalid preset photo.")}, status=400)
+            old = group.image
+            if old and os.path.isfile(old.path):
+                os.remove(old.path)
+            group.image = None
+            group.image_preset = preset
+            group.save(update_fields=["image", "image_preset"])
+            return JsonResponse({"success": True, "url": group.display_image_url})
+
         uploaded = request.FILES.get("photo")
         if not uploaded:
             return JsonResponse({"success": False, "error": "No file"}, status=400)
@@ -226,7 +240,8 @@ def group_photo_upload(request, group_id):
         if old and os.path.isfile(old.path):
             os.remove(old.path)
         group.image = uploaded
-        group.save(update_fields=["image"])
+        group.image_preset = ""
+        group.save(update_fields=["image", "image_preset"])
         return JsonResponse({"success": True})
     return render(
         request,
@@ -234,6 +249,7 @@ def group_photo_upload(request, group_id):
         {
             "context_type": "group",
             "group": group,
+            "photo_presets": list_photo_presets("group"),
             "back_url": reverse("group_detail", args=[group_id]),
         },
     )

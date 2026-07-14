@@ -156,6 +156,41 @@ input.pu-range[type=range]:active::-webkit-slider-thumb { cursor: grabbing; }
   border-radius: 20px; padding: 44px 36px;
   box-shadow: 0 4px 32px oklch(18% 0.01 60 / 0.07);
 }
+
+.pu-presets {
+  margin-top: 26px;
+}
+.pu-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+  gap: 10px;
+}
+.pu-preset-photo {
+  aspect-ratio: 1;
+  border: 1px solid var(--nc-border);
+  background: var(--nc-white);
+  border-radius: 14px;
+  overflow: hidden;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+}
+.pu-preset-photo--group {
+  aspect-ratio: 3 / 1;
+  grid-column: span 2;
+}
+.pu-preset-photo:hover,
+.pu-preset-photo:focus-visible {
+  border-color: var(--nc-accent);
+  box-shadow: 0 4px 16px oklch(18% 0.01 60 / 0.12);
+  transform: translateY(-1px);
+}
+.pu-preset-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 </style>
 
 <div class="pu-page">
@@ -203,6 +238,19 @@ input.pu-range[type=range]:active::-webkit-slider-thumb { cursor: grabbing; }
     </div>
     <label for="file-input" class="visually-hidden">{% trans "Choose an image" %}</label>
     <input type="file" id="file-input" accept="image/*" style="display:none;">
+
+    {% if photo_presets %}
+      <div class="pu-presets">
+        <div class="pu-label">{% trans "Or choose one" %}</div>
+        <div class="pu-presets-grid">
+          {% for preset in photo_presets %}
+            <button type="button" class="pu-preset-photo {% if context_type == 'group' %}pu-preset-photo--group{% endif %}" data-preset="{{ preset.path }}" data-src="{{ preset.url }}" aria-label="{% blocktrans with name=preset.name %}Choose {{ name }}{% endblocktrans %}">
+              <img src="{{ preset.url }}" alt="">
+            </button>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
 
   </div>
 
@@ -530,6 +578,36 @@ input.pu-range[type=range]:active::-webkit-slider-thumb { cursor: grabbing; }
   dropZone.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', e => loadFile(e.target.files[0]));
 
+  function showDoneImage(src) {
+    donePreview.innerHTML = '';
+    donePreview.style.backgroundImage = `url("${src}")`;
+    donePreview.style.backgroundSize = 'cover';
+    donePreview.style.backgroundPosition = 'center';
+    showStep('done');
+  }
+
+  function savePreset(button) {
+    const fd = new FormData();
+    fd.append('preset', button.dataset.preset);
+    fd.append('csrfmiddlewaretoken', CSRF);
+    button.disabled = true;
+
+    fetch(globalThis.location.pathname, { method: 'POST', body: fd })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          showDoneImage(data.url || button.dataset.src);
+        } else {
+          button.disabled = false;
+        }
+      })
+      .catch(() => { button.disabled = false; });
+  }
+
+  document.querySelectorAll('.pu-preset-photo').forEach(button => {
+    button.addEventListener('click', () => savePreset(button));
+  });
+
   // ── Back / Change again
   document.getElementById('btn-back').addEventListener('click', () => {
     fileInput.value = ''; showStep('upload');
@@ -564,6 +642,7 @@ input.pu-range[type=range]:active::-webkit-slider-thumb { cursor: grabbing; }
         .then(data => {
           if (data.success) {
             const f = 96 / CROP_W;
+            donePreview.style.backgroundImage = '';
             const img = ensurePreviewImg(donePreview);
             img.src = cropImg.src;
             img.style.transform = `translate(calc(-50% + ${ox * f}px), calc(-50% + ${oy * f}px)) scale(${zoom * f})`;
