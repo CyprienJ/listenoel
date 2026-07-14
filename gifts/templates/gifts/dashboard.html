@@ -53,6 +53,8 @@
         </span>
     </a>
 
+    <div class="nc-dashboard-shell">
+        <aside class="nc-dashboard-groups-sidebar">
     <!-- Groups -->
     {% if user_groups %}
         <div class="nc-section-label">{% trans "My groups" %} · {{ user_groups.count }}</div>
@@ -75,7 +77,6 @@
                 </a>
             {% endfor %}
 
-            <!-- Join / Create card -->
             <button type="button" class="nc-group-card--new"
                     data-bs-toggle="modal" data-bs-target="#createGroupModal">
                 <i class="bi bi-plus-lg" style="font-size:18px"></i>
@@ -84,7 +85,6 @@
         </div>
 
     {% else %}
-        <!-- Empty state -->
         <div class="nc-empty-state">
             <span class="nc-empty-state__icon">👥</span>
             <p class="nc-empty-state__title">{% trans "No groups yet" %}</p>
@@ -101,6 +101,184 @@
                     <i class="bi bi-plus-lg"></i> {% trans "Create a group" %}
                 </button>
             </div>
+        </div>
+    {% endif %}
+        </aside>
+
+        <section class="nc-dashboard-main">
+
+    <div class="nc-dashboard-quick-actions">
+        <a href="{% url 'view_list' request.user.id %}" class="nc-quick-action">
+            <i class="bi bi-gift"></i>
+            <span>{% trans "Add a wish" %}</span>
+        </a>
+        <button type="button" class="nc-quick-action" data-bs-toggle="modal" data-bs-target="#createGroupModal"
+                onclick="setTimeout(function(){ selectCreateType('event'); }, 150)">
+            <i class="bi bi-calendar-heart"></i>
+            <span>{% trans "Create event list" %}</span>
+        </button>
+        <button type="button" class="nc-quick-action" data-bs-toggle="modal" data-bs-target="#joinGroupModal">
+            <i class="bi bi-person-plus"></i>
+            <span>{% trans "Join a group" %}</span>
+        </button>
+        <a href="https://addons.mozilla.org/fr/firefox/addon/noscadeaux-quick-add/"
+           target="_blank" rel="noopener" class="nc-quick-action">
+            <i class="bi bi-browser-firefox"></i>
+            <span>{% trans "Firefox extension" %}</span>
+        </a>
+    </div>
+
+    <div class="nc-dashboard-stats">
+        <a href="{% url 'view_list' request.user.id %}" class="nc-dashboard-stat">
+            <span class="nc-dashboard-stat__value">{{ open_wish_count }}</span>
+            <span class="nc-dashboard-stat__label">{% trans "active wishes" %}</span>
+        </a>
+        <div class="nc-dashboard-stat">
+            <span class="nc-dashboard-stat__value">{{ user_groups.count }}</span>
+            <span class="nc-dashboard-stat__label">{% trans "groups" %}</span>
+        </div>
+        <div class="nc-dashboard-stat">
+            <span class="nc-dashboard-stat__value">{{ my_reservation_count }}</span>
+            <span class="nc-dashboard-stat__label">{% trans "current reservations" %}</span>
+        </div>
+        <div class="nc-dashboard-stat">
+            <span class="nc-dashboard-stat__value">{{ event_count }}</span>
+            <span class="nc-dashboard-stat__label">{% trans "event lists" %}</span>
+        </div>
+    </div>
+
+    {% if not user_groups and not user_event_lists %}
+        <div class="nc-dashboard-card nc-onboarding-card">
+            <div class="nc-dashboard-card__header">
+                <div>
+                    <div class="nc-section-label m-0">{% trans "Getting started" %}</div>
+                    <h2>{% trans "Set up your first gift space" %}</h2>
+                </div>
+            </div>
+            <div class="nc-onboarding-steps">
+                <div><span>1</span>{% trans "Create or join a group" %}</div>
+                <div><span>2</span>{% trans "Add a few ideas to your list" %}</div>
+                <div><span>3</span>{% trans "Invite people to reserve gifts secretly" %}</div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="nc-dashboard-grid">
+        <section class="nc-dashboard-card">
+            <div class="nc-dashboard-card__header">
+                <div>
+                    <div class="nc-section-label m-0">{% trans "Upcoming" %}</div>
+                    <h2>{% trans "Dates to watch" %}</h2>
+                </div>
+            </div>
+            <div class="nc-dashboard-list">
+                {% for event in upcoming_events %}
+                    <a href="{% url 'event_detail' token=event.access_token %}" class="nc-dashboard-list-row">
+                        <span class="nc-dashboard-row-icon nc-dashboard-row-icon--event"><i class="bi bi-calendar-event"></i></span>
+                        <span class="nc-dashboard-row-body">
+                            <strong>{{ event.name }}</strong>
+                            <small>{{ event.event_date|date:"j M Y" }}</small>
+                        </span>
+                    </a>
+                {% endfor %}
+                {% for birthday in upcoming_birthdays %}
+                    <a href="{% url 'view_list' birthday.member.id %}" class="nc-dashboard-list-row">
+                        <span class="nc-dashboard-row-icon nc-dashboard-row-icon--birthday"><i class="bi bi-cake2"></i></span>
+                        <span class="nc-dashboard-row-body">
+                            <strong>{{ birthday.member.nickname }}</strong>
+                            <small>
+                                {% if birthday.days_until == 0 %}
+                                    {% trans "Today" %}
+                                {% else %}
+                                    {% blocktrans count days=birthday.days_until %}in {{ days }} day{% plural %}in {{ days }} days{% endblocktrans %}
+                                {% endif %}
+                            </small>
+                        </span>
+                    </a>
+                {% endfor %}
+                {% if not upcoming_events and not upcoming_birthdays %}
+                    <div class="nc-dashboard-empty">{% trans "No upcoming event or birthday in your groups." %}</div>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="nc-dashboard-card">
+            <div class="nc-dashboard-card__header">
+                <div>
+                    <div class="nc-section-label m-0">{% trans "Reservations" %}</div>
+                    <h2>{% trans "Gifts you reserved" %}</h2>
+                </div>
+            </div>
+            <div class="nc-dashboard-list">
+                {% for reservation in my_reservations %}
+                    <a href="{% url 'view_list' reservation.gift.owner.id %}{% if reservation.gift.group_reserved_on_id %}?from_group={{ reservation.gift.group_reserved_on_id }}{% endif %}"
+                       class="nc-dashboard-list-row">
+                        <span class="nc-dashboard-row-icon nc-dashboard-row-icon--reservation"><i class="bi bi-lock-fill"></i></span>
+                        <span class="nc-dashboard-row-body">
+                            <strong>{{ reservation.gift.title }}</strong>
+                            <small>{{ reservation.gift.owner.nickname }}{% if reservation.exclusivity %} · {% trans "exclusive" %}{% endif %}</small>
+                        </span>
+                    </a>
+                {% empty %}
+                    <div class="nc-dashboard-empty">{% trans "You have no active reservation yet." %}</div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    {% if balance_summaries or recent_group_gifts %}
+        <div class="nc-dashboard-grid">
+            {% if balance_summaries %}
+                <section class="nc-dashboard-card">
+                    <div class="nc-dashboard-card__header">
+                        <div>
+                            <div class="nc-section-label m-0">{% trans "Balances" %}</div>
+                            <h2>{% trans "Money to settle" %}</h2>
+                        </div>
+                    </div>
+                    <div class="nc-dashboard-list">
+                        {% for balance in balance_summaries %}
+                            <a href="{% url 'balance_group' balance.group.id %}" class="nc-dashboard-list-row">
+                                <span class="nc-dashboard-row-icon nc-dashboard-row-icon--balance"><i class="bi bi-calculator"></i></span>
+                                <span class="nc-dashboard-row-body">
+                                    <strong>{{ balance.group.name }}</strong>
+                                    <small>
+                                        {% if balance.my_balance > 0 %}
+                                            {% blocktrans with amount=balance.my_balance %}You should receive {{ amount }} EUR{% endblocktrans %}
+                                        {% elif balance.my_balance < 0 %}
+                                            {% blocktrans with amount=balance.my_balance_abs %}You owe {{ amount }} EUR{% endblocktrans %}
+                                        {% else %}
+                                            {% trans "Suggested repayments available" %}
+                                        {% endif %}
+                                    </small>
+                                </span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
+
+            {% if recent_group_gifts %}
+                <section class="nc-dashboard-card">
+                    <div class="nc-dashboard-card__header">
+                        <div>
+                            <div class="nc-section-label m-0">{% trans "Recent activity" %}</div>
+                            <h2>{% trans "New wishes in your groups" %}</h2>
+                        </div>
+                    </div>
+                    <div class="nc-dashboard-list">
+                        {% for gift in recent_group_gifts %}
+                            <a href="{% url 'view_list' gift.owner.id %}" class="nc-dashboard-list-row">
+                                <span class="nc-dashboard-row-icon nc-dashboard-row-icon--gift"><i class="bi bi-gift"></i></span>
+                                <span class="nc-dashboard-row-body">
+                                    <strong>{{ gift.title }}</strong>
+                                    <small>{{ gift.owner.nickname }} · {{ gift.created_at|date:"j M" }}</small>
+                                </span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
         </div>
     {% endif %}
 
@@ -149,6 +327,8 @@
             {% endfor %}
         </div>
     {% endif %}
+        </section>
+    </div>
 
 </div>
 {% endblock %}

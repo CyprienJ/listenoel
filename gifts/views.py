@@ -291,9 +291,35 @@ def privacy(request):
 
 @login_required
 def dashboard(request):
-    user_groups = request.user.gift_groups.all()
-    user_event_lists = EventList.objects.filter(owner=request.user)
+    user_groups = request.user.gift_groups.prefetch_related("members").all()
+    user_event_lists = EventList.objects.filter(owner=request.user).order_by("-created_at")
     participating_event_lists = EventList.objects.filter(participants=request.user).exclude(owner=request.user)
+    today = timezone.localdate()
+    my_reservations_qs = Reservation.objects.filter(
+        reserver=request.user,
+        gift__offered=False,
+        gift__event_list__isnull=True,
+    )
+    my_reservations = my_reservations_qs.select_related("gift", "gift__owner", "gift__group_reserved_on").order_by(
+        "-created_at"
+    )[:4]
+    recent_group_gifts = (
+        Gift.objects.filter(visible_in__members=request.user, offered=False, event_list__isnull=True)
+        .exclude(owner=request.user)
+        .select_related("owner", "created_by")
+        .order_by("-created_at")
+        .distinct()[:4]
+    )
+    upcoming_events = (
+        EventList.objects.filter(Q(owner=request.user) | Q(participants=request.user), event_date__gte=today)
+        .distinct()
+        .order_by("event_date")[:4]
+    )
+    upcoming_birthdays = _upcoming_birthdays(request.user, user_groups, today)
+    balance_summaries = _dashboard_balance_summaries(request.user, user_groups)
+    open_wish_count = Gift.objects.filter(owner=request.user, offered=False, event_list__isnull=True).count()
+    event_count = user_event_lists.count() + participating_event_lists.count()
+    my_reservation_count = my_reservations_qs.count()
     current_emoji_set = emojis()
     return render(
         request,
@@ -302,10 +328,58 @@ def dashboard(request):
             "user_groups": user_groups,
             "user_event_lists": user_event_lists,
             "participating_event_lists": participating_event_lists,
+            "open_wish_count": open_wish_count,
+            "event_count": event_count,
+            "my_reservation_count": my_reservation_count,
+            "my_reservations": my_reservations,
+            "recent_group_gifts": recent_group_gifts,
+            "upcoming_events": upcoming_events,
+            "upcoming_birthdays": upcoming_birthdays,
+            "balance_summaries": balance_summaries,
             "greeting_emoji": random.choice(current_emoji_set),
             "rain_emojis": current_emoji_set,
         },
     )
+
+
+def _upcoming_birthdays(user, groups, today):
+    members = (
+        User.objects.filter(gift_groups__in=groups, birthday_month__isnull=False, birthday_day__isnull=False)
+        .exclude(id=user.id)
+        .distinct()
+    )
+    upcoming = []
+    for member in members:
+        try:
+            next_date = datetime.date(today.year, member.birthday_month, member.birthday_day)
+        except ValueError:
+            continue
+        if next_date < today:
+            next_date = datetime.date(today.year + 1, member.birthday_month, member.birthday_day)
+        days_until = (next_date - today).days
+        if days_until <= 45:
+            upcoming.append({"member": member, "date": next_date, "days_until": days_until})
+    return sorted(upcoming, key=lambda item: item["date"])[:4]
+
+
+def _dashboard_balance_summaries(user, groups):
+    summaries = []
+    for group in groups:
+        if not group.show_balance:
+            continue
+        balances, transactions, _ = compute_group_balances(group)
+        my_balance = balances.get(user, Decimal("0.00"))
+        if abs(my_balance) <= Decimal("0.01") and not transactions:
+            continue
+        summaries.append(
+            {
+                "group": group,
+                "my_balance": my_balance,
+                "my_balance_abs": abs(my_balance),
+                "transactions": transactions[:2],
+            }
+        )
+    return summaries[:3]
 
 
 def emojis():

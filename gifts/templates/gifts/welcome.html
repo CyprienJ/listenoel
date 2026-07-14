@@ -1,224 +1,184 @@
 {% extends "base.html" %}
 {% load i18n %}
 
+{% block main_class %}nc-welcome-main{% endblock %}
+
 {% block content %}
+<section class="nc-welcome-hero">
+    <div class="nc-welcome-hero__content">
+        <p class="nc-welcome-eyebrow">
+            <i class="bi bi-gift-fill"></i>
+            {% trans "Shared gift lists for real families and groups" %}
+        </p>
+        <h1 class="nc-welcome-title">
+            nos<span>cadeaux</span>
+        </h1>
+        <p class="nc-welcome-lead">
+            {% trans "Create private circles, share wish lists, coordinate secret reservations, and keep group expenses clear from the first idea to the final thank-you." %}
+        </p>
+        <div class="nc-welcome-actions">
+            {% if not user.is_authenticated %}
+                <a href="{% url 'register' %}" class="nc-btn nc-btn--primary">
+                    <i class="bi bi-person-plus"></i>{% trans "Create an account" %}
+                </a>
+                <a href="{% url 'login' %}" class="nc-btn nc-btn--ghost">
+                    <i class="bi bi-box-arrow-in-right"></i>{% trans "Log in" %}
+                </a>
+            {% else %}
+                <a href="{% url 'dashboard' %}" class="nc-btn nc-btn--primary">
+                    {% trans "Go to dashboard" %}<i class="bi bi-arrow-right"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
 
-<!-- Hero -->
-<div class="bg-body-tertiary border-bottom">
-    <div class="container py-5 py-md-6">
-        <div class="row align-items-center g-5">
-            <div class="col-lg-6">
-                <p class="text-primary fw-bold small text-uppercase mb-2 letter-spacing-1">
-                    <i class="bi bi-gift-fill me-1"></i> {% trans "Gift lists, reinvented" %}
-                </p>
-                <h1 class="display-4 fw-bold mb-3">
-                    {% trans "Organize gifts." %}<br>
-                    <span class="text-primary">{% trans "No more duplicates." %}</span>
-                </h1>
-                <p class="lead text-secondary mb-4">
-                    {% trans "Share wish lists with your close ones, secretly reserve gifts, track the history of received gifts, and balance contributions among group members." %}
-                </p>
-                <div class="d-flex flex-wrap gap-3">
-                    {% if not user.is_authenticated %}
-                        <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
-                            <i class="bi bi-person-plus me-2"></i>{% trans "Get started" %}
-                        </a>
-                        <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg px-5 rounded-pill">
-                            {% trans "Log in" %}
-                        </a>
-                    {% else %}
-                        <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
-                            {% trans "Go to dashboard" %} <i class="bi bi-arrow-right ms-2"></i>
-                        </a>
-                    {% endif %}
+    <div class="nc-welcome-preview" aria-hidden="true">
+        <div class="nc-preview-toolbar">
+            <span></span><span></span><span></span>
+        </div>
+        <div class="nc-preview-panel nc-preview-panel--accent">
+            <div>
+                <strong>{% trans "Family group" %}</strong>
+                <small>{% trans "6 members" %}</small>
+            </div>
+            <i class="bi bi-people-fill"></i>
+        </div>
+        <div class="nc-preview-list">
+            <div class="nc-preview-row">
+                <span class="nc-preview-icon nc-preview-icon--gift"><i class="bi bi-gift"></i></span>
+                <div>
+                    <strong>{% trans "Noise-cancelling headphones" %}</strong>
+                    <small>{% trans "Reserved by Lea" %}</small>
+                </div>
+                <span class="nc-preview-status">{% trans "Secret" %}</span>
+            </div>
+            <div class="nc-preview-row">
+                <span class="nc-preview-icon nc-preview-icon--event"><i class="bi bi-calendar-heart"></i></span>
+                <div>
+                    <strong>{% trans "Birthday list" %}</strong>
+                    <small>{% trans "Open event link" %}</small>
                 </div>
             </div>
-            <div class="col-lg-6 d-none d-lg-flex justify-content-center">
-                <div class="position-relative" style="width:340px; height:320px;">
-                    <!-- Decorative cards stacked -->
-                    <div class="card border-0 shadow rounded-4 p-4 position-absolute"
-                         style="width:280px; top:0; left:30px; transform:rotate(-4deg); background:var(--bs-primary);">
-                        <div class="d-flex align-items-center gap-3">
-                            <i class="bi bi-calculator fs-3 text-success"></i>
-                            <div>
-                                <div class="fw-bold">{% trans "Balance" %}</div>
-                                <div class="text-muted small">Bob → Alice : 12.50 €</div>
-                            </div>
-
-                        </div>
-                    </div>
-                    <div class="card border-0 shadow rounded-4 p-4 position-absolute"
-                         style="width:280px; top:60px; left:0; transform:rotate(2deg);">
-                        <div class="d-flex align-items-center gap-3">
-                            <i class="bi bi-people-fill fs-3 text-primary"></i>
-                            <div>
-                                <div class="fw-bold">{% trans "Family group" %}</div>
-                                <div class="text-muted small">4 {% trans "members" %}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card border-0 shadow rounded-4 p-4 position-absolute"
-                         style="width:280px; top:150px; left:40px; transform:rotate(-1deg);">
-                        <div class="d-flex align-items-center gap-3">
-                            <i class="bi bi-gift-fill fs-3"></i>
-                            <div>
-                                <div class="fw-bold">{% trans "New bicycle" %}</div>
-                                <div class="opacity-75 small">{% trans "Reserved by Alice" %} ✓</div>
-                            </div>
-                        </div>
-                    </div>
+            <div class="nc-preview-row">
+                <span class="nc-preview-icon nc-preview-icon--balance"><i class="bi bi-calculator"></i></span>
+                <div>
+                    <strong>{% trans "Balance" %}</strong>
+                    <small>{% trans "Nina owes Sam 12.50 EUR" %}</small>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
-<!-- Features -->
-<div class="container py-5 py-md-6">
-    <div class="text-center mb-5">
-        <h2 class="h2 fw-bold">{% trans "Everything you need for stress-free gifting" %}</h2>
-        <p class="text-muted lead">{% trans "One tool for the whole group, from wish to thank-you." %}</p>
+<section class="nc-welcome-section">
+    <div class="nc-welcome-section__header">
+        <p class="nc-welcome-section__label">{% trans "What you can do" %}</p>
+        <h2>{% trans "One place for every gift workflow" %}</h2>
     </div>
 
-    <div class="row g-4">
-
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 border-0 shadow-sm rounded-4 p-2">
-                <div class="card-body p-4">
-                    <div class="mb-3 d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-3"
-                         style="width:52px; height:52px;">
-                        <i class="bi bi-people-fill fs-4"></i>
-                    </div>
-                    <h3 class="h5 fw-bold">{% trans "Private groups" %}</h3>
-                    <p class="text-muted mb-0">
-                        {% trans "Create a group for your family, friends, or colleagues. Join via an invite link. No one can stumble in uninvited." %}
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 border-0 shadow-sm rounded-4 p-2">
-                <div class="card-body p-4">
-                    <div class="mb-3 d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-3"
-                         style="width:52px; height:52px;">
-                        <i class="bi bi-card-list fs-4"></i>
-                    </div>
-                    <h3 class="h5 fw-bold">{% trans "Wish lists" %}</h3>
-                    <p class="text-muted mb-0">
-                        {% trans "Everyone in the group has a wish list. Add ideas anytime : title, description, link, and / or price." %}
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 border-0 shadow-sm rounded-4 p-2">
-                <div class="card-body p-4">
-                    <div class="mb-3 d-inline-flex align-items-center justify-content-center bg-warning-subtle text-warning rounded-3"
-                         style="width:52px; height:52px;">
-                        <i class="bi bi-incognito fs-4"></i>
-                    </div>
-                    <h3 class="h5 fw-bold">{% trans "Secret reservations" %}</h3>
-                    <p class="text-muted mb-0">
-                        {% trans "Reserve a gift so others know it's taken, but the recipient never finds out. No more double gifts!" %}
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 border-0 shadow-sm rounded-4 p-2">
-                <div class="card-body p-4">
-                    <div class="mb-3 d-inline-flex align-items-center justify-content-center bg-success-subtle text-success rounded-3"
-                         style="width:52px; height:52px;">
-                        <i class="bi bi-clock-history fs-4"></i>
-                    </div>
-                    <h3 class="h5 fw-bold">{% trans "Gift history" %}</h3>
-                    <p class="text-muted mb-0">
-                        {% trans "Once a gift is offered, it moves to the group history. Never offer the same thing twice, even years later." %}
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 border-0 shadow-sm rounded-4 p-2">
-                <div class="card-body p-4">
-                    <div class="mb-3 d-inline-flex align-items-center justify-content-center bg-info-subtle text-info rounded-3"
-                         style="width:52px; height:52px;">
-                        <i class="bi bi-calculator fs-4"></i>
-                    </div>
-                    <h3 class="h5 fw-bold">{% trans "Financial balance" %}</h3>
-                    <p class="text-muted mb-0">
-                        {% trans "Log who paid what for each gift and split costs between participants. See at a glance who owes whom" %}
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 border-0 shadow-sm rounded-4 p-2">
-                <div class="card-body p-4">
-                    <div class="mb-3 d-inline-flex align-items-center justify-content-center bg-danger-subtle text-danger rounded-3"
-                         style="width:52px; height:52px;">
-                        <i class="bi bi-bell-fill fs-4"></i>
-                    </div>
-                    <h3 class="h5 fw-bold">{% trans "Notifications" %}</h3>
-                    <p class="text-muted mb-0">
-                        {% trans "Subscribe to a member's list to get notified by email when they add a new wish." %}
-                    </p>
-                </div>
-            </div>
-        </div>
-
+    <div class="nc-feature-grid">
+        <article class="nc-feature">
+            <i class="bi bi-people-fill"></i>
+            <h3>{% trans "Private groups" %}</h3>
+            <p>{% trans "Create spaces for family, friends, colleagues, or any circle. Members join with a private invitation code." %}</p>
+        </article>
+        <article class="nc-feature">
+            <i class="bi bi-card-checklist"></i>
+            <h3>{% trans "Wish lists" %}</h3>
+            <p>{% trans "Add ideas with links, descriptions, estimated prices, and visibility by group." %}</p>
+        </article>
+        <article class="nc-feature">
+            <i class="bi bi-incognito"></i>
+            <h3>{% trans "Surprises" %}</h3>
+            <p>{% trans "Add gift ideas to someone else's list without showing them to the recipient." %}</p>
+        </article>
+        <article class="nc-feature">
+            <i class="bi bi-lock-fill"></i>
+            <h3>{% trans "Secret reservations" %}</h3>
+            <p>{% trans "Reserve alone or join a shared gift so the group avoids duplicates while the recipient stays unaware." %}</p>
+        </article>
+        <article class="nc-feature">
+            <i class="bi bi-clock-history"></i>
+            <h3>{% trans "Gift history" %}</h3>
+            <p>{% trans "Move offered gifts into group history and keep a memory of what has already been given." %}</p>
+        </article>
+        <article class="nc-feature">
+            <i class="bi bi-calculator"></i>
+            <h3>{% trans "Shared expenses" %}</h3>
+            <p>{% trans "Record actual costs, who paid, who participates, and see who should reimburse whom." %}</p>
+        </article>
+        <article class="nc-feature">
+            <i class="bi bi-bell-fill"></i>
+            <h3>{% trans "Notifications" %}</h3>
+            <p>{% trans "Follow a list by email, RSS, or both, with optional birthday and Christmas reminders." %}</p>
+        </article>
+        <article class="nc-feature">
+            <i class="bi bi-person-heart"></i>
+            <h3>{% trans "Managed members" %}</h3>
+            <p>{% trans "Create and manage lists for children or relatives who do not need their own account." %}</p>
+        </article>
     </div>
-</div>
+</section>
 
-<!-- How it works -->
-<div class="bg-body-tertiary border-top border-bottom py-5 py-md-6">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="h2 fw-bold">{% trans "How it works" %}</h2>
-        </div>
-        <div class="row g-4 justify-content-center">
-            <div class="col-md-3 text-center">
-                <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white mb-3"
-                     style="width:56px; height:56px; font-size:1.3rem; font-weight:700;">1</div>
-                <h4 class="h6 fw-bold">{% trans "Create a group" %}</h4>
-                <p class="text-muted small mb-0">{% trans "Invite your family or friends with a simple link." %}</p>
-            </div>
-            <div class="col-md-3 text-center">
-                <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white mb-3"
-                     style="width:56px; height:56px; font-size:1.3rem; font-weight:700;">2</div>
-                <h4 class="h6 fw-bold">{% trans "Add your wishes" %}</h4>
-                <p class="text-muted small mb-0">{% trans "Each member fills in their own list whenever inspiration strikes." %}</p>
-            </div>
-            <div class="col-md-3 text-center">
-                <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white mb-3"
-                     style="width:56px; height:56px; font-size:1.3rem; font-weight:700;">3</div>
-                <h4 class="h6 fw-bold">{% trans "Reserve &amp; offer" %}</h4>
-                <p class="text-muted small mb-0">{% trans "Pick a gift, reserve it discreetly, then mark it as offered when done." %}</p>
-            </div>
-            <div class="col-md-3 text-center">
-                <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white mb-3"
-                     style="width:56px; height:56px; font-size:1.3rem; font-weight:700;">4</div>
-                <h4 class="h6 fw-bold">{% trans "Settle up" %}</h4>
-                <p class="text-muted small mb-0">{% trans "Use the balance tab to track costs and settle debts between group members." %}</p>
-            </div>
-        </div>
+<section class="nc-welcome-band">
+    <div>
+        <p class="nc-welcome-section__label">{% trans "Beyond classic groups" %}</p>
+        <h2>{% trans "Event links and quick capture are built in" %}</h2>
     </div>
-</div>
+    <div class="nc-callout-grid">
+        <article class="nc-callout">
+            <i class="bi bi-calendar-event"></i>
+            <div>
+                <h3>{% trans "Event lists" %}</h3>
+                <p>{% trans "Create a public list for a birthday, wedding, baby shower, or office party. Anyone with the link can identify themselves and reserve a gift." %}</p>
+            </div>
+        </article>
+        <article class="nc-callout">
+            <i class="bi bi-browser-firefox"></i>
+            <div>
+                <h3>{% trans "Firefox quick add" %}</h3>
+                <p>{% trans "Capture a product from a shop page, review the extracted title, price, image, and link, then add it to the right list." %}</p>
+                <a class="nc-callout-link"
+                   href="https://addons.mozilla.org/fr/firefox/addon/noscadeaux-quick-add/"
+                   target="_blank"
+                   rel="noopener">
+                    <i class="bi bi-box-arrow-up-right"></i>{% trans "Install the Firefox extension" %}
+                </a>
+            </div>
+        </article>
+    </div>
+</section>
 
-<!-- CTA -->
+<section class="nc-welcome-flow">
+    <div class="nc-flow-step">
+        <span>1</span>
+        <h3>{% trans "Create or join" %}</h3>
+        <p>{% trans "Start a private group or open an event list." %}</p>
+    </div>
+    <div class="nc-flow-step">
+        <span>2</span>
+        <h3>{% trans "Add ideas" %}</h3>
+        <p>{% trans "Build lists for yourself, others, or managed members." %}</p>
+    </div>
+    <div class="nc-flow-step">
+        <span>3</span>
+        <h3>{% trans "Coordinate" %}</h3>
+        <p>{% trans "Reserve secretly, join shared gifts, and avoid duplicate presents." %}</p>
+    </div>
+    <div class="nc-flow-step">
+        <span>4</span>
+        <h3>{% trans "Close the loop" %}</h3>
+        <p>{% trans "Mark gifts offered, keep history, and settle shared costs." %}</p>
+    </div>
+</section>
+
 {% if not user.is_authenticated %}
-<div class="container py-5 py-md-6 text-center">
-    <h2 class="h2 fw-bold mb-3">{% trans "Ready to get started?" %}</h2>
-    <p class="text-muted lead mb-4">{% trans "Free, private, and no ads." %}</p>
-    <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm">
-        <i class="bi bi-person-plus me-2"></i>{% trans "Create an account" %}
+<section class="nc-welcome-cta">
+    <h2>{% trans "Start with one group" %}</h2>
+    <p>{% trans "Create a private space, invite your people, and let everyone build their list at their own pace." %}</p>
+    <a href="{% url 'register' %}" class="nc-btn nc-btn--primary">
+        <i class="bi bi-person-plus"></i>{% trans "Get started" %}
     </a>
-</div>
+</section>
 {% endif %}
-
 {% endblock %}
