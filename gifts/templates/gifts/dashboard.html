@@ -62,9 +62,9 @@
             {% for group in user_groups %}
                 {% cycle "nc-color-1" "nc-color-2" "nc-color-3" "nc-color-4" "nc-color-5" "nc-color-6" "nc-color-7" "nc-color-8" as group_color silent %}
                 <a href="{% url 'group_detail' group.id %}" class="nc-group-card">
-                    {% if group.image %}
+                    {% if group.display_image_url %}
                         <div class="nc-group-avatar" style="background:none; border-radius:14px; overflow:hidden; padding:0">
-                            <img src="{{ group.image.url }}" alt="{{ group.name }}"
+                            <img src="{{ group.display_image_url }}" alt="{{ group.name }}"
                                  style="width:100%; height:100%; object-fit:cover; border-radius:14px">
                         </div>
                     {% else %}

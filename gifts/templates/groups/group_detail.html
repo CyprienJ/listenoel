@@ -15,9 +15,9 @@
         <!-- My list -->
         <a href="{% url 'view_list' request.user.id %}?from_group={{ group.id }}"
            class="nc-member-item {% if request.user.id == user_being_viewed.id %}nc-member-item--active{% endif %}">
-            {% if request.user.avatar %}
+            {% if request.user.display_avatar_url %}
                 <div class="nc-member-avatar">
-                    <img src="{{ request.user.avatar.url }}" alt="{{ request.user.nickname }}">
+                    <img src="{{ request.user.display_avatar_url }}" alt="{{ request.user.nickname }}">
                 </div>
             {% else %}
                 <div class="nc-member-avatar" style="background: var(--nc-accent)">
@@ -60,9 +60,9 @@
                 {% cycle "nc-color-m1" "nc-color-m2" "nc-color-m3" "nc-color-m4" "nc-color-m5" "nc-color-m6" "nc-color-m7" "nc-color-m8" as member_color silent %}
                 <a href="{% url 'view_list' member.id %}?from_group={{ group.id }}"
                    class="nc-member-item {% if member.id == user_being_viewed.id %}nc-member-item--active{% endif %}">
-                    {% if member.avatar %}
+                    {% if member.display_avatar_url %}
                         <div class="nc-member-avatar">
-                            <img src="{{ member.avatar.url }}" alt="{{ member.nickname }}">
+                            <img src="{{ member.display_avatar_url }}" alt="{{ member.nickname }}">
                         </div>
                     {% else %}
                         <div class="nc-member-avatar {{ member_color }}">
@@ -178,8 +178,8 @@
                 {% if not user_being_viewed %}
                     <!-- Group overview -->
                     <div class="nc-group-overview">
-                        {% if group.image %}
-                            <img src="{{ group.image.url }}" class="nc-group-overview__cover" alt="{{ group.name }}">
+                        {% if group.display_image_url %}
+                            <img src="{{ group.display_image_url }}" class="nc-group-overview__cover" alt="{{ group.name }}">
                         {% endif %}
                         <div class="nc-group-overview__body">
                             <h2 class="nc-group-overview__title">{{ group.name }}</h2>

@@ -4,6 +4,7 @@ import uuid
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.templatetags.static import static
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_resized import ResizedImageField
@@ -32,8 +33,17 @@ class Group(models.Model):
     image = ResizedImageField(
         size=[1200, 400], crop=["middle", "center"], upload_to=get_group_image_path, quality=75, blank=True, null=True
     )
+    image_preset = models.CharField(max_length=255, blank=True)
     show_history = models.BooleanField(default=False)
     show_balance = models.BooleanField(default=False)
+
+    @property
+    def display_image_url(self):
+        if self.image:
+            return self.image.url
+        if self.image_preset:
+            return static(self.image_preset)
+        return ""
 
     @property
     def has_offered_gifts(self):
@@ -84,8 +94,17 @@ class User(AbstractUser):
     avatar = ResizedImageField(
         size=[200, 200], crop=["middle", "center"], upload_to=get_avatar_path, quality=80, blank=True, null=True
     )
+    avatar_preset = models.CharField(max_length=255, blank=True)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
+
+    @property
+    def display_avatar_url(self):
+        if self.avatar:
+            return self.avatar.url
+        if self.avatar_preset:
+            return static(self.avatar_preset)
+        return ""
 
     def save(self, *args, **kwargs):
         self.email = self.email.lower()

@@ -27,9 +27,9 @@
 
                     <div class="mb-3">
                         <div class="form-label small fw-bold text-muted">{% trans "Group Cover Image" %}</div>
-                        {% if group.image %}
+                        {% if group.display_image_url %}
                             <div class="d-flex align-items-center gap-3 mb-2">
-                                <img src="{{ group.image.url }}" alt="" style="width:56px;height:42px;object-fit:cover;border-radius:8px;border:1px solid var(--nc-border);">
+                                <img src="{{ group.display_image_url }}" alt="" style="width:56px;height:42px;object-fit:cover;border-radius:8px;border:1px solid var(--nc-border);">
                                 <span class="text-muted small">{% trans "Current image" %}</span>
                             </div>
                         {% endif %}

@@ -58,16 +58,26 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
     fieldsets = BaseUserAdmin.fieldsets + (
         (
             _("More information"),
-            {"fields": ("nickname", ("birthday_month", "birthday_day"), "is_verified", "is_managed", "avatar")},
+            {
+                "fields": (
+                    "nickname",
+                    ("birthday_month", "birthday_day"),
+                    "is_verified",
+                    "is_managed",
+                    "avatar",
+                    "avatar_preset",
+                )
+            },
         ),
     )
     filter_horizontal = ("groups", "user_permissions")
 
     @admin.display(description=_("Avatar"))
     def avatar_preview(self, obj):
-        if obj.avatar:
+        if obj.display_avatar_url:
             return format_html(
-                '<img src="{}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">', obj.avatar.url
+                '<img src="{}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">',
+                obj.display_avatar_url,
             )
         return "—"
 
@@ -98,7 +108,7 @@ class GroupAdmin(ModelAdmin):
     inlines = [ManagedMemberInline]
 
     fieldsets = (
-        (None, {"fields": ("name", "description", "image", "group_token")}),
+        (None, {"fields": ("name", "description", "image", "image_preset", "group_token")}),
         (_("Members"), {"fields": ("created_by", "members")}),
         (_("Options"), {"fields": ("show_history", "show_balance")}),
         (_("Dates"), {"fields": ("created_at",)}),
