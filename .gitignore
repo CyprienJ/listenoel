@@ -4,3 +4,5 @@ staticfiles
 db.sqlite3
 CLAUDE.md
 media
+__pycache__/
+*.pyc

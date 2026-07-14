@@ -1,5 +1,5 @@
 import calendar
-from datetime import date
+from datetime import date, timedelta
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -20,29 +20,30 @@ def one_month_after(day):
 
 
 class Command(BaseCommand):
-    help = "Send birthday and Christmas list reminders due one month from today"
+    help = "Send birthday reminders due two weeks from today and Christmas reminders due one month from today"
 
     def add_arguments(self, parser):
         parser.add_argument("--date", help="Override today's date (YYYY-MM-DD), primarily for operations and tests")
 
     def handle(self, *args, **options):
         today = date.fromisoformat(options["date"]) if options.get("date") else timezone.localdate()
-        target = one_month_after(today)
+        christmas_target = one_month_after(today)
+        birthday_target = today + timedelta(days=14)
         subscriptions = Subscription.objects.select_related("subscriber", "owner").filter(
             subscriber__is_active=True,
             subscriber__is_verified=True,
         )
         sent = 0
 
-        if target.month == 12 and target.day == 25:
-            sent += self._send(subscriptions.filter(christmas_reminder=True), "christmas", target)
+        if christmas_target.month == 12 and christmas_target.day == 25:
+            sent += self._send(subscriptions.filter(christmas_reminder=True), "christmas", christmas_target)
 
         birthday_subscriptions = subscriptions.filter(
             birthday_reminder=True,
-            owner__birthday__month=target.month,
-            owner__birthday__day=target.day,
+            owner__birthday_month=birthday_target.month,
+            owner__birthday_day=birthday_target.day,
         )
-        sent += self._send(birthday_subscriptions, "birthday", target)
+        sent += self._send(birthday_subscriptions, "birthday", birthday_target)
         self.stdout.write(self.style.SUCCESS(f"Sent {sent} event reminder(s)."))
 
     def _send(self, subscriptions, event, event_date):
@@ -74,7 +75,7 @@ class Command(BaseCommand):
                 "list_url": f"{base_url}{reverse('view_list', args=[owner.pk])}",
             }
             subject = (
-                _("%(name)s's birthday is in one month")
+                _("%(name)s's birthday is in two weeks")
                 if event == "birthday"
                 else _("Christmas is in one month: %(name)s's gift list")
             ) % {"name": owner.nickname}
