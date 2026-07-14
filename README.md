@@ -39,3 +39,7 @@ Le prototype de l'extension Firefox et ses instructions de développement se tro
 ## Notes de développement
 
 - À chaque ajout ou modification de texte visible par les utilisateurs, penser à mettre à jour les traductions Django (`locale/*/LC_MESSAGES/django.po`) puis recompiler les messages.
+
+## Licence
+
+Ce projet est distribué sous licence GNU Affero General Public License v3.0 ou ultérieure (`AGPL-3.0-or-later`). Consultez le fichier [LICENSE](LICENSE) pour le texte complet de la licence.
