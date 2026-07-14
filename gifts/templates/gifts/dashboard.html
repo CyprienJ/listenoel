@@ -103,6 +103,51 @@
             </div>
         </div>
     {% endif %}
+
+    {% if user_event_lists %}
+        <div class="nc-section-label nc-section-label--spaced">{% trans "My event lists" %} · {{ user_event_lists.count }}</div>
+        <div class="nc-groups-grid">
+            {% for event in user_event_lists %}
+                <a href="{% url 'event_detail' token=event.access_token %}" class="nc-group-card nc-group-card--event">
+                    <div class="nc-event-card-avatar">{% if event.is_secret_santa %}🎄{% else %}🎁{% endif %}</div>
+                    <div class="nc-group-card__name">{{ event.name }}</div>
+                    <div class="nc-group-card__meta">
+                        {% if event.event_date %}{{ event.event_date|date:"j M Y" }}{% else %}—{% endif %}
+                    </div>
+                </a>
+            {% endfor %}
+            <button type="button" class="nc-group-card--new"
+                    data-bs-toggle="modal" data-bs-target="#createGroupModal"
+                    onclick="setTimeout(function(){ selectCreateType('event'); }, 150)">
+                <i class="bi bi-plus-lg" style="font-size:18px"></i>
+                <span>{% trans "New" %}</span>
+            </button>
+        </div>
+    {% endif %}
+
+    {% if participating_event_lists %}
+        <div class="nc-section-label nc-section-label--spaced">{% trans "Event lists I'm following" %} · {{ participating_event_lists.count }}</div>
+        <div class="nc-groups-grid">
+            {% for event in participating_event_lists %}
+                <div class="nc-group-card-wrap">
+                    <a href="{% url 'event_detail' token=event.access_token %}" class="nc-group-card nc-group-card--event">
+                        <div class="nc-event-card-avatar">{% if event.is_secret_santa %}🎄{% else %}🎁{% endif %}</div>
+                        <div class="nc-group-card__name">{{ event.name }}</div>
+                        <div class="nc-group-card__meta">
+                            {{ event.owner.nickname }}{% if event.event_date %} · {{ event.event_date|date:"j M Y" }}{% endif %}
+                        </div>
+                    </a>
+                    <form method="post" action="{% url 'leave_event_list' token=event.access_token %}" class="nc-group-card-leave">
+                        {% csrf_token %}
+                        <button type="submit" class="nc-group-card-leave-btn"
+                                title="{% trans 'Remove from my dashboard' %}">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
         </aside>
 
         <section class="nc-dashboard-main">
@@ -282,51 +327,6 @@
         </div>
     {% endif %}
 
-    <!-- Event lists (owned) -->
-    {% if user_event_lists %}
-        <div class="nc-section-label">{% trans "My event lists" %} · {{ user_event_lists.count }}</div>
-        <div class="nc-groups-grid">
-            {% for event in user_event_lists %}
-                <a href="{% url 'event_detail' token=event.access_token %}" class="nc-group-card nc-group-card--event">
-                    <div class="nc-event-card-avatar">🎁</div>
-                    <div class="nc-group-card__name">{{ event.name }}</div>
-                    <div class="nc-group-card__meta">
-                        {% if event.event_date %}{{ event.event_date|date:"j M Y" }}{% else %}—{% endif %}
-                    </div>
-                </a>
-            {% endfor %}
-            <button type="button" class="nc-group-card--new"
-                    data-bs-toggle="modal" data-bs-target="#createGroupModal">
-                <i class="bi bi-plus-lg" style="font-size:18px"></i>
-                <span>{% trans "New" %}</span>
-            </button>
-        </div>
-    {% endif %}
-
-    <!-- Event lists (participating as visitor) -->
-    {% if participating_event_lists %}
-        <div class="nc-section-label">{% trans "Event lists I'm following" %} · {{ participating_event_lists.count }}</div>
-        <div class="nc-groups-grid">
-            {% for event in participating_event_lists %}
-                <div class="nc-group-card-wrap">
-                    <a href="{% url 'event_detail' token=event.access_token %}" class="nc-group-card nc-group-card--event">
-                        <div class="nc-event-card-avatar">🎁</div>
-                        <div class="nc-group-card__name">{{ event.name }}</div>
-                        <div class="nc-group-card__meta">
-                            {{ event.owner.nickname }}{% if event.event_date %} · {{ event.event_date|date:"j M Y" }}{% endif %}
-                        </div>
-                    </a>
-                    <form method="post" action="{% url 'leave_event_list' token=event.access_token %}" class="nc-group-card-leave">
-                        {% csrf_token %}
-                        <button type="submit" class="nc-group-card-leave-btn"
-                                title="{% trans 'Remove from my dashboard' %}">
-                            <i class="bi bi-x"></i>
-                        </button>
-                    </form>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
         </section>
     </div>
 
@@ -357,6 +357,11 @@
                             <span class="nc-create-type-icon">🎁</span>
                             <span class="nc-create-type-label">{% trans "Event list" %}</span>
                             <span class="nc-create-type-desc">{% trans "Public list, anyone with the link can reserve" %}</span>
+                        </button>
+                        <button type="button" class="nc-create-type-card" onclick="selectCreateType('secret_santa')">
+                            <span class="nc-create-type-icon">🎄</span>
+                            <span class="nc-create-type-label">{% trans "Secret Santa" %}</span>
+                            <span class="nc-create-type-desc">{% trans "Draw names, set a budget, manage exclusions" %}</span>
                         </button>
                     </div>
                 </div>
@@ -390,6 +395,7 @@
                 <!-- Step 2b: Event list form -->
                 <form id="createStep2Event" class="d-none" method="post" action="{% url 'create_event_list' %}">
                     {% csrf_token %}
+                    <input type="hidden" name="mode" id="eventModeInput" value="wishlist">
                     <div class="modal-body">
                         <button type="button" class="btn btn-link btn-sm p-0 mb-3 text-muted"
                                 onclick="backToStep1()">
@@ -403,6 +409,14 @@
                         <div class="mb-3">
                             <label for="eventDateInput" class="form-label" id="eventDateLabel">{% trans "Date" %} <span class="text-muted small">({% trans "optional" %})</span></label>
                             <input type="date" name="event_date" class="form-control" id="eventDateInput">
+                        </div>
+                        <div class="mb-3 d-none" id="eventBudgetGroup">
+                            <label for="eventBudgetInput" class="form-label">{% trans "Max budget" %} <span class="text-muted small">({% trans "optional" %})</span></label>
+                            <div class="input-group">
+                                <input type="number" name="budget_max" class="form-control" id="eventBudgetInput"
+                                       min="0" step="0.01" placeholder="30">
+                                <span class="input-group-text">EUR</span>
+                            </div>
                         </div>
                         <div class="mb-1">
                             <label for="eventDescInput" class="form-label">{% trans "Description" %} <span class="text-muted small">({% trans "optional" %})</span></label>
@@ -458,6 +472,15 @@
             if (type === 'classic') {
                 document.getElementById('createStep2Classic').classList.remove('d-none');
             } else {
+                const isSecretSanta = type === 'secret_santa';
+                document.getElementById('eventModeInput').value = isSecretSanta ? 'secret_santa' : 'wishlist';
+                document.getElementById('eventBudgetGroup').classList.toggle('d-none', !isSecretSanta);
+                document.getElementById('eventNameLabel').textContent = isSecretSanta
+                    ? "{% trans 'Secret Santa name' %}"
+                    : "{% trans 'List name' %}";
+                document.getElementById('eventNameInput').placeholder = isSecretSanta
+                    ? "{% trans 'e.g. Family Christmas' %}"
+                    : "";
                 document.getElementById('createStep2Event').classList.remove('d-none');
             }
         }
@@ -465,6 +488,8 @@
         function backToStep1() {
             document.getElementById('createStep2Classic').classList.add('d-none');
             document.getElementById('createStep2Event').classList.add('d-none');
+            document.getElementById('eventModeInput').value = 'wishlist';
+            document.getElementById('eventBudgetGroup').classList.add('d-none');
             document.getElementById('createStep1').classList.remove('d-none');
             document.getElementById('createStep1Footer').classList.remove('d-none');
         }

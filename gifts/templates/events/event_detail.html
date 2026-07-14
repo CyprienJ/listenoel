@@ -15,7 +15,7 @@
     {% endif %}
     <div class="nc-event-cover__overlay">
         <div class="nc-event-cover__badge">
-            🎁 {% trans "Event list" %}
+            {% if event.is_secret_santa %}🎄 {% trans "Secret Santa" %}{% else %}🎁 {% trans "Event list" %}{% endif %}
         </div>
         <h1 class="nc-event-cover__title">{{ event.name }}</h1>
     </div>
@@ -58,6 +58,15 @@
             </div>
         </div>
         {% endif %}
+        {% if event.budget_max %}
+        <div class="nc-event-info-row">
+            <div class="nc-event-info-label">{% trans "Max budget" %}</div>
+            <div class="nc-event-info-date">
+                <i class="bi bi-cash-coin"></i>
+                {{ event.budget_max }} EUR
+            </div>
+        </div>
+        {% endif %}
 
     </div>
 
@@ -74,6 +83,159 @@
     </div>
     {% endif %}
 </div>
+
+{% if event.is_secret_santa %}
+<section class="nc-secret-santa-panel">
+    <div class="nc-secret-santa-panel__header">
+        <div>
+            <div class="nc-event-info-label">{% trans "Christmas draw" %}</div>
+            <h2>{% trans "Secret Santa" %}</h2>
+        </div>
+        {% if is_owner %}
+        <form method="post" action="{% url 'draw_secret_santa' token=event.access_token %}">
+            {% csrf_token %}
+            <button type="submit" class="nc-btn nc-btn--primary nc-btn--sm">
+                <i class="bi bi-shuffle"></i>
+                {% if secret_santa_assignments %}{% trans "Run draw again" %}{% else %}{% trans "Run draw" %}{% endif %}
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    <div class="nc-secret-santa-grid">
+        <div class="nc-secret-santa-box">
+            <div class="nc-event-info-label">{% trans "My draw" %}</div>
+            {% if my_secret_santa_assignment %}
+                <div class="nc-secret-santa-target">
+                    <span class="nc-event-avatar-sm">{{ my_secret_santa_assignment.receiver_name|first|upper }}</span>
+                    <strong>{{ my_secret_santa_assignment.receiver_name }}</strong>
+                </div>
+                {% if my_secret_santa_assignment.receiver_has_wish_list %}
+                    <a href="{% url 'view_list' user_id=my_secret_santa_assignment.receiver.id %}" class="nc-event-gift-link">
+                        <i class="bi bi-list-stars"></i> {% trans "View wish list" %}
+                    </a>
+                {% else %}
+                    <p class="nc-event-info-text">{% trans "This participant does not have a wish list." %}</p>
+                {% endif %}
+            {% elif user.is_authenticated %}
+                <p class="nc-event-info-text">{% trans "No draw has been run for you yet." %}</p>
+            {% else %}
+                <p class="nc-event-info-text">{% trans "Log in to see your Secret Santa draw." %}</p>
+            {% endif %}
+        </div>
+
+        <div class="nc-secret-santa-box">
+            <div class="nc-event-info-label">{% trans "Participants" %}</div>
+            <div class="nc-event-participant-list">
+                {% for participant in secret_santa_participant_choices %}
+                    <span class="nc-event-participant-chip">
+                        <span class="nc-event-avatar-sm">{{ participant.name|first|upper }}</span>
+                        {{ participant.name }}
+                        {% if participant.kind == "guest" %}
+                            <span class="nc-event-hidden-badge">{% trans "Guest" %}</span>
+                        {% endif %}
+                    </span>
+                {% empty %}
+                    <span class="nc-event-info-text">{% trans "No participants yet." %}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {% if is_owner %}
+    <div class="nc-secret-santa-admin">
+        <div class="nc-secret-santa-box">
+            <div class="nc-event-info-label">{% trans "Guest participants" %}</div>
+            <form method="post" action="{% url 'add_secret_santa_guest_participant' token=event.access_token %}" class="nc-secret-santa-form">
+                {% csrf_token %}
+                <label for="secretSantaGuestName" class="visually-hidden">{% trans "Name" %}</label>
+                <input type="text" id="secretSantaGuestName" name="name" class="form-control form-control-sm"
+                       placeholder="{% trans 'Name' %}" maxlength="100" required>
+                <button type="submit" class="nc-btn nc-btn--ghost nc-btn--sm">
+                    <i class="bi bi-plus-lg"></i>
+                </button>
+            </form>
+            <p class="nc-event-info-text mb-2">
+                {% trans "Guest participants are included in the draw without having a wish list. They cannot draw the event owner by default." %}
+            </p>
+            <div class="nc-secret-santa-exclusions">
+                {% for participant in secret_santa_participant_choices %}
+                    {% if participant.kind == "guest" %}
+                    <form method="post"
+                          action="{% url 'delete_secret_santa_guest_participant' token=event.access_token guest_id=participant.guest.id %}"
+                          class="nc-secret-santa-exclusion">
+                        {% csrf_token %}
+                        <span>{{ participant.name }}</span>
+                        <button type="submit" class="nc-event-icon-btn nc-event-icon-btn--sm" title="{% trans 'Delete' %}">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="nc-secret-santa-box">
+            <div class="nc-event-info-label">{% trans "Exclusions" %}</div>
+            <form method="post" action="{% url 'add_secret_santa_exclusion' token=event.access_token %}" class="nc-secret-santa-form">
+                {% csrf_token %}
+                <label for="secretSantaExclusionGiver" class="visually-hidden">{% trans "Who" %}</label>
+                <select id="secretSantaExclusionGiver" name="giver" class="form-select form-select-sm" required>
+                    <option value="">{% trans "Who" %}</option>
+                    {% for participant in secret_santa_participant_choices %}
+                        <option value="{{ participant.key }}">{{ participant.name }}</option>
+                    {% endfor %}
+                </select>
+                <span class="nc-secret-santa-form__text">{% trans "must not draw" %}</span>
+                <label for="secretSantaExclusionReceiver" class="visually-hidden">{% trans "whom" %}</label>
+                <select id="secretSantaExclusionReceiver" name="receiver" class="form-select form-select-sm" required>
+                    <option value="">{% trans "whom" %}</option>
+                    {% for participant in secret_santa_participant_choices %}
+                        <option value="{{ participant.key }}">{{ participant.name }}</option>
+                    {% endfor %}
+                </select>
+                <label class="form-check nc-secret-santa-check">
+                    <input class="form-check-input" type="checkbox" name="both_directions" value="1" checked>
+                    <span class="form-check-label">{% trans "both directions" %}</span>
+                </label>
+                <button type="submit" class="nc-btn nc-btn--ghost nc-btn--sm">
+                    <i class="bi bi-plus-lg"></i>
+                </button>
+            </form>
+
+            <div class="nc-secret-santa-exclusions">
+                {% for exclusion in secret_santa_exclusions %}
+                    <form method="post"
+                          action="{% url 'delete_secret_santa_exclusion' token=event.access_token exclusion_id=exclusion.id %}"
+                          class="nc-secret-santa-exclusion">
+                        {% csrf_token %}
+                        <span>{{ exclusion.giver_name }} → {{ exclusion.receiver_name }}</span>
+                        <button type="submit" class="nc-event-icon-btn nc-event-icon-btn--sm" title="{% trans 'Delete' %}">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </form>
+                {% empty %}
+                    <p class="nc-event-info-text">{% trans "No exclusions configured." %}</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if secret_santa_guest_assignments %}
+        <div class="nc-secret-santa-box">
+            <div class="nc-event-info-label">{% trans "Guest draws" %}</div>
+            <div class="nc-secret-santa-exclusions">
+                {% for assignment in secret_santa_guest_assignments %}
+                    <div class="nc-secret-santa-exclusion">
+                        <span>{{ assignment.giver_name }} → <strong>{{ assignment.receiver_name }}</strong></span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</section>
+{% endif %}
 
 <!-- ── WISHLIST ───────────────────────────────────────────────────────────── -->
 <div class="nc-event-wishlist">
@@ -521,6 +683,16 @@
                         <input type="date" id="editInfoDate" name="event_date" class="form-control"
                                value="{{ event.event_date|date:'Y-m-d'|default:'' }}">
                     </div>
+                    {% if event.is_secret_santa %}
+                    <div class="mb-3">
+                        <label for="editInfoBudget" class="form-label">{% trans "Max budget" %} <span class="text-muted small">({% trans "optional" %})</span></label>
+                        <div class="input-group">
+                            <input type="number" id="editInfoBudget" name="budget_max" class="form-control"
+                                   min="0" step="0.01" value="{{ event.budget_max|default:'' }}">
+                            <span class="input-group-text">EUR</span>
+                        </div>
+                    </div>
+                    {% endif %}
                     <div class="mb-1">
                         <label for="editInfoDesc" class="form-label">{% trans "Description" %} <span class="text-muted small">({% trans "optional" %})</span></label>
                         <textarea id="editInfoDesc" name="description" class="form-control" rows="3"

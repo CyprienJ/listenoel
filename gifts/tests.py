@@ -27,6 +27,9 @@ from .models import (
     GuestReservation,
     ManagedMember,
     Reservation,
+    SecretSantaAssignment,
+    SecretSantaExclusion,
+    SecretSantaGuestParticipant,
     Subscription,
     User,
 )
@@ -1540,6 +1543,125 @@ class EventDetailViewTest(TestCase):
     def test_invalid_token_returns_404(self):
         response = self.client.get(reverse("event_detail", kwargs={"token": "INVALID99"}))
         self.assertEqual(response.status_code, 404)
+
+
+class SecretSantaEventTest(TestCase):
+    def setUp(self):
+        self.user1, self.user2, self.user3 = create_users()
+        self.event = EventList.objects.create(
+            name="Christmas",
+            owner=self.user1,
+            mode=EventList.MODE_SECRET_SANTA,
+            budget_max=Decimal("30.00"),
+        )
+        self.event.participants.add(self.user2, self.user3)
+
+    def test_create_secret_santa_event_with_budget(self):
+        self.client.force_login(self.user1)
+        response = self.client.post(
+            reverse("create_event_list"),
+            {
+                "name": "Family Christmas",
+                "mode": "secret_santa",
+                "budget_max": "45,50",
+                "event_date": "2026-12-25",
+            },
+        )
+        event = EventList.objects.get(name="Family Christmas")
+        self.assertRedirects(response, reverse("event_detail", kwargs={"token": event.access_token}))
+        self.assertEqual(event.mode, EventList.MODE_SECRET_SANTA)
+        self.assertEqual(event.budget_max, Decimal("45.50"))
+
+    def test_owner_can_add_bidirectional_exclusion(self):
+        self.client.force_login(self.user1)
+        response = self.client.post(
+            reverse("add_secret_santa_exclusion", kwargs={"token": self.event.access_token}),
+            {"giver": self.user1.id, "receiver": self.user2.id, "both_directions": "1"},
+        )
+        self.assertRedirects(response, reverse("event_detail", kwargs={"token": self.event.access_token}))
+        self.assertTrue(
+            SecretSantaExclusion.objects.filter(event=self.event, giver=self.user1, receiver=self.user2).exists()
+        )
+        self.assertTrue(
+            SecretSantaExclusion.objects.filter(event=self.event, giver=self.user2, receiver=self.user1).exists()
+        )
+
+    def test_non_owner_cannot_add_exclusion(self):
+        self.client.force_login(self.user2)
+        response = self.client.post(
+            reverse("add_secret_santa_exclusion", kwargs={"token": self.event.access_token}),
+            {"giver": self.user1.id, "receiver": self.user2.id},
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_draw_creates_one_assignment_per_participant(self):
+        SecretSantaExclusion.objects.create(event=self.event, giver=self.user1, receiver=self.user2)
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse("draw_secret_santa", kwargs={"token": self.event.access_token}))
+        self.assertRedirects(response, reverse("event_detail", kwargs={"token": self.event.access_token}))
+
+        assignments = list(SecretSantaAssignment.objects.filter(event=self.event))
+        self.assertEqual(len(assignments), 3)
+        self.assertEqual(
+            {assignment.giver_id for assignment in assignments}, {self.user1.id, self.user2.id, self.user3.id}
+        )
+        self.assertEqual(
+            {assignment.receiver_id for assignment in assignments}, {self.user1.id, self.user2.id, self.user3.id}
+        )
+        self.assertFalse(
+            SecretSantaAssignment.objects.filter(event=self.event, giver=self.user1, receiver=self.user2).exists()
+        )
+        self.assertFalse(any(assignment.giver_id == assignment.receiver_id for assignment in assignments))
+
+    def test_draw_fails_when_constraints_are_impossible(self):
+        self.event.participants.remove(self.user3)
+        SecretSantaExclusion.objects.create(event=self.event, giver=self.user1, receiver=self.user2)
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse("draw_secret_santa", kwargs={"token": self.event.access_token}))
+        self.assertRedirects(response, reverse("event_detail", kwargs={"token": self.event.access_token}))
+        self.assertFalse(SecretSantaAssignment.objects.filter(event=self.event).exists())
+
+    def test_assignment_allows_receiver_wish_list_access_without_common_group(self):
+        Gift.objects.create(owner=self.user2, created_by=self.user2, title="Book")
+        SecretSantaAssignment.objects.create(event=self.event, giver=self.user1, receiver=self.user2)
+        self.client.force_login(self.user1)
+        response = self.client.get(reverse("view_list", args=[self.user2.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Book")
+
+    def test_owner_can_add_guest_participant_with_default_owner_exclusion(self):
+        self.client.force_login(self.user1)
+        response = self.client.post(
+            reverse("add_secret_santa_guest_participant", kwargs={"token": self.event.access_token}),
+            {"name": "Grandma"},
+        )
+        self.assertRedirects(response, reverse("event_detail", kwargs={"token": self.event.access_token}))
+        guest = SecretSantaGuestParticipant.objects.get(event=self.event, name="Grandma")
+        self.assertTrue(
+            SecretSantaExclusion.objects.filter(event=self.event, giver_guest=guest, receiver=self.user1).exists()
+        )
+
+    def test_guest_participant_is_included_in_draw_and_cannot_draw_owner_by_default(self):
+        guest = SecretSantaGuestParticipant.objects.create(event=self.event, name="Grandma")
+        SecretSantaExclusion.objects.create(event=self.event, giver_guest=guest, receiver=self.user1)
+        self.client.force_login(self.user1)
+        response = self.client.post(reverse("draw_secret_santa", kwargs={"token": self.event.access_token}))
+        self.assertRedirects(response, reverse("event_detail", kwargs={"token": self.event.access_token}))
+
+        guest_assignment = SecretSantaAssignment.objects.get(event=self.event, giver_guest=guest)
+        self.assertNotEqual(guest_assignment.receiver, self.user1)
+        self.assertEqual(SecretSantaAssignment.objects.filter(event=self.event).count(), 4)
+
+    def test_owner_context_includes_guest_assignments_only(self):
+        guest = SecretSantaGuestParticipant.objects.create(event=self.event, name="Grandma")
+        SecretSantaAssignment.objects.create(event=self.event, giver_guest=guest, receiver=self.user2)
+        SecretSantaAssignment.objects.create(event=self.event, giver=self.user1, receiver=self.user3)
+        self.client.force_login(self.user1)
+        response = self.client.get(reverse("event_detail", kwargs={"token": self.event.access_token}))
+        self.assertEqual(
+            list(response.context["secret_santa_guest_assignments"]),
+            [guest.secret_santa_assignments_as_giver.get()],
+        )
 
 
 class EventGiftManagementTest(TestCase):

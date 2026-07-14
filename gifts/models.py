@@ -246,10 +246,19 @@ def get_event_image_path(instance, filename):
 
 
 class EventList(models.Model):
+    MODE_WISHLIST = "wishlist"
+    MODE_SECRET_SANTA = "secret_santa"
+    MODE_CHOICES = (
+        (MODE_WISHLIST, _("Event wishlist")),
+        (MODE_SECRET_SANTA, _("Christmas / Secret Santa")),
+    )
+
     name = models.CharField(max_length=200)
     owner = models.ForeignKey("User", on_delete=models.CASCADE, related_name="event_lists")
     description = models.TextField(blank=True)
     event_date = models.DateField(null=True, blank=True)
+    mode = models.CharField(max_length=20, choices=MODE_CHOICES, default=MODE_WISHLIST)
+    budget_max = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
     image = ResizedImageField(
         size=[1200, 400], crop=["middle", "center"], upload_to=get_event_image_path, quality=75, blank=True, null=True
     )
@@ -267,6 +276,105 @@ class EventList(models.Model):
         if not self.access_token:
             self.access_token = uuid.uuid4().hex[:8].upper()
         super().save(*args, **kwargs)
+
+    @property
+    def is_secret_santa(self):
+        return self.mode == self.MODE_SECRET_SANTA
+
+    def secret_santa_participants(self):
+        participant_ids = list(self.participants.values_list("id", flat=True))
+        if self.owner_id not in participant_ids:
+            participant_ids.append(self.owner_id)
+        return User.objects.filter(id__in=participant_ids).order_by("nickname", "email")
+
+
+class SecretSantaGuestParticipant(models.Model):
+    event = models.ForeignKey(EventList, on_delete=models.CASCADE, related_name="secret_santa_guest_participants")
+    name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ["name"]
+        constraints = [
+            models.UniqueConstraint(fields=("event", "name"), name="unique_secret_santa_guest_participant"),
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.event.name})"
+
+
+def _secret_santa_user_fk(kind, role):
+    return models.ForeignKey(
+        "User",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name=f"secret_santa_{kind}_as_{role}",
+    )
+
+
+def _secret_santa_guest_fk(kind, role):
+    return models.ForeignKey(
+        SecretSantaGuestParticipant,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name=f"secret_santa_{kind}_as_{role}",
+    )
+
+
+class SecretSantaParticipantPairMixin:
+    @staticmethod
+    def _participant_key(user_id, guest_id):
+        return f"user:{user_id}" if user_id else f"guest:{guest_id}"
+
+    @staticmethod
+    def _participant_name(user, guest):
+        return user.nickname if user else guest.name
+
+    @property
+    def giver_key(self):
+        return self._participant_key(self.giver_id, self.giver_guest_id)
+
+    @property
+    def receiver_key(self):
+        return self._participant_key(self.receiver_id, self.receiver_guest_id)
+
+    @property
+    def giver_name(self):
+        return self._participant_name(self.giver, self.giver_guest)
+
+    @property
+    def receiver_name(self):
+        return self._participant_name(self.receiver, self.receiver_guest)
+
+
+class SecretSantaExclusion(SecretSantaParticipantPairMixin, models.Model):
+    event = models.ForeignKey(EventList, on_delete=models.CASCADE, related_name="secret_santa_exclusions")
+    giver = _secret_santa_user_fk("exclusions", "giver")
+    receiver = _secret_santa_user_fk("exclusions", "receiver")
+    giver_guest = _secret_santa_guest_fk("exclusions", "giver")
+    receiver_guest = _secret_santa_guest_fk("exclusions", "receiver")
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.event.name}: {self.giver_name} !→ {self.receiver_name}"
+
+
+class SecretSantaAssignment(SecretSantaParticipantPairMixin, models.Model):
+    event = models.ForeignKey(EventList, on_delete=models.CASCADE, related_name="secret_santa_assignments")
+    giver = _secret_santa_user_fk("assignments", "giver")
+    receiver = _secret_santa_user_fk("assignments", "receiver")
+    giver_guest = _secret_santa_guest_fk("assignments", "giver")
+    receiver_guest = _secret_santa_guest_fk("assignments", "receiver")
+    created_at = models.DateTimeField(default=timezone.now)
+
+    @property
+    def receiver_has_wish_list(self):
+        return bool(self.receiver_id)
+
+    def __str__(self):
+        return f"{self.event.name}: {self.giver_name} → {self.receiver_name}"
 
 
 class GuestReservation(models.Model):

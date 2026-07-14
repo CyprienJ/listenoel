@@ -859,6 +859,7 @@ body {
     text-transform: uppercase;
     margin-bottom: 14px;
 }
+.nc-section-label--spaced { margin-top: 4px; }
 
 /* Groups grid */
 .nc-groups-grid {
@@ -892,6 +893,15 @@ body {
     border-radius: 11px;
     margin-bottom: 0;
     font-size: 15px;
+    grid-row: span 2;
+}
+
+.nc-dashboard-groups-sidebar .nc-event-card-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    margin-bottom: 0;
+    font-size: 17px;
     grid-row: span 2;
 }
 
@@ -2044,6 +2054,55 @@ body {
 .nc-event-info-row { display: flex; flex-direction: column; gap: 4px; }
 .nc-event-info-date { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 600; }
 
+/* ── Secret Santa panel ──────────────────────────────────────── */
+.nc-secret-santa-panel {
+    padding: 16px 24px;
+    background: var(--nc-bg);
+    border-bottom: 1px solid var(--nc-border);
+}
+.nc-secret-santa-panel__header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin-bottom: 12px;
+}
+.nc-secret-santa-panel__header h2 {
+    font-size: 18px; line-height: 1.2; margin: 0; font-weight: 700;
+    color: var(--nc-text);
+}
+.nc-secret-santa-grid,
+.nc-secret-santa-admin {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    gap: 12px; margin-top: 12px;
+}
+.nc-secret-santa-box {
+    background: var(--nc-white);
+    border: 1px solid var(--nc-border);
+    border-radius: 8px;
+    padding: 14px;
+}
+.nc-secret-santa-target {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 15px; margin: 2px 0 8px;
+}
+.nc-secret-santa-form {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+.nc-secret-santa-form .form-select { width: auto; min-width: 150px; }
+.nc-secret-santa-form__text { font-size: 12px; color: var(--nc-text-muted); }
+.nc-secret-santa-check {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; color: var(--nc-text-sub); margin: 0;
+}
+.nc-secret-santa-exclusions {
+    display: flex; flex-direction: column; gap: 6px;
+    font-size: 12.5px; color: var(--nc-text-sub);
+}
+.nc-secret-santa-exclusion {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px; padding: 6px 8px;
+    border-radius: 7px; background: var(--nc-bg-sub);
+}
+
 /* ── Members button ──────────────────────────────────────────── */
 .nc-event-members-btn {
     background: none; border: none; cursor: pointer; padding: 0;
@@ -2282,5 +2341,8 @@ body {
     .nc-event-info-strip__meta { min-width: unset; }
     .nc-event-cover__title { font-size: 19px; }
     .nc-event-gift-desc { display: none; }
+    .nc-secret-santa-grid,
+    .nc-secret-santa-admin { grid-template-columns: 1fr; }
+    .nc-secret-santa-panel__header { align-items: flex-start; flex-direction: column; }
     .nc-create-type-grid { grid-template-columns: 1fr; }
 }

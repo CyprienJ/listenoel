@@ -2791,6 +2791,116 @@ msgstr "Données de remboursement invalides."
 msgid "Settlement recorded."
 msgstr "Remboursement enregistré."
 
+msgid "Event wishlist"
+msgstr "Liste d'événement"
+
+msgid "Christmas / Secret Santa"
+msgstr "Noël / Secret Santa"
+
+msgid "Secret Santa"
+msgstr "Secret Santa"
+
+msgid "Max budget"
+msgstr "Budget max"
+
+msgid "Christmas draw"
+msgstr "Tirage de Noël"
+
+msgid "Run draw again"
+msgstr "Relancer le tirage"
+
+msgid "Run draw"
+msgstr "Lancer le tirage"
+
+msgid "My draw"
+msgstr "Mon tirage"
+
+msgid "View wish list"
+msgstr "Voir la liste de souhaits"
+
+msgid "No draw has been run for you yet."
+msgstr "Aucun tirage n'a encore été lancé pour vous."
+
+msgid "Log in to see your Secret Santa draw."
+msgstr "Connectez-vous pour voir votre tirage Secret Santa."
+
+msgid "No participants yet."
+msgstr "Aucun participant pour le moment."
+
+msgid "Exclusions"
+msgstr "Exclusions"
+
+msgid "Who"
+msgstr "Qui"
+
+msgid "must not draw"
+msgstr "ne doit pas tomber sur"
+
+msgid "whom"
+msgstr "qui"
+
+msgid "both directions"
+msgstr "dans les deux sens"
+
+msgid "No exclusions configured."
+msgstr "Aucune exclusion configurée."
+
+msgid "Secret Santa name"
+msgstr "Nom du Secret Santa"
+
+msgid "e.g. Family Christmas"
+msgstr "ex. Noël en famille"
+
+msgid "Draw names, set a budget, manage exclusions"
+msgstr "Tirez au sort, fixez un budget, gérez les exclusions"
+
+msgid "Please choose two participants."
+msgstr "Veuillez choisir deux participants."
+
+msgid "This exclusion is not valid."
+msgstr "Cette exclusion n'est pas valide."
+
+msgid "Exclusion added. Run the draw again when ready."
+msgstr "Exclusion ajoutée. Relancez le tirage quand vous êtes prêt."
+
+msgid "Exclusion deleted. Run the draw again when ready."
+msgstr "Exclusion supprimée. Relancez le tirage quand vous êtes prêt."
+
+msgid "The draw is impossible with the current participants and exclusions."
+msgstr "Le tirage est impossible avec les participants et exclusions actuels."
+
+msgid "Secret Santa draw completed."
+msgstr "Tirage Secret Santa terminé."
+
+msgid "Guest name is required."
+msgstr "Le nom de l'invité est requis."
+
+msgid "Guest participant added."
+msgstr "Participant invité ajouté."
+
+msgid "Guest participant deleted."
+msgstr "Participant invité supprimé."
+
+msgid "This participant does not have a wish list."
+msgstr "Ce participant n'a pas de liste de souhaits."
+
+msgid "Guest"
+msgstr "Invité"
+
+msgid "Guest participants"
+msgstr "Participants invités"
+
+msgid ""
+"Guest participants are included in the draw without having a wish list. They "
+"cannot draw the event owner by default."
+msgstr ""
+"Les participants invités sont inclus dans le tirage sans avoir de liste de "
+"souhaits. Par défaut, ils ne peuvent pas tomber sur le propriétaire de "
+"l'événement."
+
+msgid "Guest draws"
+msgstr "Tirages des invités"
+
 #~ msgid "Gift lists, reinvented"
 #~ msgstr "Les listes de cadeaux, réinventées"
 

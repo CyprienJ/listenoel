@@ -1,17 +1,29 @@
 import contextlib
 import json
+import secrets
 import uuid
 from datetime import date
 from decimal import Decimal, InvalidOperation
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
-from .models import EventList, Gift, GuestReservation
+from .models import (
+    EventList,
+    Gift,
+    GuestReservation,
+    SecretSantaAssignment,
+    SecretSantaExclusion,
+    SecretSantaGuestParticipant,
+)
+
+_SECURE_RANDOM = secrets.SystemRandom()
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -34,6 +46,90 @@ def _get_guest_identity(request):
     name = request.session.get("guest_name", "")
     sk = request.session.session_key or ""
     return None, name, sk
+
+
+def _parse_money(value):
+    value = (value or "").strip().replace(",", ".")
+    if not value:
+        return None
+    try:
+        amount = Decimal(value)
+    except InvalidOperation:
+        return None
+    if amount < 0:
+        return None
+    return amount
+
+
+def _draw_secret_santa(participant_keys, exclusions):
+    if len(participant_keys) < 2:
+        return None
+
+    excluded_pairs = set(exclusions)
+    givers = participant_keys[:]
+    _SECURE_RANDOM.shuffle(givers)
+    receivers = participant_keys[:]
+    _SECURE_RANDOM.shuffle(receivers)
+    assignments = {}
+
+    def assign(index):
+        if index == len(givers):
+            return True
+        giver_key = givers[index]
+        candidates = receivers[:]
+        _SECURE_RANDOM.shuffle(candidates)
+        candidates.sort(
+            key=lambda receiver_key: (giver_key == receiver_key, (giver_key, receiver_key) in excluded_pairs)
+        )
+        for receiver_key in candidates:
+            if receiver_key == giver_key or (giver_key, receiver_key) in excluded_pairs:
+                continue
+            assignments[giver_key] = receiver_key
+            receivers.remove(receiver_key)
+            if assign(index + 1):
+                return True
+            receivers.append(receiver_key)
+            del assignments[giver_key]
+        return False
+
+    return assignments if assign(0) else None
+
+
+def _participant_key(participant):
+    if isinstance(participant, SecretSantaGuestParticipant):
+        return f"guest:{participant.id}"
+    return f"user:{participant.id}"
+
+
+def _secret_santa_participant_choices(event):
+    users = list(event.secret_santa_participants())
+    guests = list(event.secret_santa_guest_participants.order_by("name"))
+    choices = [
+        {"key": _participant_key(user), "name": user.nickname, "kind": "user", "user": user, "guest": None}
+        for user in users
+    ]
+    choices.extend(
+        {"key": _participant_key(guest), "name": guest.name, "kind": "guest", "user": None, "guest": guest}
+        for guest in guests
+    )
+    return choices
+
+
+def _participant_kwargs(key, prefix):
+    key = _normalize_participant_key(key)
+    kind, raw_id = (key or "").split(":", 1)
+    if kind not in {"user", "guest"}:
+        raise ValueError
+    participant_id = int(raw_id)
+    if kind == "user":
+        return {f"{prefix}_id": participant_id, f"{prefix}_guest_id": None}
+    return {f"{prefix}_id": None, f"{prefix}_guest_id": participant_id}
+
+
+def _normalize_participant_key(key):
+    if key and ":" not in key:
+        return f"user:{key}"
+    return key
 
 
 # ── Public views ─────────────────────────────────────────────────────────────
@@ -86,6 +182,30 @@ def event_detail(request, token):
     if request.user.is_authenticated and not is_owner:
         event.participants.add(request.user)
 
+    secret_santa_participants = []
+    secret_santa_participant_choices = []
+    secret_santa_exclusions = []
+    secret_santa_assignments = []
+    secret_santa_guest_assignments = []
+    my_secret_santa_assignment = None
+    if event.is_secret_santa:
+        secret_santa_participants = list(event.secret_santa_participants())
+        secret_santa_participant_choices = _secret_santa_participant_choices(event)
+        secret_santa_exclusions = list(
+            event.secret_santa_exclusions.select_related("giver", "receiver", "giver_guest", "receiver_guest")
+        )
+        secret_santa_assignments = list(
+            event.secret_santa_assignments.select_related("giver", "receiver", "giver_guest", "receiver_guest")
+        )
+        secret_santa_guest_assignments = [
+            assignment for assignment in secret_santa_assignments if assignment.giver_guest_id
+        ]
+        if request.user.is_authenticated:
+            my_secret_santa_assignment = next(
+                (assignment for assignment in secret_santa_assignments if assignment.giver_id == request.user.id),
+                None,
+            )
+
     return render(
         request,
         "events/event_detail.html",
@@ -101,6 +221,12 @@ def event_detail(request, token):
             "hidden_count": event.gifts.filter(is_hidden=True).count() if is_owner else 0,
             "reserved_count": sum(1 for g in gifts_list if g["my_reservation"] or g["other_reservations"]),
             "has_my_reservations": any(g["my_reservation"] for g in gifts_list),
+            "secret_santa_participants": secret_santa_participants,
+            "secret_santa_participant_choices": secret_santa_participant_choices,
+            "secret_santa_exclusions": secret_santa_exclusions,
+            "secret_santa_assignments": secret_santa_assignments,
+            "secret_santa_guest_assignments": secret_santa_guest_assignments,
+            "my_secret_santa_assignment": my_secret_santa_assignment,
         },
     )
 
@@ -172,6 +298,9 @@ def create_event_list(request):
     name = request.POST.get("name", "").strip()
     description = request.POST.get("description", "").strip()
     date_str = request.POST.get("event_date", "").strip()
+    mode = request.POST.get("mode", EventList.MODE_WISHLIST)
+    if mode not in dict(EventList.MODE_CHOICES):
+        mode = EventList.MODE_WISHLIST
 
     if not name:
         return redirect("dashboard")
@@ -180,6 +309,8 @@ def create_event_list(request):
         name=name,
         owner=request.user,
         description=description,
+        mode=mode,
+        budget_max=_parse_money(request.POST.get("budget_max")),
     )
     if date_str:
         with contextlib.suppress(ValueError):
@@ -358,7 +489,128 @@ def edit_event_info(request, token):
             event.event_date = date.fromisoformat(date_str)
     else:
         event.event_date = None
+    event.budget_max = _parse_money(request.POST.get("budget_max"))
     event.save()
+    return redirect("event_detail", token=event.access_token)
+
+
+@login_required
+@require_POST
+def add_secret_santa_guest_participant(request, token):
+    event = _get_event_or_404(token)
+    err = _check_owner(request, event)
+    if err:
+        return err
+    if not event.is_secret_santa:
+        return redirect("event_detail", token=event.access_token)
+
+    name = (request.POST.get("name") or "").strip()[:100]
+    if not name:
+        messages.error(request, _("Guest name is required."))
+        return redirect("event_detail", token=event.access_token)
+
+    guest, _created = SecretSantaGuestParticipant.objects.get_or_create(event=event, name=name)
+    SecretSantaExclusion.objects.get_or_create(event=event, giver_guest=guest, receiver=event.owner)
+    event.secret_santa_assignments.all().delete()
+    messages.success(request, _("Guest participant added."))
+    return redirect("event_detail", token=event.access_token)
+
+
+@login_required
+@require_POST
+def delete_secret_santa_guest_participant(request, token, guest_id):
+    event = _get_event_or_404(token)
+    err = _check_owner(request, event)
+    if err:
+        return err
+    SecretSantaGuestParticipant.objects.filter(id=guest_id, event=event).delete()
+    event.secret_santa_assignments.all().delete()
+    messages.success(request, _("Guest participant deleted."))
+    return redirect("event_detail", token=event.access_token)
+
+
+@login_required
+@require_POST
+def add_secret_santa_exclusion(request, token):
+    event = _get_event_or_404(token)
+    err = _check_owner(request, event)
+    if err:
+        return err
+    if not event.is_secret_santa:
+        return redirect("event_detail", token=event.access_token)
+
+    participant_keys = {choice["key"] for choice in _secret_santa_participant_choices(event)}
+    giver_key = _normalize_participant_key(request.POST.get("giver"))
+    receiver_key = _normalize_participant_key(request.POST.get("receiver"))
+    try:
+        giver_kwargs = _participant_kwargs(giver_key, "giver")
+        receiver_kwargs = _participant_kwargs(receiver_key, "receiver")
+    except (AttributeError, TypeError, ValueError):
+        messages.error(request, _("Please choose two participants."))
+        return redirect("event_detail", token=event.access_token)
+
+    if giver_key == receiver_key or giver_key not in participant_keys or receiver_key not in participant_keys:
+        messages.error(request, _("This exclusion is not valid."))
+        return redirect("event_detail", token=event.access_token)
+
+    SecretSantaExclusion.objects.get_or_create(event=event, **giver_kwargs, **receiver_kwargs)
+    if request.POST.get("both_directions"):
+        SecretSantaExclusion.objects.get_or_create(
+            event=event,
+            **_participant_kwargs(receiver_key, "giver"),
+            **_participant_kwargs(giver_key, "receiver"),
+        )
+    event.secret_santa_assignments.all().delete()
+    messages.success(request, _("Exclusion added. Run the draw again when ready."))
+    return redirect("event_detail", token=event.access_token)
+
+
+@login_required
+@require_POST
+def delete_secret_santa_exclusion(request, token, exclusion_id):
+    event = _get_event_or_404(token)
+    err = _check_owner(request, event)
+    if err:
+        return err
+    SecretSantaExclusion.objects.filter(id=exclusion_id, event=event).delete()
+    event.secret_santa_assignments.all().delete()
+    messages.success(request, _("Exclusion deleted. Run the draw again when ready."))
+    return redirect("event_detail", token=event.access_token)
+
+
+@login_required
+@require_POST
+def draw_secret_santa(request, token):
+    event = _get_event_or_404(token)
+    err = _check_owner(request, event)
+    if err:
+        return err
+    if not event.is_secret_santa:
+        return redirect("event_detail", token=event.access_token)
+
+    participant_keys = [choice["key"] for choice in _secret_santa_participant_choices(event)]
+    exclusions = [(exclusion.giver_key, exclusion.receiver_key) for exclusion in event.secret_santa_exclusions.all()]
+    assignments = _draw_secret_santa(participant_keys, exclusions)
+    if not assignments:
+        messages.error(
+            request,
+            _("The draw is impossible with the current participants and exclusions."),
+        )
+        return redirect("event_detail", token=event.access_token)
+
+    with transaction.atomic():
+        event.secret_santa_assignments.all().delete()
+        SecretSantaAssignment.objects.bulk_create(
+            [
+                SecretSantaAssignment(
+                    event=event,
+                    **_participant_kwargs(giver_key, "giver"),
+                    **_participant_kwargs(receiver_key, "receiver"),
+                )
+                for giver_key, receiver_key in assignments.items()
+            ]
+        )
+    messages.success(request, _("Secret Santa draw completed."))
     return redirect("event_detail", token=event.access_token)
 
 

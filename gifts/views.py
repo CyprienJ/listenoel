@@ -22,7 +22,7 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
-from .models import BalanceSettlement, EventList, Gift, Group, Reservation, Subscription, User
+from .models import BalanceSettlement, EventList, Gift, Group, Reservation, SecretSantaAssignment, Subscription, User
 
 OFFER_MODAL_CONTENT_PATH = "gifts/includes/_offer_modal_content.html"
 RESERVE_MODAL_MODEL_PATH = "gifts/includes/_reserve_modal_content.html"
@@ -407,7 +407,13 @@ def view_list(request: HttpRequest, user_id: int):
 
     if not is_owner:
         common_groups = list(Group.objects.filter(members=request.user).filter(members=target_user))
-        if not common_groups:
+        has_secret_santa_access = SecretSantaAssignment.objects.filter(
+            giver=request.user,
+            receiver=target_user,
+            giver_guest__isnull=True,
+            receiver_guest__isnull=True,
+        ).exists()
+        if not common_groups and not has_secret_santa_access:
             return render(request, USER_NOT_FOUND_TEMPLATE, status=403)
         if group and group.id not in {g.id for g in common_groups}:
             return render(request, USER_NOT_FOUND_TEMPLATE, status=403)
