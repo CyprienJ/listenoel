@@ -1,6 +1,6 @@
 {% load i18n %}{% blocktrans with subscriber_name=subscriber.nickname %}Hi {{ subscriber_name }},{% endblocktrans %}
 
-{% if event == "birthday" %}{% blocktrans with owner_name=owner.nickname event_date=event_date %}{{ owner_name }}'s birthday is on {{ event_date }}, in one month.{% endblocktrans %}{% else %}{% blocktrans with owner_name=owner.nickname %}Christmas is in one month. Here is {{ owner_name }}'s gift list.{% endblocktrans %}{% endif %}
+{% if event == "birthday" %}{% blocktrans with owner_name=owner.nickname event_date=event_date %}{{ owner_name }}'s birthday is on {{ event_date }}, in two weeks.{% endblocktrans %}{% else %}{% blocktrans with owner_name=owner.nickname %}Christmas is in one month. Here is {{ owner_name }}'s gift list.{% endblocktrans %}{% endif %}
 
 {% if gifts %}{% for gift in gifts %}- {{ gift.title }}{% if gift.url %}: {{ gift.url }}{% endif %}
 {% endfor %}{% else %}{% trans "Their list is currently empty." %}

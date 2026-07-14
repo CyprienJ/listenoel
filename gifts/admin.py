@@ -58,7 +58,7 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
     fieldsets = BaseUserAdmin.fieldsets + (
         (
             _("More information"),
-            {"fields": ("nickname", "birthday", "is_verified", "is_managed", "avatar")},
+            {"fields": ("nickname", ("birthday_month", "birthday_day"), "is_verified", "is_managed", "avatar")},
         ),
     )
     filter_horizontal = ("groups", "user_permissions")

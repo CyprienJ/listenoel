@@ -2,6 +2,7 @@ import os
 import uuid
 
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -57,7 +58,16 @@ class User(AbstractUser):
     )
 
     nickname = models.CharField(max_length=150, blank=False)
-    birthday = models.DateField(blank=True, null=True)
+    birthday_month = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(12)],
+    )
+    birthday_day = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(31)],
+    )
     is_verified = models.BooleanField(default=False)
     is_managed = models.BooleanField(default=False)
     managed_by = models.ForeignKey("self", on_delete=models.CASCADE, related_name="sub_accounts", blank=True, null=True)
@@ -79,6 +89,26 @@ class User(AbstractUser):
         self.email = self.email.lower()
         self.username = self.email
         super().save(*args, **kwargs)
+
+    @property
+    def birthday(self):
+        if self.birthday_month and self.birthday_day:
+            return f"{self.birthday_month:02d}-{self.birthday_day:02d}"
+        return None
+
+    @birthday.setter
+    def birthday(self, value):
+        if not value:
+            self.birthday_month = None
+            self.birthday_day = None
+            return
+        if hasattr(value, "month") and hasattr(value, "day"):
+            self.birthday_month = value.month
+            self.birthday_day = value.day
+            return
+        month, day = str(value).split("-")[-2:]
+        self.birthday_month = int(month)
+        self.birthday_day = int(day)
 
 
 class Subscription(models.Model):

@@ -368,8 +368,29 @@ class SubscriptionTest(TestCase):
         self.assertTrue(subscription.birthday_reminder)
         self.assertTrue(subscription.christmas_reminder)
 
+    def test_profile_birthday_saves_and_displays_without_year(self):
+        self.client.force_login(self.user1)
+
+        self.client.post(
+            reverse("account"),
+            {
+                "nickname": self.user1.nickname,
+                "email": self.user1.email,
+                "birthday_month": "8",
+                "birthday_day": "8",
+            },
+        )
+
+        self.user1.refresh_from_db()
+        self.assertEqual(self.user1.birthday_month, 8)
+        self.assertEqual(self.user1.birthday_day, 8)
+
+        response = self.client.get(reverse("account"))
+        self.assertContains(response, '<option value="8" selected>August</option>', html=True)
+        self.assertContains(response, '<option value="8" selected>8</option>', html=True)
+
     @override_settings(PUBLIC_BASE_URL="https://example.test")
-    def test_birthday_reminder_is_sent_once_one_month_before(self):
+    def test_birthday_reminder_is_sent_once_two_weeks_before(self):
         self.user1.birthday = date(1990, 8, 8)
         self.user1.save()
         Gift.objects.create(owner=self.user1, created_by=self.user1, title="Birthday gift")
@@ -379,10 +400,11 @@ class SubscriptionTest(TestCase):
             birthday_reminder=True,
         )
 
-        call_command("send_event_reminders", date="2026-07-08")
-        call_command("send_event_reminders", date="2026-07-08")
+        call_command("send_event_reminders", date="2026-07-25")
+        call_command("send_event_reminders", date="2026-07-25")
 
         self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("deux semaines", mail.outbox[0].subject)
         self.assertIn("Birthday gift", mail.outbox[0].body)
         self.assertIn("https://example.test", mail.outbox[0].body)
 
@@ -396,7 +418,7 @@ class SubscriptionTest(TestCase):
         call_command("send_event_reminders", date="2026-11-25")
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertIn("Christmas", mail.outbox[0].subject)
+        self.assertIn("Noel", mail.outbox[0].subject)
 
     def test_private_rss_feed_respects_gift_visibility(self):
         group2 = Group.objects.create(name="Group 1-3")
