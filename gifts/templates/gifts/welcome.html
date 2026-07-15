@@ -24,6 +24,9 @@
                 <a href="{% url 'login' %}" class="nc-btn nc-btn--ghost">
                     <i class="bi bi-box-arrow-in-right"></i>{% trans "Log in" %}
                 </a>
+                <a href="{% url 'demo_login' %}" class="nc-btn nc-btn--ghost">
+                    <i class="bi bi-play-circle"></i>{% trans "Try the demo" %}
+                </a>
             {% else %}
                 <a href="{% url 'dashboard' %}" class="nc-btn nc-btn--primary">
                     {% trans "Go to dashboard" %}<i class="bi bi-arrow-right"></i>
@@ -178,6 +181,9 @@
     <p>{% trans "Create a private space, invite your people, and let everyone build their list at their own pace." %}</p>
     <a href="{% url 'register' %}" class="nc-btn nc-btn--primary">
         <i class="bi bi-person-plus"></i>{% trans "Get started" %}
+    </a>
+    <a href="{% url 'demo_login' %}" class="nc-btn nc-btn--ghost">
+        <i class="bi bi-play-circle"></i>{% trans "Try the demo" %}
     </a>
 </section>
 {% endif %}

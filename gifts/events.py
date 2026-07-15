@@ -14,6 +14,8 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
+from gifts.demo import demo_scope_forbidden_response, has_same_demo_scope
+
 from .models import (
     EventList,
     Gift,
@@ -37,6 +39,12 @@ def _parse_json_body(request):
 
 def _get_event_or_404(token):
     return get_object_or_404(EventList, access_token=token)
+
+
+def _check_event_demo_scope(request, event):
+    if request.user.is_authenticated and not has_same_demo_scope(request.user, event):
+        return demo_scope_forbidden_response()
+    return None
 
 
 def _get_guest_identity(request):
@@ -138,6 +146,9 @@ def _normalize_participant_key(key):
 @require_GET
 def event_detail(request, token):
     event = _get_event_or_404(token)
+    err = _check_event_demo_scope(request, event)
+    if err:
+        return err
     is_owner = request.user.is_authenticated and request.user == event.owner
 
     reserver_user, guest_name, session_key = _get_guest_identity(request)
@@ -234,6 +245,9 @@ def event_detail(request, token):
 @require_POST
 def set_guest_name(request, token):
     event = _get_event_or_404(token)
+    err = _check_event_demo_scope(request, event)
+    if err:
+        return err
     data, err = _parse_json_body(request)
     if err:
         return err
@@ -256,6 +270,9 @@ def set_guest_name(request, token):
 @require_POST
 def reserve_event_gift(request, token, gift_id):
     event = _get_event_or_404(token)
+    err = _check_event_demo_scope(request, event)
+    if err:
+        return err
     gift = get_object_or_404(Gift, id=gift_id, event_list=event, is_hidden=False)
 
     reserver_user, reserver_name, session_key = _get_guest_identity(request)
@@ -311,6 +328,7 @@ def create_event_list(request):
         description=description,
         mode=mode,
         budget_max=_parse_money(request.POST.get("budget_max")),
+        is_demo=request.user.is_demo,
     )
     if date_str:
         with contextlib.suppress(ValueError):
