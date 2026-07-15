@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
+from gifts.demo import demo_scope_forbidden_response, has_same_demo_scope
 from gifts.forms import GroupForm
 from gifts.models import EventList, Group, ManagedMember, User
 
@@ -22,6 +23,7 @@ def create_group(request):
     if form.is_valid():
         group = form.save(commit=False)
         group.created_by = request.user
+        group.is_demo = request.user.is_demo
         group.save()
         group.members.add(request.user)
         msg = _("Group '%(name)s' created ! Share this code: %(token)s") % {
@@ -43,15 +45,16 @@ def join_group(request, token=None):
     if EventList.objects.filter(access_token=token).exists():
         return redirect("event_detail", token=token)
 
-    if request.user in Group.objects.get(group_token=token).members.all():
-        messages.info(
-            request, _("You are already a member of the group '%s'.") % Group.objects.get(group_token=token).name
-        )
-        return redirect("dashboard")
-
     group = Group.objects.filter(group_token=token).first()
     if not group:
         return render(request, "groups/group_not_found.html", status=404)
+
+    if not has_same_demo_scope(request.user, group):
+        return demo_scope_forbidden_response()
+
+    if request.user in group.members.all():
+        messages.info(request, _("You are already a member of the group '%s'.") % group.name)
+        return redirect("dashboard")
 
     return render(request, "groups/group_preview.html", status=200, context={"group": group})
 
@@ -62,6 +65,8 @@ def join_group_confirm(request, token):
     group = Group.objects.filter(group_token=token).first()
 
     if group:
+        if not has_same_demo_scope(request.user, group):
+            return demo_scope_forbidden_response()
         if request.user in group.members.all():
             messages.info(request, _("You are already a member of the group '%s'.") % group.name)
         else:
@@ -119,6 +124,7 @@ def add_managed_member(request, group_id):
         username=email,
         nickname=name,
         is_managed=True,
+        is_demo=request.user.is_demo,
         is_verified=True,
         is_active=False,
     )
@@ -240,6 +246,8 @@ def regenerate_group_token(request, group_id):
         Group,
         id=group_id,
     )
+    if request.user not in group.members.all():
+        return HttpResponseForbidden(_(NOT_A_MEMBER))
     group.group_token = ""  # Will be regenerated in save()
     group.save()
     messages.success(request, _("New invitation code generated !"))

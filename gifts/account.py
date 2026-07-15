@@ -4,10 +4,11 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.views import PasswordChangeView
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.core.management import call_command
-from django.http import JsonResponse
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -16,6 +17,7 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
+from gifts.demo import DEMO_EMAIL, is_demo_user
 from gifts.forms import LocalUserCreationForm, UserProfileForm
 from gifts.models import User
 
@@ -38,6 +40,9 @@ def send_verification_email(request, user):
 @login_required
 @require_http_methods(["GET", "POST"])
 def account(request):
+    if is_demo_user(request.user) and request.method == "POST":
+        return HttpResponseForbidden(_("The public demo account profile cannot be changed."))
+
     if request.method == "POST":
         old_email = request.user.email
         old_avatar = request.user.avatar
@@ -67,6 +72,9 @@ def account(request):
 @login_required
 @require_POST
 def delete_account(request):
+    if is_demo_user(request.user):
+        return HttpResponseForbidden(_("The public demo account cannot be deleted."))
+
     user = request.user
     logout(request)
     user.delete()
@@ -119,6 +127,12 @@ def resend_verification(request):
 @login_required
 @require_http_methods(["GET", "POST"])
 def photo_upload(request):
+    if is_demo_user(request.user) and request.method == "POST":
+        return JsonResponse(
+            {"success": False, "error": _("The public demo profile picture cannot be changed.")},
+            status=403,
+        )
+
     if request.method == "POST":
         uploaded = request.FILES.get("photo")
         if not uploaded:
@@ -157,3 +171,19 @@ def register(request):
     else:
         form = LocalUserCreationForm()
     return render(request, "registration/register.html", {"form": form})
+
+
+@require_GET
+def demo_login(request):
+    call_command("reset_demo", lazy=True)
+    user = User.objects.get(email=DEMO_EMAIL, is_demo=True)
+    login(request, user, backend="gifts.backends.CaseInsensitiveModelBackend")
+    messages.info(request, _("You are using a public demo account. Demo data resets every 15 minutes."))
+    return redirect("dashboard")
+
+
+class DemoProtectedPasswordChangeView(PasswordChangeView):
+    def dispatch(self, request, *args, **kwargs):
+        if is_demo_user(request.user):
+            return HttpResponseForbidden(_("The public demo account password cannot be changed."))
+        return super().dispatch(request, *args, **kwargs)

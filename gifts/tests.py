@@ -19,6 +19,7 @@ from django.utils.translation import activate, deactivate
 from django.utils.translation import gettext as _
 from PIL import Image
 
+from .demo import DEMO_EMAIL
 from .models import (
     BalanceSettlement,
     EventList,
@@ -1938,3 +1939,72 @@ class EventTransferAndLeaveTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("/login/", response["Location"])
         self.assertTrue(Gift.objects.filter(id=self.gift.id).exists())
+
+
+class PublicDemoTest(TestCase):
+    def test_demo_login_creates_and_logs_in_demo_user(self):
+        response = self.client.get(reverse("demo_login"))
+
+        self.assertRedirects(response, reverse("dashboard"))
+        demo_user = User.objects.get(email=DEMO_EMAIL)
+        self.assertTrue(demo_user.is_demo)
+        self.assertTrue(demo_user.is_active)
+        self.assertEqual(int(self.client.session["_auth_user_id"]), demo_user.id)
+        self.assertTrue(Group.objects.filter(is_demo=True, members=demo_user).exists())
+        self.assertTrue(EventList.objects.filter(is_demo=True, owner=demo_user).exists())
+        self.assertTrue(Gift.objects.filter(owner__is_demo=True).exists())
+
+    def test_lazy_reset_keeps_fresh_demo_data(self):
+        call_command("reset_demo")
+        demo_user = User.objects.get(email=DEMO_EMAIL)
+        Gift.objects.create(owner=demo_user, created_by=demo_user, title="Visitor edit")
+
+        call_command("reset_demo", lazy=True)
+
+        self.assertTrue(Gift.objects.filter(owner=demo_user, title="Visitor edit").exists())
+
+    def test_lazy_reset_rebuilds_stale_demo_data(self):
+        call_command("reset_demo")
+        demo_user = User.objects.get(email=DEMO_EMAIL)
+        demo_user.date_joined = timezone.now() - timedelta(minutes=16)
+        demo_user.save(update_fields=["date_joined"])
+        Gift.objects.create(owner=demo_user, created_by=demo_user, title="Visitor edit")
+
+        call_command("reset_demo", lazy=True)
+
+        self.assertFalse(Gift.objects.filter(title="Visitor edit").exists())
+        self.assertTrue(User.objects.filter(email=DEMO_EMAIL, is_demo=True).exists())
+
+    def test_real_user_cannot_join_demo_group(self):
+        call_command("reset_demo")
+        demo_group = Group.objects.filter(is_demo=True).first()
+        real_user = User.objects.create_user(
+            username="real@test.com",
+            email="real@test.com",
+            password="password",
+            is_verified=True,
+            nickname="Real",
+        )
+
+        self.client.force_login(real_user)
+        response = self.client.get(reverse("join_group", kwargs={"token": demo_group.group_token}))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertNotIn(real_user, demo_group.members.all())
+
+    def test_demo_profile_cannot_be_modified(self):
+        call_command("reset_demo")
+        demo_user = User.objects.get(email=DEMO_EMAIL)
+        self.client.force_login(demo_user)
+
+        response = self.client.post(
+            reverse("account"),
+            {
+                "nickname": "Changed",
+                "email": "changed@example.com",
+            },
+        )
+
+        self.assertEqual(response.status_code, 403)
+        demo_user.refresh_from_db()
+        self.assertEqual(demo_user.email, DEMO_EMAIL)

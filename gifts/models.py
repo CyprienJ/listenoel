@@ -28,6 +28,7 @@ class Group(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey("User", on_delete=models.SET_NULL, null=True, related_name="owned_groups")
     description = models.TextField(blank=True)
+    is_demo = models.BooleanField(default=False)
     image = ResizedImageField(
         size=[1200, 400], crop=["middle", "center"], upload_to=get_group_image_path, quality=75, blank=True, null=True
     )
@@ -70,6 +71,7 @@ class User(AbstractUser):
     )
     is_verified = models.BooleanField(default=False)
     is_managed = models.BooleanField(default=False)
+    is_demo = models.BooleanField(default=False)
     managed_by = models.ForeignKey("self", on_delete=models.CASCADE, related_name="sub_accounts", blank=True, null=True)
     subscriptions = models.ManyToManyField(
         "self",
@@ -259,6 +261,7 @@ class EventList(models.Model):
     event_date = models.DateField(null=True, blank=True)
     mode = models.CharField(max_length=20, choices=MODE_CHOICES, default=MODE_WISHLIST)
     budget_max = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
+    is_demo = models.BooleanField(default=False)
     image = ResizedImageField(
         size=[1200, 400], crop=["middle", "center"], upload_to=get_event_image_path, quality=75, blank=True, null=True
     )

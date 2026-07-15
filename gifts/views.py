@@ -22,6 +22,8 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
+from gifts.demo import demo_scope_forbidden_response, has_same_demo_scope, is_demo_user
+
 from .models import BalanceSettlement, EventList, Gift, Group, Reservation, SecretSantaAssignment, Subscription, User
 
 OFFER_MODAL_CONTENT_PATH = "gifts/includes/_offer_modal_content.html"
@@ -55,6 +57,9 @@ def _redirect_to_referer_or(request, view_name, **kwargs):
 
 
 def _check_gift_access(request, gift):
+    if not has_same_demo_scope(request.user, gift.owner):
+        return demo_scope_forbidden_response()
+
     is_owner = gift.owner == request.user
     is_reserver = Reservation.objects.filter(gift=gift, reserver=request.user).exists()
     if gift.owner.is_managed:
@@ -149,6 +154,9 @@ def _get_reservation_group(request, gift, group_id):
 
     if not group.members.filter(id=request.user.id).exists() or not group.members.filter(id=gift.owner_id).exists():
         return None, HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+
+    if not has_same_demo_scope(request.user, group) or not has_same_demo_scope(request.user, gift.owner):
+        return None, demo_scope_forbidden_response()
 
     if gift.group_reserved_on_id and gift.group_reserved_on_id != group.id:
         return None, JsonResponse(
@@ -396,6 +404,8 @@ def view_list(request: HttpRequest, user_id: int):
     target_user = User.objects.filter(id=user_id).first()
     if not target_user:
         return render(request, USER_NOT_FOUND_TEMPLATE, status=404)
+    if not has_same_demo_scope(request.user, target_user):
+        return render(request, USER_NOT_FOUND_TEMPLATE, status=403)
 
     is_owner = request.user.id == target_user.id
     from_group_id = request.GET.get("from_group")
@@ -509,6 +519,9 @@ def view_list(request: HttpRequest, user_id: int):
 @require_POST
 def toggle_subscription(request, user_id):
     target_user = get_object_or_404(User, id=user_id)
+    if is_demo_user(request.user) or getattr(target_user, "is_demo", False):
+        return HttpResponseForbidden(_("Subscriptions are disabled for demo accounts."))
+
     if target_user == request.user:
         return HttpResponseForbidden(_("You cannot subscribe to yourself"))
 
@@ -547,6 +560,8 @@ def unsubscribe_token(request, owner_id, uidb64, token):
         subscriber_id = force_str(urlsafe_base64_decode(uidb64))
         subscriber = get_object_or_404(User, id=subscriber_id)
         owner = get_object_or_404(User, id=owner_id)
+        if subscriber.is_demo or owner.is_demo:
+            return redirect_dashboard()
 
         if not default_token_generator.check_token(subscriber, token):
             messages.error(request, _("The unsubscription link is invalid"))
@@ -567,6 +582,9 @@ def unsubscribe_token(request, owner_id, uidb64, token):
 def add_gift(request, owner_id):
     owner = get_object_or_404(User, id=owner_id)
 
+    if not has_same_demo_scope(request.user, owner):
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+
     if owner != request.user and not Group.objects.filter(members=request.user).filter(members=owner).exists():
         return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
@@ -581,11 +599,14 @@ def add_gift(request, owner_id):
         )
         group_ids = request.POST.getlist("visible_in")
         if group_ids:
-            valid_groups = Group.objects.filter(id__in=group_ids, members=request.user)
+            valid_groups = Group.objects.filter(id__in=group_ids, members=request.user, is_demo=request.user.is_demo)
             gift.visible_in.set(valid_groups)
 
-        subscription_records = owner.subscriber_records.filter(email_enabled=True).select_related("subscriber")
-        if subscription_records.exists():
+        subscription_records = owner.subscriber_records.filter(
+            email_enabled=True,
+            subscriber__is_demo=False,
+        ).select_related("subscriber")
+        if not owner.is_demo and subscription_records.exists():
             protocol = "https" if request.is_secure() else "http"
             domain = get_current_site(request).domain
             list_url = f"{protocol}://{domain}{reverse('view_list', args=[owner.id])}"
@@ -628,6 +649,9 @@ def add_gift(request, owner_id):
 @require_POST
 def delete_gift(request, gift_id):
     gift = get_object_or_404(Gift, id=gift_id)
+    if not has_same_demo_scope(request.user, gift.owner):
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+
     # Managed member gifts: any group member can delete
     if gift.owner.is_managed:
         mm = getattr(gift.owner, "managed_member_profile", None)
@@ -647,6 +671,8 @@ def delete_gift(request, gift_id):
 @require_POST
 def edit_gift(request: HttpRequest, gift_id: int):
     gift = get_object_or_404(Gift, id=gift_id)
+    if not has_same_demo_scope(request.user, gift.owner):
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
     if gift.owner.is_managed:
         mm = getattr(gift.owner, "managed_member_profile", None)
@@ -664,7 +690,7 @@ def edit_gift(request: HttpRequest, gift_id: int):
 
         group_ids = request.POST.getlist("visible_in")
         if group_ids:
-            valid_groups = Group.objects.filter(id__in=group_ids, members=request.user)
+            valid_groups = Group.objects.filter(id__in=group_ids, members=request.user, is_demo=request.user.is_demo)
             gift.visible_in.set(valid_groups)
         else:
             gift.visible_in.clear()
@@ -676,6 +702,8 @@ def edit_gift(request: HttpRequest, gift_id: int):
 @require_POST
 def edit_gift_price(request, gift_id):
     gift = get_object_or_404(Gift, id=gift_id)
+    if not has_same_demo_scope(request.user, gift.owner):
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
     price_raw = request.POST.get("price", "").strip().replace(",", ".")
 
@@ -709,6 +737,9 @@ def reserve_gift(request: HttpRequest, gift_id: int):
 
     gift = get_object_or_404(Gift, id=gift_id)
     user = get_object_or_404(User, id=user_id)
+
+    if not has_same_demo_scope(request.user, gift.owner) or not has_same_demo_scope(request.user, user):
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
     if gift.owner == request.user:
         return HttpResponseForbidden("Impossible on your own list")
@@ -753,6 +784,9 @@ def modify_reservation(request: HttpRequest, gift_id: int):
         return err
 
     gift = get_object_or_404(Gift, id=gift_id)
+    if not has_same_demo_scope(request.user, gift.owner):
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+
     group_id = data.get("group_id")
     group, err = _get_reservation_group(request, gift, group_id)
     if err:
@@ -794,6 +828,9 @@ def delete_reservation(request, gift_id):
         return err
 
     gift = get_object_or_404(Gift, id=gift_id)
+    if not has_same_demo_scope(request.user, gift.owner):
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+
     group_id = data.get("group_id")
     group, err = _get_reservation_group(request, gift, group_id)
     if err:
@@ -822,6 +859,8 @@ def delete_reservation(request, gift_id):
 @require_POST
 def offer_gift(request, gift_id):
     gift = get_object_or_404(Gift, id=gift_id)
+    if not has_same_demo_scope(request.user, gift.owner):
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
     if gift.owner == request.user:
         return HttpResponseForbidden(_("You cannot mark your own gift as offered"))
@@ -883,6 +922,9 @@ def history_view(request, group_id=None):
 
     group = get_object_or_404(Group, id=group_id)
 
+    if not has_same_demo_scope(request.user, group):
+        return demo_scope_forbidden_response()
+
     if not group.members.filter(id=request.user.id).exists():
         return render(
             request, "groups/history_access_denied.html", {"group": group, "reason": "not_member"}, status=403
@@ -927,6 +969,9 @@ def history_view(request, group_id=None):
 @require_POST
 def un_offer_gift(request, gift_id):
     gift = get_object_or_404(Gift, id=gift_id, offered=True)
+    if not has_same_demo_scope(request.user, gift.owner):
+        return HttpResponseForbidden(_(PERMISSION_DENIED))
+
     group = gift.group_reserved_on
 
     is_owner = gift.owner == request.user
@@ -1012,6 +1057,8 @@ def edit_offered_amounts(request, gift_id):
 @require_POST
 def mark_received(request, gift_id):
     gift = get_object_or_404(Gift, id=gift_id)
+    if not has_same_demo_scope(request.user, gift.owner):
+        return HttpResponseForbidden(_("Only the gift owner can mark it as received"))
 
     if gift.owner != request.user:
         return HttpResponseForbidden(_("Only the gift owner can mark it as received"))
@@ -1133,6 +1180,9 @@ def compute_group_balances(group):
 @require_GET
 def balance_view(request, group_id):
     group = get_object_or_404(Group, id=group_id)
+    if not has_same_demo_scope(request.user, group):
+        return demo_scope_forbidden_response()
+
     if not group.members.filter(id=request.user.id).exists():
         return render(
             request, "groups/history_access_denied.html", {"group": group, "reason": "not_member"}, status=403
@@ -1172,6 +1222,9 @@ def balance_view(request, group_id):
 @require_POST
 def add_settlement(request, group_id):
     group = get_object_or_404(Group, id=group_id)
+    if not has_same_demo_scope(request.user, group):
+        return demo_scope_forbidden_response()
+
     if not group.members.filter(id=request.user.id).exists():
         return HttpResponseForbidden(_(PERMISSION_DENIED))
     try:
