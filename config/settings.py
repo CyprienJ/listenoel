@@ -146,7 +146,11 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage",
+        "BACKEND": (
+            "django.contrib.staticfiles.storage.StaticFilesStorage"
+            if "test" in sys.argv
+            else "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+        ),
     },
 }
 SESSION_COOKIE_SECURE = not DEBUG
