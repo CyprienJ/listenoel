@@ -57,6 +57,12 @@
                     </div>
                 {% endif %}
 
+                {% if not is_owner and item.group_id %}
+                    <div class="mb-4">
+                        {% include "gifts/includes/_gift_comments_panel.html" with item=item %}
+                    </div>
+                {% endif %}
+
                 {% if not is_owner %}
                     {% if state.can_open %}
                         <button class="btn {% if state.is_mine %}btn-outline-primary{% else %}btn-primary{% endif %} rounded-pill w-100 btn-lg btn-sm px-4"
@@ -92,3 +98,38 @@
     </div>
     {% endwith %}
 </div>
+
+<script>
+    if (!window.toggleGiftCommentEdit) {
+        window.toggleGiftCommentEdit = function(commentId) {
+            document.getElementById(`editGiftCommentForm${commentId}`)?.classList.toggle('d-none');
+        };
+    }
+
+    if (!window.giftCommentAjaxInitialized) {
+        window.giftCommentAjaxInitialized = true;
+        document.addEventListener('submit', async function(event) {
+            const form = event.target;
+            if (!form.matches('[data-gift-comment-form]')) return;
+
+            event.preventDefault();
+            const panel = document.getElementById(form.dataset.commentsPanelId);
+            if (!panel) {
+                form.submit();
+                return;
+            }
+
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: {'X-Requested-With': 'XMLHttpRequest'},
+                body: new FormData(form),
+            });
+
+            if (response.ok) {
+                panel.outerHTML = await response.text();
+            } else {
+                alert(await response.text());
+            }
+        });
+    }
+</script>

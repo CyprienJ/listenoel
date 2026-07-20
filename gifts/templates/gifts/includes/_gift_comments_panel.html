@@ -1,0 +1,101 @@
+{% load i18n %}
+
+<div id="giftCommentsPanel{{ item.gift.id }}">
+    <span class="small text-uppercase fw-bold text-muted d-block mb-2">
+        <i class="bi bi-chat-left-text me-1"></i>{% trans "Secret group notes" %}
+    </span>
+    <div class="small text-muted mb-3">
+        {% trans "Visible only to this group's members, not to the gift owner." %}
+    </div>
+
+    {% if item.comments %}
+        <div class="d-grid gap-2 mb-3">
+            {% for comment in item.comments %}
+                <div class="nc-reservation-person align-items-start">
+                    <div class="nc-reservation-person__name d-block">
+                        <i class="bi bi-person-circle"></i>
+                        {{ comment.author.nickname }}
+                        <small class="text-muted ms-1">{{ comment.created_at|date:"d M Y H:i" }}</small>
+                        {% if comment.edited_at and not comment.is_deleted %}
+                            <small class="badge rounded-pill text-bg-light ms-1">{% trans "edited" %}</small>
+                        {% endif %}
+                        {% if comment.is_deleted %}
+                            <span class="d-block fw-normal fst-italic text-muted mt-1">
+                                {% trans "Comment deleted." %}
+                            </span>
+                        {% else %}
+                            <span class="d-block fw-normal mt-1">{{ comment.body|linebreaksbr }}</span>
+                            {% if comment.author_id == item.current_user.id %}
+                                <form method="post"
+                                      action="{% url 'edit_gift_comment' comment_id=comment.id %}"
+                                      class="mt-2 d-none"
+                                      id="editGiftCommentForm{{ comment.id }}"
+                                      data-gift-comment-form
+                                      data-comments-panel-id="giftCommentsPanel{{ item.gift.id }}">
+                                    {% csrf_token %}
+                                    <label class="visually-hidden" for="editGiftComment{{ comment.id }}">
+                                        {% trans "Edit comment" %}
+                                    </label>
+                                    <textarea id="editGiftComment{{ comment.id }}"
+                                              name="body"
+                                              maxlength="1000"
+                                              rows="2"
+                                              class="form-control rounded-4 mb-2">{{ comment.body }}</textarea>
+                                    <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill">
+                                        <i class="bi bi-check2 me-1"></i>{% trans "Update comment" %}
+                                    </button>
+                                </form>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    {% if comment.author_id == item.current_user.id and not comment.is_deleted %}
+                        <span class="nc-reservation-person__actions">
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary rounded-pill"
+                                    title="{% trans 'Edit comment' %}"
+                                    onclick="toggleGiftCommentEdit({{ comment.id }})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <form method="post"
+                                  action="{% url 'delete_gift_comment' comment_id=comment.id %}"
+                                  class="m-0"
+                                  data-gift-comment-form
+                                  data-comments-panel-id="giftCommentsPanel{{ item.gift.id }}">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-danger rounded-pill"
+                                        title="{% trans 'Delete comment' %}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </span>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="nc-reservation-empty mb-3">
+            <i class="bi bi-chat-dots"></i> {% trans "No note yet." %}
+        </div>
+    {% endif %}
+
+    <form method="post"
+          action="{% url 'add_gift_comment' gift_id=item.gift.id %}"
+          data-gift-comment-form
+          data-comments-panel-id="giftCommentsPanel{{ item.gift.id }}">
+        {% csrf_token %}
+        <input type="hidden" name="group_id" value="{{ item.group_id }}">
+        <label class="form-label small text-muted" for="giftComment{{ item.gift.id }}">
+            {% trans "Add a note" %}
+        </label>
+        <textarea id="giftComment{{ item.gift.id }}"
+                  name="body"
+                  maxlength="1000"
+                  rows="2"
+                  class="form-control rounded-4 mb-2"
+                  placeholder="{% trans 'He already has it, cheaper link, coordination...' %}"></textarea>
+        <button type="submit" class="btn btn-outline-primary rounded-pill px-4">
+            <i class="bi bi-send me-1"></i>{% trans "Add note" %}
+        </button>
+    </form>
+</div>

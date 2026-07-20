@@ -12,7 +12,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.db.models import Q, QuerySet
-from django.http import HttpRequest, HttpResponseForbidden, JsonResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -28,6 +28,7 @@ from .models import (
     BalanceSettlement,
     EventList,
     Gift,
+    GiftComment,
     Group,
     NotificationDigestPreference,
     Reservation,
@@ -46,6 +47,9 @@ GROUP_NOT_FOUND = "Group not found."
 PERMISSION_DENIED = "You don't have permission to do this"
 INVALID_AMOUNT_FORMAT = _("Invalid amount format.")
 UNSUBSCRIBE_SUCCESS_MSG = "You are no longer subscribed to %(name)s's list"
+COMMENT_MAX_LENGTH = 1000
+COMMENT_EMPTY_MESSAGE = _("Comment cannot be empty.")
+COMMENT_TOO_LONG_MESSAGE = _("Comment is too long.")
 
 
 # --- Helpers ---
@@ -170,6 +174,7 @@ def _gift_item(request, gift, reservations, group_id, other_members=None):
         "user_reservation": user_res,
         "other_non_participant": other_non_participants,
         "group_id": group_id,
+        "comments": _gift_comments(gift, group_id),
         "reservation_state": _reservation_state(gift, reservations, request.user, group_id),
     }
 
@@ -193,6 +198,58 @@ def _get_reservation_group(request, gift, group_id):
         )
 
     return group, None
+
+
+def _gift_is_visible_in_group(gift, group):
+    visible_group_ids = set(gift.visible_in.values_list("id", flat=True))
+    return not visible_group_ids or group.id in visible_group_ids
+
+
+def _get_comment_group(request, gift, group_id):
+    if gift.owner == request.user:
+        return None, HttpResponseForbidden(_("Gift comments are hidden from the gift owner."))
+
+    try:
+        group = Group.objects.get(id=int(group_id))
+    except (Group.DoesNotExist, TypeError, ValueError):
+        return None, JsonResponse({"success": False, "error": _(GROUP_NOT_FOUND)}, status=400)
+
+    if not group.members.filter(id=request.user.id).exists() or not group.members.filter(id=gift.owner_id).exists():
+        return None, HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+
+    if not has_same_demo_scope(request.user, group) or not has_same_demo_scope(request.user, gift.owner):
+        return None, demo_scope_forbidden_response()
+
+    if not _gift_is_visible_in_group(gift, group):
+        return None, HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+
+    return group, None
+
+
+def _gift_comments(gift, group_id):
+    if not group_id:
+        return GiftComment.objects.none()
+    return (
+        GiftComment.objects.filter(gift=gift, group_id=group_id)
+        .select_related("author", "group")
+        .order_by("created_at", "id")
+    )
+
+
+def _is_ajax(request):
+    return request.headers.get("x-requested-with") == "XMLHttpRequest"
+
+
+def _render_gift_comments_panel(request, gift, group_id):
+    context = {
+        "item": {
+            "current_user": request.user,
+            "gift": gift,
+            "group_id": group_id,
+            "comments": _gift_comments(gift, group_id),
+        }
+    }
+    return render(request, "gifts/includes/_gift_comments_panel.html", context)
 
 
 def _reservation_group_for_gift(gift, common_groups):
@@ -221,6 +278,7 @@ def _render_reservation_modal(request, gift, group_id, reservations, extra_exclu
             "user_reservation": user_res,
             "other_non_participant": other_members,
             "group_id": group_id,
+            "comments": _gift_comments(gift, group_id),
             "reservation_state": _reservation_state(gift, reservations, request.user, group_id),
         }
     }
@@ -709,6 +767,93 @@ def unsubscribe_token(request, owner_id, uidb64, token):
     except (TypeError, ValueError, OverflowError):
         messages.error(request, _("The unsubscription link is invalid"))
         return redirect_dashboard()
+
+
+@login_required
+@require_POST
+def add_gift_comment(request, gift_id):
+    gift = get_object_or_404(Gift, id=gift_id, offered=False, event_list__isnull=True)
+    group, err = _get_comment_group(request, gift, request.POST.get("group_id"))
+    if err:
+        return err
+
+    body = request.POST.get("body", "").strip()
+    if not body:
+        if _is_ajax(request):
+            return HttpResponse(_(COMMENT_EMPTY_MESSAGE), status=400)
+        messages.error(request, _(COMMENT_EMPTY_MESSAGE))
+        return _redirect_to_referer_or(request, "view_list", user_id=gift.owner_id)
+
+    if len(body) > COMMENT_MAX_LENGTH:
+        if _is_ajax(request):
+            return HttpResponse(_(COMMENT_TOO_LONG_MESSAGE), status=400)
+        messages.error(request, _(COMMENT_TOO_LONG_MESSAGE))
+        return _redirect_to_referer_or(request, "view_list", user_id=gift.owner_id)
+
+    GiftComment.objects.create(gift=gift, group=group, author=request.user, body=body)
+    if _is_ajax(request):
+        return _render_gift_comments_panel(request, gift, group.id)
+
+    messages.success(request, _("Comment added."))
+    return _redirect_to_referer_or(request, "view_list", user_id=gift.owner_id)
+
+
+@login_required
+@require_POST
+def delete_gift_comment(request, comment_id):
+    comment = get_object_or_404(GiftComment.objects.select_related("gift", "group", "author"), id=comment_id)
+    _comment_group, err = _get_comment_group(request, comment.gift, comment.group_id)
+    if err:
+        return err
+
+    if comment.author_id != request.user.id:
+        return HttpResponseForbidden(_(PERMISSION_DENIED))
+
+    comment.is_deleted = True
+    comment.deleted_by = request.user
+    comment.save(update_fields=["is_deleted", "deleted_by", "updated_at"])
+    if _is_ajax(request):
+        return _render_gift_comments_panel(request, comment.gift, comment.group_id)
+
+    messages.success(request, _("Comment deleted."))
+    return _redirect_to_referer_or(request, "view_list", user_id=comment.gift.owner_id)
+
+
+@login_required
+@require_POST
+def edit_gift_comment(request, comment_id):
+    comment = get_object_or_404(GiftComment.objects.select_related("gift", "group", "author"), id=comment_id)
+    _comment_group, err = _get_comment_group(request, comment.gift, comment.group_id)
+    if err:
+        return err
+
+    if comment.author_id != request.user.id:
+        return HttpResponseForbidden(_(PERMISSION_DENIED))
+
+    if comment.is_deleted:
+        return HttpResponseForbidden(_("Deleted comments cannot be edited."))
+
+    body = request.POST.get("body", "").strip()
+    if not body:
+        if _is_ajax(request):
+            return HttpResponse(_(COMMENT_EMPTY_MESSAGE), status=400)
+        messages.error(request, _(COMMENT_EMPTY_MESSAGE))
+        return _redirect_to_referer_or(request, "view_list", user_id=comment.gift.owner_id)
+
+    if len(body) > COMMENT_MAX_LENGTH:
+        if _is_ajax(request):
+            return HttpResponse(_(COMMENT_TOO_LONG_MESSAGE), status=400)
+        messages.error(request, _(COMMENT_TOO_LONG_MESSAGE))
+        return _redirect_to_referer_or(request, "view_list", user_id=comment.gift.owner_id)
+
+    comment.body = body
+    comment.edited_at = timezone.now()
+    comment.save(update_fields=["body", "edited_at", "updated_at"])
+    if _is_ajax(request):
+        return _render_gift_comments_panel(request, comment.gift, comment.group_id)
+
+    messages.success(request, _("Comment updated."))
+    return _redirect_to_referer_or(request, "view_list", user_id=comment.gift.owner_id)
 
 
 @login_required

@@ -269,6 +269,33 @@ class Reservation(models.Model):
     amount_paid = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
 
 
+class GiftComment(models.Model):
+    gift = models.ForeignKey(Gift, on_delete=models.CASCADE, related_name="comments")
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="gift_comments")
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="gift_comments")
+    body = models.TextField(max_length=1000)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    edited_at = models.DateTimeField(blank=True, null=True)
+    is_deleted = models.BooleanField(default=False)
+    deleted_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="deleted_gift_comments",
+    )
+
+    class Meta:
+        ordering = ["created_at", "id"]
+        indexes = [
+            models.Index(fields=["gift", "group", "is_deleted"]),
+        ]
+
+    def __str__(self):
+        return f"{self.author.nickname} → {self.gift.title}"
+
+
 MANAGED_MEMBER_COLORS = [
     "oklch(60% 0.14 100)",
     "oklch(60% 0.14 180)",

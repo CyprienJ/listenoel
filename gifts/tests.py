@@ -24,6 +24,7 @@ from .models import (
     BalanceSettlement,
     EventList,
     Gift,
+    GiftComment,
     Group,
     GuestReservation,
     ManagedMember,
@@ -404,6 +405,222 @@ class ReservationFlowTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.gift.refresh_from_db()
         self.assertIsNone(self.gift.group_reserved_on)
+
+
+class GiftCommentTest(TestCase):
+    def setUp(self):
+        self.owner, self.member, self.other_member = create_users()
+        self.outsider = User.objects.create_user(
+            username="outsider@test.com",
+            email="outsider@test.com",
+            password="password",
+            is_verified=True,
+            nickname="Outsider",
+        )
+        self.group = Group.objects.create(name="Family", created_by=self.member)
+        self.group.members.add(self.owner, self.member, self.other_member)
+        self.gift = Gift.objects.create(owner=self.owner, created_by=self.owner, title="Bike")
+
+    def test_group_member_can_add_secret_comment(self):
+        self.client.force_login(self.member)
+
+        response = self.client.post(
+            reverse("add_gift_comment", args=[self.gift.id]),
+            {"group_id": self.group.id, "body": "Found cheaper here"},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(
+            GiftComment.objects.filter(
+                gift=self.gift,
+                group=self.group,
+                author=self.member,
+                body="Found cheaper here",
+            ).exists()
+        )
+
+    def test_owner_cannot_read_or_add_comments_on_their_gift(self):
+        GiftComment.objects.create(gift=self.gift, group=self.group, author=self.member, body="Secret note")
+        self.client.force_login(self.owner)
+
+        list_response = self.client.get(reverse("view_list", args=[self.owner.id]))
+        add_response = self.client.post(
+            reverse("add_gift_comment", args=[self.gift.id]),
+            {"group_id": self.group.id, "body": "Owner note"},
+        )
+
+        self.assertNotContains(list_response, "Secret note")
+        self.assertEqual(add_response.status_code, 403)
+        self.assertFalse(GiftComment.objects.filter(author=self.owner).exists())
+
+    def test_group_member_sees_comments_in_gift_detail_modal(self):
+        GiftComment.objects.create(gift=self.gift, group=self.group, author=self.other_member, body="Already bought")
+        self.client.force_login(self.member)
+
+        response = self.client.get(f"{reverse('view_list', args=[self.owner.id])}?from_group={self.group.id}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'id="viewGiftModal{self.gift.id}"')
+        self.assertContains(response, _("Secret group notes"))
+        self.assertContains(response, "Already bought")
+
+    def test_author_edit_form_is_hidden_until_edit_button_is_clicked(self):
+        comment = GiftComment.objects.create(gift=self.gift, group=self.group, author=self.member, body="Draft")
+        self.client.force_login(self.member)
+
+        response = self.client.get(f"{reverse('view_list', args=[self.owner.id])}?from_group={self.group.id}")
+
+        self.assertContains(response, f'onclick="toggleGiftCommentEdit({comment.id})"')
+        self.assertContains(response, f'id="editGiftCommentForm{comment.id}"')
+        self.assertContains(response, "d-none")
+
+    def test_comments_are_scoped_to_group(self):
+        second_group = Group.objects.create(name="Friends")
+        second_group.members.add(self.owner, self.outsider)
+        GiftComment.objects.create(gift=self.gift, group=self.group, author=self.member, body="Family note")
+
+        self.client.force_login(self.outsider)
+        response = self.client.get(f"{reverse('view_list', args=[self.owner.id])}?from_group={second_group.id}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Family note")
+
+    def test_outsider_cannot_add_comment(self):
+        self.client.force_login(self.outsider)
+
+        response = self.client.post(
+            reverse("add_gift_comment", args=[self.gift.id]),
+            {"group_id": self.group.id, "body": "No access"},
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(GiftComment.objects.exists())
+
+    def test_author_can_soft_delete_comment(self):
+        comment = GiftComment.objects.create(gift=self.gift, group=self.group, author=self.member, body="Old note")
+        self.client.force_login(self.member)
+
+        response = self.client.post(reverse("delete_gift_comment", args=[comment.id]))
+
+        self.assertEqual(response.status_code, 302)
+        comment.refresh_from_db()
+        self.assertTrue(comment.is_deleted)
+        self.assertEqual(comment.deleted_by, self.member)
+
+        list_response = self.client.get(f"{reverse('view_list', args=[self.owner.id])}?from_group={self.group.id}")
+        self.assertContains(list_response, _("Comment deleted."))
+        self.assertNotContains(list_response, "Old note")
+
+    def test_ajax_delete_comment_returns_updated_panel_without_redirect(self):
+        comment = GiftComment.objects.create(gift=self.gift, group=self.group, author=self.member, body="Old note")
+        self.client.force_login(self.member)
+
+        response = self.client.post(
+            reverse("delete_gift_comment", args=[comment.id]),
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'id="giftCommentsPanel{self.gift.id}"')
+        self.assertContains(response, _("Comment deleted."))
+        self.assertNotContains(response, "Old note")
+
+    def test_group_creator_cannot_delete_someone_elses_comment(self):
+        comment = GiftComment.objects.create(
+            gift=self.gift,
+            group=self.group,
+            author=self.other_member,
+            body="Not mine",
+        )
+        self.client.force_login(self.member)
+
+        response = self.client.post(reverse("delete_gift_comment", args=[comment.id]))
+
+        self.assertEqual(response.status_code, 403)
+        comment.refresh_from_db()
+        self.assertFalse(comment.is_deleted)
+
+    def test_author_can_edit_comment_and_badge_is_shown(self):
+        comment = GiftComment.objects.create(gift=self.gift, group=self.group, author=self.member, body="Initial note")
+        self.client.force_login(self.member)
+
+        response = self.client.post(
+            reverse("edit_gift_comment", args=[comment.id]),
+            {"body": "Updated note"},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        comment.refresh_from_db()
+        self.assertEqual(comment.body, "Updated note")
+        self.assertIsNotNone(comment.edited_at)
+
+        list_response = self.client.get(f"{reverse('view_list', args=[self.owner.id])}?from_group={self.group.id}")
+        self.assertContains(list_response, "Updated note")
+        self.assertContains(list_response, _("edited"))
+        self.assertNotContains(list_response, "Initial note")
+
+    def test_ajax_edit_comment_returns_updated_panel_without_redirect(self):
+        comment = GiftComment.objects.create(gift=self.gift, group=self.group, author=self.member, body="Initial note")
+        self.client.force_login(self.member)
+
+        response = self.client.post(
+            reverse("edit_gift_comment", args=[comment.id]),
+            {"body": "Updated note"},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'id="giftCommentsPanel{self.gift.id}"')
+        self.assertContains(response, "Updated note")
+        self.assertContains(response, _("edited"))
+        self.assertNotContains(response, "Initial note")
+
+    def test_ajax_add_comment_returns_updated_panel_without_redirect(self):
+        self.client.force_login(self.member)
+
+        response = self.client.post(
+            reverse("add_gift_comment", args=[self.gift.id]),
+            {"group_id": self.group.id, "body": "Fresh note"},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'id="giftCommentsPanel{self.gift.id}"')
+        self.assertContains(response, "Fresh note")
+
+    def test_other_member_cannot_edit_comment(self):
+        comment = GiftComment.objects.create(
+            gift=self.gift, group=self.group, author=self.other_member, body="Original"
+        )
+        self.client.force_login(self.member)
+
+        response = self.client.post(
+            reverse("edit_gift_comment", args=[comment.id]),
+            {"body": "Hacked"},
+        )
+
+        self.assertEqual(response.status_code, 403)
+        comment.refresh_from_db()
+        self.assertEqual(comment.body, "Original")
+
+    def test_deleted_comment_cannot_be_edited(self):
+        comment = GiftComment.objects.create(
+            gift=self.gift,
+            group=self.group,
+            author=self.member,
+            body="Deleted",
+            is_deleted=True,
+        )
+        self.client.force_login(self.member)
+
+        response = self.client.post(
+            reverse("edit_gift_comment", args=[comment.id]),
+            {"body": "Back"},
+        )
+
+        self.assertEqual(response.status_code, 403)
+        comment.refresh_from_db()
+        self.assertEqual(comment.body, "Deleted")
 
 
 class SubscriptionTest(TestCase):
