@@ -651,11 +651,15 @@ body {
     min-width: 0;
 }
 
-.nc-dashboard-quick-actions {
+.nc-dashboard-overview {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 10px;
-    margin-bottom: 18px;
+    margin-bottom: 24px;
+}
+
+.nc-dashboard-quick-actions {
+    display: contents;
 }
 
 .nc-quick-action {
@@ -691,23 +695,26 @@ body {
 }
 
 .nc-dashboard-stats {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 10px;
-    margin-bottom: 24px;
+    display: contents;
 }
 
 .nc-dashboard-stat {
+    min-height: 70px;
     background: var(--nc-white);
     border: 1px solid var(--nc-border);
     border-radius: 12px;
     padding: 14px;
     text-decoration: none;
+    text-align: left;
 }
 
 .nc-dashboard-stat:hover {
     color: var(--nc-text);
     border-color: var(--nc-border-strong);
+}
+
+.nc-dashboard-stat--button {
+    cursor: pointer;
 }
 
 .nc-dashboard-stat__value {
@@ -745,6 +752,10 @@ body {
 .nc-dashboard-card__header {
     padding: 16px 18px;
     border-bottom: 1px solid var(--nc-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }
 
 .nc-dashboard-card__header h2 {
@@ -771,6 +782,23 @@ body {
 .nc-dashboard-list-row:hover {
     background: var(--nc-bg-sub);
     color: var(--nc-text);
+}
+
+.nc-dashboard-reservations-placeholder {
+    width: 100%;
+    min-height: 62px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 16px;
+    color: var(--nc-text);
+    background: transparent;
+    border: 0;
+    text-align: left;
+}
+
+.nc-dashboard-reservations-placeholder:hover {
+    background: var(--nc-bg-sub);
 }
 
 .nc-dashboard-row-icon {
@@ -1444,8 +1472,7 @@ body {
     .nc-dashboard-groups-sidebar .nc-groups-grid {
         grid-template-columns: 1fr 1fr;
     }
-    .nc-dashboard-quick-actions,
-    .nc-dashboard-stats,
+    .nc-dashboard-overview,
     .nc-dashboard-grid {
         grid-template-columns: 1fr 1fr;
     }
