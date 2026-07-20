@@ -78,6 +78,11 @@
                 {% endif %}
             </span>
         {% endif %}
+        {% if item.comments %}
+            <span class="nc-wish-meta-chip">
+                <i class="bi bi-chat-left-text"></i> {{ item.comments|length }}
+            </span>
+        {% endif %}
     </div>
 
     {# Actions #}

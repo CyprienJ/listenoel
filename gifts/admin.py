@@ -9,6 +9,7 @@ from .models import (
     BalanceSettlement,
     EventList,
     Gift,
+    GiftComment,
     Group,
     GuestReservation,
     ManagedMember,
@@ -31,6 +32,13 @@ class GuestReservationInline(TabularInline):
     extra = 0
     fields = ("reserver_user", "reserver_name", "exclusivity", "created_at")
     readonly_fields = ("created_at",)
+
+
+class GiftCommentInline(TabularInline):
+    model = GiftComment
+    extra = 0
+    fields = ("author", "group", "body", "is_deleted", "deleted_by", "created_at", "edited_at")
+    readonly_fields = ("created_at", "edited_at")
 
 
 class ManagedMemberInline(TabularInline):
@@ -138,7 +146,7 @@ class GiftAdmin(ModelAdmin):
     readonly_fields = ("created_at", "offered_at")
     date_hierarchy = "created_at"
     filter_horizontal = ("visible_in", "expense_split")
-    inlines = [ReservationInline, GuestReservationInline]
+    inlines = [ReservationInline, GuestReservationInline, GiftCommentInline]
 
     fieldsets = (
         (None, {"fields": ("title", "description", "url", "price")}),
@@ -157,6 +165,14 @@ class ReservationAdmin(ModelAdmin):
     list_filter = ("exclusivity", ("created_at", RangeDateFilter))
     search_fields = ("gift__title", "reserver__nickname", "reserver__email")
     readonly_fields = ("created_at",)
+
+
+@admin.register(GiftComment)
+class GiftCommentAdmin(ModelAdmin):
+    list_display = ("gift", "author", "group", "is_deleted", "created_at", "edited_at")
+    list_filter = ("is_deleted", "group", ("created_at", RangeDateFilter))
+    search_fields = ("body", "gift__title", "author__nickname", "author__email", "group__name")
+    readonly_fields = ("created_at", "updated_at")
 
 
 @admin.register(BalanceSettlement)
