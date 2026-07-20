@@ -24,7 +24,17 @@ from django.views.decorators.http import require_GET, require_POST
 
 from gifts.demo import demo_scope_forbidden_response, has_same_demo_scope, is_demo_user
 
-from .models import BalanceSettlement, EventList, Gift, Group, Reservation, SecretSantaAssignment, Subscription, User
+from .models import (
+    BalanceSettlement,
+    EventList,
+    Gift,
+    Group,
+    NotificationDigestPreference,
+    Reservation,
+    SecretSantaAssignment,
+    Subscription,
+    User,
+)
 
 OFFER_MODAL_CONTENT_PATH = "gifts/includes/_offer_modal_content.html"
 RESERVE_MODAL_MODEL_PATH = "gifts/includes/_reserve_modal_content.html"
@@ -35,6 +45,7 @@ METHOD_NOT_AUTHORIZED_MESSAGE = "Method {} not authorized"
 GROUP_NOT_FOUND = "Group not found."
 PERMISSION_DENIED = "You don't have permission to do this"
 INVALID_AMOUNT_FORMAT = _("Invalid amount format.")
+UNSUBSCRIBE_SUCCESS_MSG = "You are no longer subscribed to %(name)s's list"
 
 
 # --- Helpers ---
@@ -54,6 +65,23 @@ def _redirect_to_referer_or(request, view_name, **kwargs):
     if referer:
         return redirect(referer)
     return redirect(view_name, **kwargs)
+
+
+def _reminder_days_from_post(request, field_name, default):
+    try:
+        value = int(request.POST.get(field_name, default))
+    except (TypeError, ValueError):
+        return default
+    return value if 0 <= value <= 365 else default
+
+
+def _subscription_removed_message(owner_name):
+    return _(UNSUBSCRIBE_SUCCESS_MSG) % {"name": owner_name}
+
+
+def _delivery_from_post(request):
+    delivery = request.POST.get("delivery")
+    return delivery if delivery in {"email", "rss", "both"} else "email"
 
 
 def _check_gift_access(request, gift):
@@ -530,13 +558,11 @@ def toggle_subscription(request, user_id):
 
     subscription = Subscription.objects.filter(subscriber=request.user, owner=target_user).first()
     delivery = request.POST.get("delivery")
-
     if request.POST.get("action") == "unsubscribe" or (subscription and not delivery):
         subscription.delete()
-        messages.success(request, _("You are no longer subscribed to %(name)s's list") % {"name": target_user.nickname})
+        messages.success(request, _subscription_removed_message(target_user.nickname))
     else:
-        if delivery not in {"email", "rss", "both"}:
-            delivery = "email"
+        delivery = _delivery_from_post(request)
         Subscription.objects.update_or_create(
             subscriber=request.user,
             owner=target_user,
@@ -544,7 +570,11 @@ def toggle_subscription(request, user_id):
                 "email_enabled": delivery in {"email", "both"},
                 "rss_enabled": delivery in {"rss", "both"},
                 "birthday_reminder": request.POST.get("birthday_reminder") == "on",
+                "birthday_reminder_days_before": _reminder_days_from_post(request, "birthday_reminder_days_before", 14),
                 "christmas_reminder": request.POST.get("christmas_reminder") == "on",
+                "christmas_reminder_days_before": _reminder_days_from_post(
+                    request, "christmas_reminder_days_before", 30
+                ),
             },
         )
         messages.success(request, _("You are now subscribed to %(name)s's list") % {"name": target_user.nickname})
@@ -552,6 +582,110 @@ def toggle_subscription(request, user_id):
     # Keep the originating group context (notably ?from_group=...) so the
     # group sidebar remains rendered after toggling the subscription.
     return _redirect_to_referer_or(request, "view_list", user_id=user_id)
+
+
+def _update_notification_subscription_from_post(request, subscription):
+    delivery = _delivery_from_post(request)
+    subscription.email_enabled = delivery in {"email", "both"}
+    subscription.rss_enabled = delivery in {"rss", "both"}
+    subscription.birthday_reminder = request.POST.get("birthday_reminder") == "on"
+    subscription.birthday_reminder_days_before = _reminder_days_from_post(
+        request, "birthday_reminder_days_before", subscription.birthday_reminder_days_before
+    )
+    subscription.christmas_reminder = request.POST.get("christmas_reminder") == "on"
+    subscription.christmas_reminder_days_before = _reminder_days_from_post(
+        request, "christmas_reminder_days_before", subscription.christmas_reminder_days_before
+    )
+    subscription.save(
+        update_fields=[
+            "email_enabled",
+            "rss_enabled",
+            "birthday_reminder",
+            "birthday_reminder_days_before",
+            "christmas_reminder",
+            "christmas_reminder_days_before",
+        ]
+    )
+
+
+def _handle_notification_subscription_post(request, action):
+    subscription = get_object_or_404(
+        Subscription.objects.select_related("owner"),
+        id=request.POST.get("subscription_id"),
+        subscriber=request.user,
+    )
+    if action == "unsubscribe":
+        owner_name = subscription.owner.nickname
+        subscription.delete()
+        messages.success(request, _subscription_removed_message(owner_name))
+        return
+
+    _update_notification_subscription_from_post(request, subscription)
+    messages.success(request, _("Notification preferences updated."))
+
+
+def _handle_notification_digest_post(request, digest_preference):
+    frequency = request.POST.get("frequency")
+    valid_frequencies = {choice[0] for choice in NotificationDigestPreference.FREQUENCY_CHOICES}
+    if frequency not in valid_frequencies:
+        frequency = NotificationDigestPreference.FREQUENCY_NONE
+    digest_preference.frequency = frequency
+    digest_preference.save(update_fields=["frequency", "updated_at"])
+    messages.success(request, _("Digest preference updated."))
+
+
+@login_required
+def notification_center(request):
+    if is_demo_user(request.user):
+        return HttpResponseForbidden(_("Notifications are disabled for demo accounts."))
+
+    digest_preference = NotificationDigestPreference.objects.get_or_create(user=request.user)[0]
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action in {"update_subscription", "unsubscribe"}:
+            _handle_notification_subscription_post(request, action)
+
+        elif action == "update_digest":
+            _handle_notification_digest_post(request, digest_preference)
+
+        return redirect("notification_center")
+
+    subscriptions = (
+        Subscription.objects.filter(subscriber=request.user)
+        .select_related("owner")
+        .order_by("owner__nickname", "owner__email")
+    )
+    user_groups = request.user.gift_groups.prefetch_related("members").all()
+    today = timezone.localdate()
+    recent_group_gifts = (
+        Gift.objects.filter(visible_in__members=request.user, offered=False, event_list__isnull=True)
+        .exclude(owner=request.user)
+        .select_related("owner", "created_by")
+        .order_by("-created_at")
+        .distinct()[:8]
+    )
+    my_reservations = (
+        Reservation.objects.filter(reserver=request.user, gift__offered=False, gift__event_list__isnull=True)
+        .select_related("gift", "gift__owner", "gift__group_reserved_on")
+        .order_by("-created_at")[:8]
+    )
+
+    return render(
+        request,
+        "gifts/notification_center.html",
+        {
+            "subscriptions": subscriptions,
+            "digest_preference": digest_preference,
+            "frequency_choices": NotificationDigestPreference.FREQUENCY_CHOICES,
+            "reminder_day_choices": Subscription.REMINDER_DAY_CHOICES,
+            "upcoming_birthdays": _upcoming_birthdays(request.user, user_groups, today),
+            "recent_group_gifts": recent_group_gifts,
+            "my_reservations": my_reservations,
+            "balance_summaries": _dashboard_balance_summaries(request.user, user_groups),
+        },
+    )
 
 
 @require_GET
@@ -569,7 +703,7 @@ def unsubscribe_token(request, owner_id, uidb64, token):
 
         if subscriber.subscriptions.filter(id=owner.id).exists():
             subscriber.subscriptions.remove(owner)
-            messages.success(request, _("You are no longer subscribed to %(name)s's list") % {"name": owner.nickname})
+            messages.success(request, _subscription_removed_message(owner.nickname))
 
         return redirect("view_list", user_id=owner.id)
     except (TypeError, ValueError, OverflowError):
@@ -613,6 +747,8 @@ def add_gift(request, owner_id):
 
             for subscription in subscription_records:
                 subscriber = subscription.subscriber
+                if subscriber == request.user:
+                    continue
                 if Group.objects.filter(members=owner).filter(members=subscriber).exists():
                     gift_groups = gift.visible_in.all()
                     if gift_groups.exists() and not gift_groups.filter(members=subscriber).exists():

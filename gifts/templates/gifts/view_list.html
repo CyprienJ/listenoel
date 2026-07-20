@@ -83,10 +83,24 @@
                                     <input class="form-check-input me-2" type="checkbox" name="birthday_reminder" {% if subscription.birthday_reminder %}checked{% endif %} {% if not user.birthday %}disabled{% endif %}>
                                     <i class="bi bi-cake2 me-1"></i> {% trans "Their birthday" %}
                                     {% if not user.birthday %}<span class="small text-muted">({% trans "birthday not provided" %})</span>{% endif %}
+                                    <select class="form-select form-select-sm mt-2" name="birthday_reminder_days_before" {% if not user.birthday %}disabled{% endif %}>
+                                        <option value="0" {% if subscription.birthday_reminder_days_before == 0 %}selected{% endif %}>{% trans "On the day" %}</option>
+                                        <option value="1" {% if subscription.birthday_reminder_days_before == 1 %}selected{% endif %}>{% trans "1 day before" %}</option>
+                                        <option value="7" {% if subscription.birthday_reminder_days_before == 7 %}selected{% endif %}>{% trans "1 week before" %}</option>
+                                        <option value="14" {% if not subscription or subscription.birthday_reminder_days_before == 14 %}selected{% endif %}>{% trans "2 weeks before" %}</option>
+                                        <option value="30" {% if subscription.birthday_reminder_days_before == 30 %}selected{% endif %}>{% trans "1 month before" %}</option>
+                                    </select>
                                 </label>
                                 <label class="p-3 bg-body-tertiary rounded-4">
                                     <input class="form-check-input me-2" type="checkbox" name="christmas_reminder" {% if subscription.christmas_reminder %}checked{% endif %}>
                                     <i class="bi bi-gift me-1"></i> {% trans "Christmas" %}
+                                    <select class="form-select form-select-sm mt-2" name="christmas_reminder_days_before">
+                                        <option value="0" {% if subscription.christmas_reminder_days_before == 0 %}selected{% endif %}>{% trans "On the day" %}</option>
+                                        <option value="1" {% if subscription.christmas_reminder_days_before == 1 %}selected{% endif %}>{% trans "1 day before" %}</option>
+                                        <option value="7" {% if subscription.christmas_reminder_days_before == 7 %}selected{% endif %}>{% trans "1 week before" %}</option>
+                                        <option value="14" {% if subscription.christmas_reminder_days_before == 14 %}selected{% endif %}>{% trans "2 weeks before" %}</option>
+                                        <option value="30" {% if not subscription or subscription.christmas_reminder_days_before == 30 %}selected{% endif %}>{% trans "1 month before" %}</option>
+                                    </select>
                                 </label>
                             </div>
 

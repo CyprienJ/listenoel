@@ -1,0 +1,25 @@
+{% load i18n %}
+{% blocktrans with frequency=frequency %}Your {{ frequency }} nosCadeaux digest{% endblocktrans %}
+
+{% trans "New visible wishes" %}
+{% for gift in recent_group_gifts %}- {{ gift.title }} — {{ gift.owner.nickname }}
+{% empty %}- {% trans "No new visible wish." %}
+{% endfor %}
+
+{% trans "Upcoming birthdays" %}
+{% for birthday in upcoming_birthdays %}- {{ birthday.member.nickname }} — {{ birthday.date|date:"d M" }}
+{% empty %}- {% trans "No upcoming birthday." %}
+{% endfor %}
+
+{% trans "What you are expected to give" %}
+{% for reservation in my_reservations %}- {{ reservation.gift.title }} — {{ reservation.gift.owner.nickname }}
+{% empty %}- {% trans "No active reservation." %}
+{% endfor %}
+
+{% trans "What you should receive or owe" %}
+{% for balance in balance_summaries %}- {{ balance.group.name }}:
+{% if balance.my_balance > 0 %}{% blocktrans with amount=balance.my_balance %}You should receive {{ amount }} EUR{% endblocktrans %}{% elif balance.my_balance < 0 %}{% blocktrans with amount=balance.my_balance_abs %}You owe {{ amount }} EUR{% endblocktrans %}{% endif %}
+{% empty %}- {% trans "No active balance." %}
+{% endfor %}
+
+{% trans "Manage notifications:" %} {{ notification_center_url }}

@@ -139,6 +139,7 @@ urlpatterns = [
     path("event/<str:token>/regenerate/", events.regenerate_event_token, name="regenerate_event_token"),
     path("event/<str:token>/photo/", events.event_photo_upload, name="event_photo_upload"),
     # Notification
+    path("notifications/", views.notification_center, name="notification_center"),
     path("subscribe/<int:user_id>/", views.toggle_subscription, name="toggle_subscription"),
     path("feeds/subscriptions/<uuid:feed_token>/", SubscriptionFeed(), name="subscription_feed"),
     path(

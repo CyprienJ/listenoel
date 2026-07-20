@@ -1,7 +1,7 @@
 {% load i18n %}<!doctype html>
 <html><body style="font-family:Arial,sans-serif;color:#292929">
 <p>{% blocktrans with subscriber_name=subscriber.nickname %}Hi {{ subscriber_name }},{% endblocktrans %}</p>
-<p>{% if event == "birthday" %}{% blocktrans with owner_name=owner.nickname event_date=event_date %}{{ owner_name }}'s birthday is on {{ event_date }}, in two weeks.{% endblocktrans %}{% else %}{% blocktrans with owner_name=owner.nickname %}Christmas is in one month. Here is {{ owner_name }}'s gift list.{% endblocktrans %}{% endif %}</p>
+<p>{% if event == "birthday" %}{% blocktrans with owner_name=owner.nickname event_date=event_date days=days_before %}{{ owner_name }}'s birthday is on {{ event_date }}, in {{ days }} day(s).{% endblocktrans %}{% else %}{% blocktrans with owner_name=owner.nickname days=days_before %}Christmas is in {{ days }} day(s). Here is {{ owner_name }}'s gift list.{% endblocktrans %}{% endif %}</p>
 {% if gifts %}<ul>{% for gift in gifts %}<li>{% if gift.url %}<a href="{{ gift.url }}">{{ gift.title }}</a>{% else %}{{ gift.title }}{% endif %}</li>{% endfor %}</ul>{% else %}<p>{% trans "Their list is currently empty." %}</p>{% endif %}
 <p><a href="{{ list_url }}">{% trans "View the up-to-date list" %}</a></p>
 </body></html>

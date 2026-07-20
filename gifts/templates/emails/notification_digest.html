@@ -1,0 +1,56 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+<!doctype html>
+<html lang="{{ LANGUAGE_CODE|default:'fr' }}">
+<head>
+    <title>{% trans "Your nosCadeaux notification digest" %}</title>
+</head>
+<body style="font-family:Arial,sans-serif;line-height:1.5;color:#222">
+    <h1>{% blocktrans with frequency=frequency %}Your {{ frequency }} nosCadeaux digest{% endblocktrans %}</h1>
+
+    <h2>{% trans "New visible wishes" %}</h2>
+    <ul>
+        {% for gift in recent_group_gifts %}
+            <li><strong>{{ gift.title }}</strong> — {{ gift.owner.nickname }}</li>
+        {% empty %}
+            <li>{% trans "No new visible wish." %}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>{% trans "Upcoming birthdays" %}</h2>
+    <ul>
+        {% for birthday in upcoming_birthdays %}
+            <li><strong>{{ birthday.member.nickname }}</strong> — {{ birthday.date|date:"d M" }}</li>
+        {% empty %}
+            <li>{% trans "No upcoming birthday." %}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>{% trans "What you are expected to give" %}</h2>
+    <ul>
+        {% for reservation in my_reservations %}
+            <li><strong>{{ reservation.gift.title }}</strong> — {{ reservation.gift.owner.nickname }}</li>
+        {% empty %}
+            <li>{% trans "No active reservation." %}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>{% trans "What you should receive or owe" %}</h2>
+    <ul>
+        {% for balance in balance_summaries %}
+            <li>
+                <strong>{{ balance.group.name }}</strong> —
+                {% if balance.my_balance > 0 %}
+                    {% blocktrans with amount=balance.my_balance %}You should receive {{ amount }} EUR{% endblocktrans %}
+                {% elif balance.my_balance < 0 %}
+                    {% blocktrans with amount=balance.my_balance_abs %}You owe {{ amount }} EUR{% endblocktrans %}
+                {% endif %}
+            </li>
+        {% empty %}
+            <li>{% trans "No active balance." %}</li>
+        {% endfor %}
+    </ul>
+
+    <p><a href="{{ notification_center_url }}">{% trans "Manage notifications" %}</a></p>
+</body>
+</html>
