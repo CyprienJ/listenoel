@@ -133,12 +133,30 @@ class User(AbstractUser):
 
 
 class Subscription(models.Model):
+    REMINDER_DAY_CHOICES = (
+        (0, _("On the day")),
+        (1, _("1 day before")),
+        (7, _("1 week before")),
+        (14, _("2 weeks before")),
+        (30, _("1 month before")),
+    )
+
     subscriber = models.ForeignKey(User, on_delete=models.CASCADE, related_name="subscription_records")
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="subscriber_records")
     email_enabled = models.BooleanField(default=True)
     rss_enabled = models.BooleanField(default=False)
     birthday_reminder = models.BooleanField(default=False)
+    birthday_reminder_days_before = models.PositiveSmallIntegerField(
+        default=14,
+        choices=REMINDER_DAY_CHOICES,
+        validators=[MaxValueValidator(365)],
+    )
     christmas_reminder = models.BooleanField(default=False)
+    christmas_reminder_days_before = models.PositiveSmallIntegerField(
+        default=30,
+        choices=REMINDER_DAY_CHOICES,
+        validators=[MaxValueValidator(365)],
+    )
     feed_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -149,6 +167,27 @@ class Subscription(models.Model):
 
     def __str__(self):
         return f"{self.subscriber.nickname} → {self.owner.nickname}"
+
+
+class NotificationDigestPreference(models.Model):
+    FREQUENCY_NONE = "none"
+    FREQUENCY_DAILY = "daily"
+    FREQUENCY_WEEKLY = "weekly"
+    FREQUENCY_MONTHLY = "monthly"
+    FREQUENCY_CHOICES = (
+        (FREQUENCY_NONE, _("Disabled")),
+        (FREQUENCY_DAILY, _("Daily")),
+        (FREQUENCY_WEEKLY, _("Weekly")),
+        (FREQUENCY_MONTHLY, _("Monthly")),
+    )
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="notification_digest_preference")
+    frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, default=FREQUENCY_NONE)
+    last_sent_at = models.DateTimeField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.nickname}: {self.frequency}"
 
 
 class ReminderDelivery(models.Model):

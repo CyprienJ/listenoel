@@ -113,6 +113,11 @@
                             </a>
                         </li>
                         <li>
+                            <a class="dropdown-item py-2" href="{% url 'notification_center' %}">
+                                <i class="bi bi-bell me-2"></i> {% trans "Notification center" %}
+                            </a>
+                        </li>
+                        <li>
                             <form action="{% url 'logout' %}" method="post" class="m-0">
                                 {% csrf_token %}
                                 <button type="submit" class="dropdown-item text-danger py-2">

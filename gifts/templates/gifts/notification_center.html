@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Notification center" %} — Nos cadeaux{% endblock %}
+
+{% block content %}
+<div class="nc-notification-center">
+    <div class="nc-notification-header">
+        <div>
+            <div class="nc-section-label">{% trans "Notifications" %}</div>
+            <h1 class="nc-dashboard-title mb-2">{% trans "Notification center" %}</h1>
+            <p class="text-muted mb-0">{% trans "Review active subscriptions, reminders, and digest settings." %}</p>
+        </div>
+        <a class="nc-btn nc-btn--outline nc-btn--sm" href="{% url 'dashboard' %}">
+            <i class="bi bi-arrow-left"></i> {% trans "Dashboard" %}
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="nc-section-card mb-4">
+                <div class="nc-section-card__header">
+                    <div>
+                        <div class="nc-section-card__title">{% trans "List subscriptions" %}</div>
+                        <div class="nc-section-card__subtitle">{% trans "People whose list updates or reminders you follow." %}</div>
+                    </div>
+                </div>
+                <div class="nc-section-card__body">
+                    {% if subscriptions %}
+                        <div class="nc-notification-subscriptions">
+                            {% for subscription in subscriptions %}
+                                <form method="post" class="nc-notification-subscription">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="subscription_id" value="{{ subscription.id }}">
+                                    <div class="nc-notification-subscription__header">
+                                        <div>
+                                            <strong class="nc-notification-subscription__name">{{ subscription.owner.nickname }}</strong>
+                                            <div class="nc-notification-subscription__email">{{ subscription.owner.email }}</div>
+                                        </div>
+                                        <button type="submit" name="action" value="unsubscribe" class="btn btn-sm btn-outline-danger rounded-pill">
+                                            {% trans "Remove" %}
+                                        </button>
+                                    </div>
+
+                                    <div class="nc-notification-settings-grid">
+                                        <div>
+                                            <label class="form-label small fw-semibold" for="delivery{{ subscription.id }}">{% trans "Delivery" %}</label>
+                                            <select id="delivery{{ subscription.id }}" class="form-select form-select-sm" name="delivery">
+                                                <option value="email" {% if subscription.email_enabled and not subscription.rss_enabled %}selected{% endif %}>{% trans "Email" %}</option>
+                                                <option value="rss" {% if subscription.rss_enabled and not subscription.email_enabled %}selected{% endif %}>{% trans "RSS" %}</option>
+                                                <option value="both" {% if subscription.email_enabled and subscription.rss_enabled %}selected{% endif %}>{% trans "Email and RSS" %}</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <div class="form-label small fw-semibold">
+                                                <input id="birthdayReminder{{ subscription.id }}" class="form-check-input me-1" type="checkbox" name="birthday_reminder" {% if subscription.birthday_reminder %}checked{% endif %} {% if not subscription.owner.birthday %}disabled{% endif %}>
+                                                <label for="birthdayReminder{{ subscription.id }}">
+                                                {% trans "Birthday" %}
+                                                </label>
+                                            </div>
+                                            <label class="visually-hidden" for="birthdayReminderDays{{ subscription.id }}">{% trans "Birthday reminder delay" %}</label>
+                                            <select id="birthdayReminderDays{{ subscription.id }}" class="form-select form-select-sm" name="birthday_reminder_days_before" {% if not subscription.owner.birthday %}disabled{% endif %}>
+                                                {% for value, label in reminder_day_choices %}
+                                                    <option value="{{ value }}" {% if subscription.birthday_reminder_days_before == value %}selected{% endif %}>{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            {% if not subscription.owner.birthday %}
+                                                <div class="form-text">{% trans "Birthday not provided." %}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <div class="form-label small fw-semibold">
+                                                <input id="christmasReminder{{ subscription.id }}" class="form-check-input me-1" type="checkbox" name="christmas_reminder" {% if subscription.christmas_reminder %}checked{% endif %}>
+                                                <label for="christmasReminder{{ subscription.id }}">
+                                                {% trans "Christmas" %}
+                                                </label>
+                                            </div>
+                                            <label class="visually-hidden" for="christmasReminderDays{{ subscription.id }}">{% trans "Christmas reminder delay" %}</label>
+                                            <select id="christmasReminderDays{{ subscription.id }}" class="form-select form-select-sm" name="christmas_reminder_days_before">
+                                                {% for value, label in reminder_day_choices %}
+                                                    <option value="{{ value }}" {% if subscription.christmas_reminder_days_before == value %}selected{% endif %}>{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="nc-notification-subscription__footer">
+                                        <button type="submit" name="action" value="update_subscription" class="btn btn-primary btn-sm rounded-pill px-3">
+                                            {% trans "Save" %}
+                                        </button>
+                                    </div>
+                                </form>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="nc-dashboard-empty">{% trans "No active notification subscription." %}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="nc-section-card">
+                <div class="nc-section-card__header">
+                    <div>
+                        <div class="nc-section-card__title">{% trans "Digest" %}</div>
+                        <div class="nc-section-card__subtitle">{% trans "Receive a periodic summary instead of checking every group manually." %}</div>
+                    </div>
+                </div>
+                <div class="nc-section-card__body">
+                    <form method="post" class="nc-notification-digest-form">
+                        {% csrf_token %}
+                        <div class="nc-notification-digest-form__field">
+                            <label class="form-label small fw-semibold" for="digestFrequency">{% trans "Frequency" %}</label>
+                            <select id="digestFrequency" class="form-select" name="frequency">
+                                {% for value, label in frequency_choices %}
+                                    <option value="{{ value }}" {% if digest_preference.frequency == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">
+                                {% trans "The digest includes new visible wishes in shared groups, upcoming birthdays, active reservations, and balances." %}
+                            </div>
+                        </div>
+                        <div class="nc-notification-digest-form__actions">
+                            <button type="submit" name="action" value="update_digest" class="btn btn-primary rounded-pill px-4">
+                                {% trans "Save digest" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="nc-section-card">
+                <div class="nc-section-card__header">
+                    <div>
+                        <div class="nc-section-card__title">{% trans "Current summary" %}</div>
+                        <div class="nc-section-card__subtitle">{% trans "What your digest would currently contain." %}</div>
+                    </div>
+                </div>
+                <div class="nc-section-card__body">
+                    <div class="nc-notification-summary-section">
+                        <div class="nc-notification-summary-title">{% trans "New visible wishes" %}</div>
+                        {% for gift in recent_group_gifts %}
+                            <a class="nc-notification-summary-link" href="{% url 'view_list' gift.owner.id %}">
+                                <strong>{{ gift.title }}</strong>
+                                <span>{{ gift.owner.nickname }}</span>
+                            </a>
+                        {% empty %}
+                            <div class="nc-notification-summary-empty">{% trans "No recent visible wish." %}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="nc-notification-summary-section">
+                        <div class="nc-notification-summary-title">{% trans "Upcoming birthdays" %}</div>
+                        {% for birthday in upcoming_birthdays %}
+                            <div class="nc-notification-summary-item">
+                                <strong>{{ birthday.member.nickname }}</strong>
+                                <span>{{ birthday.date|date:"d M" }}</span>
+                            </div>
+                        {% empty %}
+                            <div class="nc-notification-summary-empty">{% trans "No upcoming birthday." %}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="nc-notification-summary-section">
+                        <div class="nc-notification-summary-title">{% trans "What you are expected to give" %}</div>
+                        {% for reservation in my_reservations %}
+                            <a class="nc-notification-summary-link" href="{% url 'view_list' reservation.gift.owner.id %}">
+                                <strong>{{ reservation.gift.title }}</strong>
+                                <span>{{ reservation.gift.owner.nickname }}</span>
+                            </a>
+                        {% empty %}
+                            <div class="nc-notification-summary-empty">{% trans "No active reservation." %}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="nc-notification-summary-section">
+                        <div class="nc-notification-summary-title">{% trans "What you should receive or owe" %}</div>
+                        {% for balance in balance_summaries %}
+                            <div class="nc-notification-summary-item">
+                                <strong>{{ balance.group.name }}</strong>
+                                <span>
+                                    {% if balance.my_balance > 0 %}
+                                        {% blocktrans with amount=balance.my_balance %}You should receive {{ amount }} EUR{% endblocktrans %}
+                                    {% elif balance.my_balance < 0 %}
+                                        {% blocktrans with amount=balance.my_balance_abs %}You owe {{ amount }} EUR{% endblocktrans %}
+                                    {% endif %}
+                                </span>
+                            </div>
+                        {% empty %}
+                            <div class="nc-notification-summary-empty">{% trans "No active balance." %}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

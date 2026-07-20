@@ -27,6 +27,7 @@ from .models import (
     Group,
     GuestReservation,
     ManagedMember,
+    NotificationDigestPreference,
     Reservation,
     SecretSantaAssignment,
     SecretSantaExclusion,
@@ -615,7 +616,7 @@ class SubscriptionTest(TestCase):
 
         self.assertTrue(self.user2.subscriptions.filter(id=self.user1.id).exists())
 
-    def test_notification_sent_when_subscriber_adds_surprise(self):
+    def test_notification_not_sent_when_subscriber_adds_surprise(self):
         # User2 subscribes to User1
         self.user2.subscriptions.add(self.user1)
 
@@ -623,10 +624,78 @@ class SubscriptionTest(TestCase):
         # User2 add a surprise to User1's list
         self.client.post(reverse("add_gift", args=[self.user1.id]), {"title": "Surprise"})
 
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_custom_birthday_reminder_delay_is_saved_and_used(self):
+        self.user1.birthday = date(1990, 8, 8)
+        self.user1.save()
+        self.client.force_login(self.user2)
+
+        self.client.post(
+            reverse("toggle_subscription", args=[self.user1.id]),
+            {
+                "delivery": "email",
+                "birthday_reminder": "on",
+                "birthday_reminder_days_before": "7",
+            },
+        )
+
+        subscription = Subscription.objects.get(subscriber=self.user2, owner=self.user1)
+        self.assertEqual(subscription.birthday_reminder_days_before, 7)
+
+        call_command("send_event_reminders", date="2026-08-01")
         self.assertEqual(len(mail.outbox), 1)
-        notification_mail = mail.outbox[0]
-        self.assertIn(self.user2.email, notification_mail.to)
-        self.assertIn("Surprise", notification_mail.body)
+
+    def test_notification_center_updates_subscription_and_digest(self):
+        subscription = Subscription.objects.create(
+            subscriber=self.user2,
+            owner=self.user1,
+            birthday_reminder=True,
+            christmas_reminder=True,
+        )
+        self.client.force_login(self.user2)
+
+        response = self.client.get(reverse("notification_center"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.user1.nickname)
+
+        self.client.post(
+            reverse("notification_center"),
+            {
+                "action": "update_subscription",
+                "subscription_id": subscription.id,
+                "delivery": "both",
+                "birthday_reminder": "on",
+                "birthday_reminder_days_before": "1",
+                "christmas_reminder": "on",
+                "christmas_reminder_days_before": "7",
+            },
+        )
+        subscription.refresh_from_db()
+        self.assertTrue(subscription.email_enabled)
+        self.assertTrue(subscription.rss_enabled)
+        self.assertEqual(subscription.birthday_reminder_days_before, 1)
+        self.assertEqual(subscription.christmas_reminder_days_before, 7)
+
+        self.client.post(
+            reverse("notification_center"),
+            {"action": "update_digest", "frequency": NotificationDigestPreference.FREQUENCY_WEEKLY},
+        )
+        digest_preference = NotificationDigestPreference.objects.get(user=self.user2)
+        self.assertEqual(digest_preference.frequency, NotificationDigestPreference.FREQUENCY_WEEKLY)
+
+    def test_notification_digest_command_sends_due_digest(self):
+        NotificationDigestPreference.objects.create(
+            user=self.user2,
+            frequency=NotificationDigestPreference.FREQUENCY_DAILY,
+        )
+        gift = Gift.objects.create(owner=self.user1, created_by=self.user1, title="Visible group wish")
+        gift.visible_in.add(self.group)
+
+        call_command("send_notification_digests")
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("Visible group wish", mail.outbox[0].body)
 
     def test_notification_visibility_restriction(self):
         # User2 subscribes to User1

@@ -12,6 +12,7 @@ from .models import (
     Group,
     GuestReservation,
     ManagedMember,
+    NotificationDigestPreference,
     Reservation,
     Subscription,
     User,
@@ -90,12 +91,22 @@ class SubscriptionAdmin(ModelAdmin):
         "email_enabled",
         "rss_enabled",
         "birthday_reminder",
+        "birthday_reminder_days_before",
         "christmas_reminder",
+        "christmas_reminder_days_before",
         "created_at",
     )
     list_filter = ("email_enabled", "rss_enabled", "birthday_reminder", "christmas_reminder")
     search_fields = ("subscriber__email", "subscriber__nickname", "owner__email", "owner__nickname")
     readonly_fields = ("feed_token", "created_at")
+
+
+@admin.register(NotificationDigestPreference)
+class NotificationDigestPreferenceAdmin(ModelAdmin):
+    list_display = ("user", "frequency", "last_sent_at", "updated_at")
+    list_filter = ("frequency",)
+    search_fields = ("user__email", "user__nickname")
+    readonly_fields = ("updated_at",)
 
 
 @admin.register(Group)
