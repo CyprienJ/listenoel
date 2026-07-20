@@ -21,11 +21,11 @@ jobs:
       - name: Set up Python
         run: uv python install
       - name: Install dependencies
-        run: uv sync --all-extras --dev
+        run: uv sync --all-extras --dev --frozen
       - name: Run linter
-        run: uv run ruff check .
+        run: uv run --frozen --no-sync ruff check .
       - name: Run formater check
-        run: uv run ruff format --check .
+        run: uv run --frozen --no-sync ruff format --check .
 
   test:
     runs-on: ubuntu-latest
@@ -36,9 +36,9 @@ jobs:
       - name: Set up Python
         run: uv python install
       - name: Install dependencies
-        run: uv sync --all-extras --dev
+        run: uv sync --all-extras --dev --frozen
       - name: Run Tests
-        run: uv run python manage.py test
+        run: uv run --frozen --no-sync python manage.py test
 
   extension-test:
     runs-on: ubuntu-latest
