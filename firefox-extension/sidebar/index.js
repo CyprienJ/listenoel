@@ -251,7 +251,7 @@ async function api(path, options = {}) {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
-      ...(options.headers || {})
+      ...options.headers
     }
   });
   const data = response.status === 204 ? null : await response.json().catch(() => null);

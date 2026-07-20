@@ -350,4 +350,4 @@ globalThis.__NOSCADEAUX_PRODUCT__ = (() => {
     extractionError: error?.stack || error?.message || String(error)
   };
 }
-Object.assign({}, globalThis.__NOSCADEAUX_PRODUCT__);
+({ ...globalThis.__NOSCADEAUX_PRODUCT__ });

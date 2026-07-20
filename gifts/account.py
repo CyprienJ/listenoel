@@ -1,5 +1,3 @@
-import os
-
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -38,6 +36,30 @@ def send_verification_email(request, user):
     send_mail(subject, message_txt, None, [user.email], html_message=message_html)
 
 
+def delete_avatar_file(storage, name):
+    if name:
+        storage.delete(name)
+
+
+def save_profile_form(request, form, old_email, old_avatar_storage, old_avatar_name):
+    user = form.save(commit=False)
+
+    if "avatar" in request.FILES:
+        delete_avatar_file(old_avatar_storage, old_avatar_name)
+        user.avatar_preset = ""
+
+    if user.email != old_email:
+        user.is_verified = False
+        user.save()
+        send_verification_email(request, user)
+        messages.success(request, _("Profile updated! Please verify your new email address."))
+        return redirect("verify_email_sent")
+
+    user.save()
+    messages.success(request, _("Your profile has been updated!"))
+    return redirect("account")
+
+
 @login_required
 @require_http_methods(["GET", "POST"])
 def account(request):
@@ -47,25 +69,11 @@ def account(request):
     if request.method == "POST":
         old_email = request.user.email
         old_avatar = request.user.avatar
+        old_avatar_name = old_avatar.name if old_avatar else ""
+        old_avatar_storage = old_avatar.storage
         form = UserProfileForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
-            user = form.save(commit=False)
-
-            if "avatar" in request.FILES and old_avatar and os.path.isfile(old_avatar.path):
-                os.remove(old_avatar.path)
-            if "avatar" in request.FILES:
-                user.avatar_preset = ""
-
-            if user.email != old_email:
-                user.is_verified = False
-                user.save()
-                send_verification_email(request, user)
-                messages.success(request, _("Profile updated! Please verify your new email address."))
-                return redirect("verify_email_sent")
-
-            user.save()
-            messages.success(request, _("Your profile has been updated!"))
-            return redirect("account")
+            return save_profile_form(request, form, old_email, old_avatar_storage, old_avatar_name)
     else:
         form = UserProfileForm(instance=request.user)
 
@@ -127,6 +135,28 @@ def resend_verification(request):
     return redirect("verify_email_sent")
 
 
+def set_profile_preset(user, preset):
+    if not is_valid_photo_preset("profile", preset):
+        return JsonResponse({"success": False, "error": _("Invalid preset photo.")}, status=400)
+
+    delete_avatar_file(user.avatar.storage, user.avatar.name)
+    user.avatar = None
+    user.avatar_preset = preset
+    user.save(update_fields=["avatar", "avatar_preset"])
+    return JsonResponse({"success": True, "url": user.display_avatar_url})
+
+
+def set_profile_photo(user, uploaded):
+    if not uploaded:
+        return JsonResponse({"success": False, "error": "No file"}, status=400)
+
+    delete_avatar_file(user.avatar.storage, user.avatar.name)
+    user.avatar = uploaded
+    user.avatar_preset = ""
+    user.save(update_fields=["avatar", "avatar_preset"])
+    return JsonResponse({"success": True})
+
+
 @login_required
 @require_http_methods(["GET", "POST"])
 def photo_upload(request):
@@ -139,26 +169,10 @@ def photo_upload(request):
     if request.method == "POST":
         preset = request.POST.get("preset", "")
         if preset:
-            if not is_valid_photo_preset("profile", preset):
-                return JsonResponse({"success": False, "error": _("Invalid preset photo.")}, status=400)
-            old = request.user.avatar
-            if old and os.path.isfile(old.path):
-                os.remove(old.path)
-            request.user.avatar = None
-            request.user.avatar_preset = preset
-            request.user.save(update_fields=["avatar", "avatar_preset"])
-            return JsonResponse({"success": True, "url": request.user.display_avatar_url})
+            return set_profile_preset(request.user, preset)
 
         uploaded = request.FILES.get("photo")
-        if not uploaded:
-            return JsonResponse({"success": False, "error": "No file"}, status=400)
-        old = request.user.avatar
-        if old and os.path.isfile(old.path):
-            os.remove(old.path)
-        request.user.avatar = uploaded
-        request.user.avatar_preset = ""
-        request.user.save(update_fields=["avatar", "avatar_preset"])
-        return JsonResponse({"success": True})
+        return set_profile_photo(request.user, uploaded)
     return render(
         request,
         "photos/photo_upload.html",
