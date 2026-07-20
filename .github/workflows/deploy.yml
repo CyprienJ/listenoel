@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras --dev --frozen --no-build
       - name: Run linter
-        run: uv run --frozen --no-sync ruff check .
+        run: uv run --no-build --frozen --no-sync ruff check .
       - name: Run formater check
         run: uv run --frozen --no-sync --no-build ruff format --check .
 
