@@ -152,43 +152,31 @@
 
         <section class="nc-dashboard-main">
 
-    <div class="nc-dashboard-quick-actions">
-        <a href="{% url 'view_list' request.user.id %}" class="nc-quick-action">
-            <i class="bi bi-gift"></i>
-            <span>{% trans "Add a wish" %}</span>
-        </a>
-        <button type="button" class="nc-quick-action" data-bs-toggle="modal" data-bs-target="#createGroupModal"
-                onclick="setTimeout(function(){ selectCreateType('event'); }, 150)">
-            <i class="bi bi-calendar-heart"></i>
-            <span>{% trans "Create event list" %}</span>
-        </button>
-        <button type="button" class="nc-quick-action" data-bs-toggle="modal" data-bs-target="#joinGroupModal">
-            <i class="bi bi-person-plus"></i>
-            <span>{% trans "Join a group" %}</span>
-        </button>
-        <a href="https://addons.mozilla.org/fr/firefox/addon/noscadeaux-quick-add/"
-           target="_blank" rel="noopener" class="nc-quick-action">
-            <i class="bi bi-browser-firefox"></i>
-            <span>{% trans "Firefox extension" %}</span>
-        </a>
-    </div>
+    <div class="nc-dashboard-overview">
+        <div class="nc-dashboard-quick-actions">
+            <a href="{% url 'view_list' request.user.id %}" class="nc-quick-action">
+                <i class="bi bi-gift"></i>
+                <span>{% trans "Add a wish" %}</span>
+            </a>
+            <a href="https://addons.mozilla.org/fr/firefox/addon/noscadeaux-quick-add/"
+               target="_blank" rel="noopener" class="nc-quick-action">
+                <i class="bi bi-browser-firefox"></i>
+                <span>{% trans "Firefox extension" %}</span>
+            </a>
+        </div>
 
-    <div class="nc-dashboard-stats">
-        <a href="{% url 'view_list' request.user.id %}" class="nc-dashboard-stat">
-            <span class="nc-dashboard-stat__value">{{ open_wish_count }}</span>
-            <span class="nc-dashboard-stat__label">{% trans "active wishes" %}</span>
-        </a>
-        <div class="nc-dashboard-stat">
-            <span class="nc-dashboard-stat__value">{{ user_groups.count }}</span>
-            <span class="nc-dashboard-stat__label">{% trans "groups" %}</span>
-        </div>
-        <div class="nc-dashboard-stat">
-            <span class="nc-dashboard-stat__value">{{ my_reservation_count }}</span>
-            <span class="nc-dashboard-stat__label">{% trans "current reservations" %}</span>
-        </div>
-        <div class="nc-dashboard-stat">
-            <span class="nc-dashboard-stat__value">{{ event_count }}</span>
-            <span class="nc-dashboard-stat__label">{% trans "event lists" %}</span>
+        <div class="nc-dashboard-stats">
+            <a href="{% url 'view_list' request.user.id %}" class="nc-dashboard-stat">
+                <span class="nc-dashboard-stat__value">{{ open_wish_count }}</span>
+                <span class="nc-dashboard-stat__label">{% trans "active wishes" %}</span>
+            </a>
+            <button type="button" class="nc-dashboard-stat nc-dashboard-stat--button"
+                    id="reservationStatToggle"
+                    aria-controls="dashboardReservationsList"
+                    aria-expanded="false">
+                <span class="nc-dashboard-stat__value">{{ my_reservation_count }}</span>
+                <span class="nc-dashboard-stat__label">{% trans "current reservations" %}</span>
+            </button>
         </div>
     </div>
 
@@ -253,20 +241,45 @@
                     <div class="nc-section-label m-0">{% trans "Reservations" %}</div>
                     <h2>{% trans "Gifts you reserved" %}</h2>
                 </div>
+                {% if my_reservation_count %}
+                    <button type="button" class="nc-btn nc-btn--ghost nc-btn--sm"
+                            id="reservationListToggle"
+                            aria-controls="dashboardReservationsList"
+                            aria-expanded="false"
+                            data-show-label="{% trans 'Show' %}"
+                            data-hide-label="{% trans 'Hide' %}">
+                        <i class="bi bi-eye"></i>
+                        <span>{% trans "Show" %}</span>
+                    </button>
+                {% endif %}
             </div>
-            <div class="nc-dashboard-list">
-                {% for reservation in my_reservations %}
-                    <a href="{% url 'view_list' reservation.gift.owner.id %}{% if reservation.gift.group_reserved_on_id %}?from_group={{ reservation.gift.group_reserved_on_id }}{% endif %}"
-                       class="nc-dashboard-list-row">
-                        <span class="nc-dashboard-row-icon nc-dashboard-row-icon--reservation"><i class="bi bi-lock-fill"></i></span>
+            <div class="nc-dashboard-list" id="dashboardReservationsList">
+                {% if my_reservation_count %}
+                    <button type="button" class="nc-dashboard-reservations-placeholder"
+                            id="reservationPlaceholderToggle"
+                            aria-controls="dashboardReservationsList"
+                            aria-expanded="false">
+                        <span class="nc-dashboard-row-icon nc-dashboard-row-icon--reservation"><i class="bi bi-eye-slash"></i></span>
                         <span class="nc-dashboard-row-body">
-                            <strong>{{ reservation.gift.title }}</strong>
-                            <small>{{ reservation.gift.owner.nickname }}{% if reservation.exclusivity %} · {% trans "exclusive" %}{% endif %}</small>
+                            <strong>{% trans "Reserved gifts are hidden" %}</strong>
+                            <small>{% trans "Click to show your reserved gifts." %}</small>
                         </span>
-                    </a>
-                {% empty %}
+                    </button>
+                    <div class="d-none" id="dashboardReservationsRows">
+                        {% for reservation in my_reservations %}
+                            <a href="{% url 'view_list' reservation.gift.owner.id %}{% if reservation.gift.group_reserved_on_id %}?from_group={{ reservation.gift.group_reserved_on_id }}{% endif %}"
+                               class="nc-dashboard-list-row">
+                                <span class="nc-dashboard-row-icon nc-dashboard-row-icon--reservation"><i class="bi bi-lock-fill"></i></span>
+                                <span class="nc-dashboard-row-body">
+                                    <strong>{{ reservation.gift.title }}</strong>
+                                    <small>{{ reservation.gift.owner.nickname }}{% if reservation.exclusivity %} · {% trans "exclusive" %}{% endif %}</small>
+                                </span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
                     <div class="nc-dashboard-empty">{% trans "You have no active reservation yet." %}</div>
-                {% endfor %}
+                {% endif %}
             </div>
         </section>
     </div>
@@ -537,6 +550,37 @@
             };
             btn.addEventListener('click', redirect);
             input.addEventListener('keypress', e => { if (e.key === 'Enter') redirect(); });
+        });
+
+        /* Hide reserved gifts on dashboard until explicitly revealed */
+        document.addEventListener('DOMContentLoaded', function () {
+            const rows = document.getElementById('dashboardReservationsRows');
+            const placeholder = document.getElementById('reservationPlaceholderToggle');
+            const headerToggle = document.getElementById('reservationListToggle');
+            const statToggle = document.getElementById('reservationStatToggle');
+            if (!rows) return;
+
+            const toggles = [placeholder, headerToggle, statToggle].filter(Boolean);
+            const setExpanded = (expanded) => {
+                rows.classList.toggle('d-none', !expanded);
+                if (placeholder) placeholder.classList.toggle('d-none', expanded);
+                toggles.forEach(toggle => toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false'));
+                if (headerToggle) {
+                    const label = headerToggle.querySelector('span');
+                    const icon = headerToggle.querySelector('i');
+                    if (label) label.textContent = expanded ? headerToggle.dataset.hideLabel : headerToggle.dataset.showLabel;
+                    if (icon) {
+                        icon.classList.toggle('bi-eye', !expanded);
+                        icon.classList.toggle('bi-eye-slash', expanded);
+                    }
+                }
+            };
+
+            toggles.forEach(toggle => {
+                toggle.addEventListener('click', function () {
+                    setExpanded(rows.classList.contains('d-none'));
+                });
+            });
         });
     </script>
 {% endblock %}
