@@ -1,56 +1,163 @@
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
-<!doctype html>
+<!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'fr' }}">
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% trans "Your nosCadeaux notification digest" %}</title>
 </head>
-<body style="font-family:Arial,sans-serif;line-height:1.5;color:#222">
-    <h1>{% blocktrans with frequency=frequency %}Your {{ frequency }} nosCadeaux digest{% endblocktrans %}</h1>
+<body style="margin: 0; padding: 0; font-family: 'Inter', Helvetica, Arial, sans-serif; background-color: #f9f9f9; color: #1A1C1E; -webkit-text-size-adjust: 100%;">
+    <table role="presentation" style="width: 100%; border: 0; border-collapse: collapse; background-color: #f9f9f9;">
+        <tr>
+            <td style="padding: 20px 10px 40px; text-align: center;">
+                <table role="presentation" style="width: 100%; max-width: 600px; margin: 0 auto; border: 1px solid #eeeeee; border-collapse: separate; border-spacing: 0; overflow: hidden; background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: left;">
+                    <tr>
+                        <td style="padding: 40px 20px; background-color: #D32F2F; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">🎁 Nos Cadeaux</h1>
+                        </td>
+                    </tr>
 
-    <h2>{% trans "New visible wishes" %}</h2>
-    <ul>
-        {% for gift in recent_group_gifts %}
-            <li><strong>{{ gift.title }}</strong> — {{ gift.owner.nickname }}</li>
-        {% empty %}
-            <li>{% trans "No new visible wish." %}</li>
-        {% endfor %}
-    </ul>
+                    <tr>
+                        <td style="padding: 36px 30px 16px;">
+                            <h2 style="margin: 0 0 8px; color: #1A1C1E; font-size: 24px; line-height: 32px; text-align: center;">
+                                {% blocktrans with frequency=frequency %}Your {{ frequency }} nosCadeaux digest{% endblocktrans %}
+                            </h2>
+                        </td>
+                    </tr>
 
-    <h2>{% trans "Upcoming birthdays" %}</h2>
-    <ul>
-        {% for birthday in upcoming_birthdays %}
-            <li><strong>{{ birthday.member.nickname }}</strong> — {{ birthday.date|date:"d M" }}</li>
-        {% empty %}
-            <li>{% trans "No upcoming birthday." %}</li>
-        {% endfor %}
-    </ul>
+                    <tr>
+                        <td style="padding: 12px 30px;">
+                            <table role="presentation" style="width: 100%; border: 0; border-collapse: separate; border-spacing: 0; background-color: #FFF8F8; border-radius: 12px; border-left: 4px solid #D32F2F;">
+                                <tr>
+                                    <td style="padding: 22px 24px;">
+                                        <h3 style="margin: 0 0 14px; color: #1A1C1E; font-size: 18px; line-height: 24px;">🎁 {% trans "New visible wishes" %}</h3>
+                                        <table role="presentation" style="width: 100%; border: 0; border-collapse: collapse;">
+                                            {% for gift in recent_group_gifts %}
+                                                <tr>
+                                                    <td style="padding: 8px 0; border-top: 1px solid #f0dddd; color: #44474E; font-size: 15px; line-height: 22px;">
+                                                        <strong style="color: #1A1C1E;">{{ gift.title }}</strong><br>
+                                                        <span style="font-size: 13px;">{{ gift.owner.nickname }}</span>
+                                                    </td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td style="color: #6F7278; font-size: 15px; line-height: 22px;">{% trans "No new visible wish." %}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
 
-    <h2>{% trans "What you are expected to give" %}</h2>
-    <ul>
-        {% for reservation in my_reservations %}
-            <li><strong>{{ reservation.gift.title }}</strong> — {{ reservation.gift.owner.nickname }}</li>
-        {% empty %}
-            <li>{% trans "No active reservation." %}</li>
-        {% endfor %}
-    </ul>
+                    <tr>
+                        <td style="padding: 12px 30px;">
+                            <table role="presentation" style="width: 100%; border: 0; border-collapse: separate; border-spacing: 0; background-color: #FFF8F8; border-radius: 12px; border-left: 4px solid #D32F2F;">
+                                <tr>
+                                    <td style="padding: 22px 24px;">
+                                        <h3 style="margin: 0 0 14px; color: #1A1C1E; font-size: 18px; line-height: 24px;">🎂 {% trans "Upcoming birthdays" %}</h3>
+                                        <table role="presentation" style="width: 100%; border: 0; border-collapse: collapse;">
+                                            {% for birthday in upcoming_birthdays %}
+                                                <tr>
+                                                    <td style="padding: 8px 0; border-top: 1px solid #f0dddd; color: #44474E; font-size: 15px; line-height: 22px;">
+                                                        <strong style="color: #1A1C1E;">{{ birthday.member.nickname }}</strong><br>
+                                                        <span style="font-size: 13px;">{{ birthday.date|date:"d M" }}</span>
+                                                    </td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td style="color: #6F7278; font-size: 15px; line-height: 22px;">{% trans "No upcoming birthday." %}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
 
-    <h2>{% trans "What you should receive or owe" %}</h2>
-    <ul>
-        {% for balance in balance_summaries %}
-            <li>
-                <strong>{{ balance.group.name }}</strong> —
-                {% if balance.my_balance > 0 %}
-                    {% blocktrans with amount=balance.my_balance %}You should receive {{ amount }} EUR{% endblocktrans %}
-                {% elif balance.my_balance < 0 %}
-                    {% blocktrans with amount=balance.my_balance_abs %}You owe {{ amount }} EUR{% endblocktrans %}
-                {% endif %}
-            </li>
-        {% empty %}
-            <li>{% trans "No active balance." %}</li>
-        {% endfor %}
-    </ul>
+                    <tr>
+                        <td style="padding: 12px 30px;">
+                            <table role="presentation" style="width: 100%; border: 0; border-collapse: separate; border-spacing: 0; background-color: #FFF8F8; border-radius: 12px; border-left: 4px solid #D32F2F;">
+                                <tr>
+                                    <td style="padding: 22px 24px;">
+                                        <h3 style="margin: 0 0 14px; color: #1A1C1E; font-size: 18px; line-height: 24px;">🛍️ {% trans "What you are expected to give" %}</h3>
+                                        <table role="presentation" style="width: 100%; border: 0; border-collapse: collapse;">
+                                            {% for reservation in my_reservations %}
+                                                <tr>
+                                                    <td style="padding: 8px 0; border-top: 1px solid #f0dddd; color: #44474E; font-size: 15px; line-height: 22px;">
+                                                        <strong style="color: #1A1C1E;">{{ reservation.gift.title }}</strong><br>
+                                                        <span style="font-size: 13px;">{{ reservation.gift.owner.nickname }}</span>
+                                                    </td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td style="color: #6F7278; font-size: 15px; line-height: 22px;">{% trans "No active reservation." %}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
 
-    <p><a href="{{ notification_center_url }}">{% trans "Manage notifications" %}</a></p>
+                    <tr>
+                        <td style="padding: 12px 30px;">
+                            <table role="presentation" style="width: 100%; border: 0; border-collapse: separate; border-spacing: 0; background-color: #FFF8F8; border-radius: 12px; border-left: 4px solid #D32F2F;">
+                                <tr>
+                                    <td style="padding: 22px 24px;">
+                                        <h3 style="margin: 0 0 14px; color: #1A1C1E; font-size: 18px; line-height: 24px;">💶 {% trans "What you should receive or owe" %}</h3>
+                                        <table role="presentation" style="width: 100%; border: 0; border-collapse: collapse;">
+                                            {% for balance in balance_summaries %}
+                                                <tr>
+                                                    <td style="padding: 8px 0; border-top: 1px solid #f0dddd; color: #44474E; font-size: 15px; line-height: 22px;">
+                                                        <strong style="color: #1A1C1E;">{{ balance.group.name }}</strong><br>
+                                                        <span style="font-size: 13px;">
+                                                            {% if balance.my_balance > 0 %}
+                                                                {% blocktrans with amount=balance.my_balance %}You should receive {{ amount }} EUR{% endblocktrans %}
+                                                            {% elif balance.my_balance < 0 %}
+                                                                {% blocktrans with amount=balance.my_balance_abs %}You owe {{ amount }} EUR{% endblocktrans %}
+                                                            {% endif %}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td style="color: #6F7278; font-size: 15px; line-height: 22px;">{% trans "No active balance." %}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 28px 30px 40px; text-align: center;">
+                            <table role="presentation" style="margin: 0 auto; border: 0; border-collapse: separate; border-spacing: 0;">
+                                <tr>
+                                    <td style="border-radius: 100px; background-color: #D32F2F; text-align: center;">
+                                        <a href="{{ notification_center_url }}" style="display: inline-block; padding: 16px 32px; color: #ffffff; font-size: 16px; font-weight: 700; text-decoration: none;">
+                                            {% trans "Manage notifications" %}
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 26px 30px; background-color: #f4f4f4; color: #6D7076; font-size: 12px; line-height: 18px; text-align: center;">
+                            <p style="margin: 0;">Nos Cadeaux</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
