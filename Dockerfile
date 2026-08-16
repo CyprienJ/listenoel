@@ -10,6 +10,15 @@ RUN uv sync --frozen --no-dev --no-install-project --no-build
 
 FROM python:3.12-slim-bookworm
 
+ARG APP_VERSION=0.0.0
+ARG DEPLOYMENT_REVISION=unknown
+
+ENV APP_VERSION=${APP_VERSION}
+ENV DEPLOYMENT_REVISION=${DEPLOYMENT_REVISION}
+
+LABEL org.opencontainers.image.version=${APP_VERSION}
+LABEL org.opencontainers.image.revision=${DEPLOYMENT_REVISION}
+
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \

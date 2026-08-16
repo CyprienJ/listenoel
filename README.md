@@ -40,6 +40,24 @@ Le prototype de l'extension Firefox et ses instructions de développement se tro
 
 - À chaque ajout ou modification de texte visible par les utilisateurs, penser à mettre à jour les traductions Django (`locale/*/LC_MESSAGES/django.po`) puis recompiler les messages.
 
+### Versionnement
+
+La version applicative suit le format `X.Y.Z` et sa source de vérité est le champ
+`project.version` de `pyproject.toml`. Avant d'ouvrir une pull request, l'incrémenter
+selon la nature du changement :
+
+```bash
+uv version --bump patch  # correction
+uv version --bump minor  # fonctionnalité rétrocompatible
+uv version --bump major  # changement incompatible
+```
+
+Le check CI `Version incremented` échoue si la version d'une pull request n'est pas
+strictement supérieure à celle de la branche cible. Ce check doit être déclaré
+obligatoire dans le ruleset GitHub de `main`. Lors du build, le workflow injecte
+automatiquement cette version et le hash complet du commit dans l'unique image
+Docker `latest`.
+
 ## Licence
 
 Ce projet est distribué sous licence GNU Affero General Public License v3.0 ou ultérieure (`AGPL-3.0-or-later`). Consultez le fichier [LICENSE](LICENSE) pour le texte complet de la licence.
