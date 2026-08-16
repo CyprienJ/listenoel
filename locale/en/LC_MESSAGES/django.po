@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-21 08:18+0000\n"
+"POT-Creation-Date: 2026-08-17 14:13+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: config/settings.py:126
+#: config/settings.py:143
 msgid "French"
 msgstr ""
 
-#: config/settings.py:127
+#: config/settings.py:144
 msgid "English"
 msgstr ""
 
@@ -137,6 +137,190 @@ msgstr ""
 #: gifts/admin.py:216 gifts/templates/events/event_detail.html:128
 #: gifts/templates/gifts/includes/_reserve_modal_content.html:83
 msgid "Participants"
+msgstr ""
+
+#: gifts/bug_reports.py:29
+msgid "Display"
+msgstr ""
+
+#: gifts/bug_reports.py:30
+msgid "Navigation"
+msgstr ""
+
+#: gifts/bug_reports.py:31
+msgid "Account"
+msgstr ""
+
+#: gifts/bug_reports.py:32
+msgid "Content"
+msgstr ""
+
+#: gifts/bug_reports.py:33
+msgid "Performance"
+msgstr ""
+
+#: gifts/bug_reports.py:34
+msgid "Other"
+msgstr ""
+
+#: gifts/bug_reports.py:37 gifts/bug_reports.py:169
+msgid "Not specified"
+msgstr ""
+
+#: gifts/bug_reports.py:38
+msgid "Every time"
+msgstr ""
+
+#: gifts/bug_reports.py:39
+msgid "Sometimes"
+msgstr ""
+
+#: gifts/bug_reports.py:40
+msgid "Only once"
+msgstr ""
+
+#: gifts/bug_reports.py:43
+msgid "Short title"
+msgstr ""
+
+#: gifts/bug_reports.py:44
+msgid "Category"
+msgstr ""
+
+#: gifts/bug_reports.py:45 gifts/bug_reports.py:181
+#: gifts/templates/events/event_detail.html:697
+#: gifts/templates/gifts/dashboard.html:435
+#: gifts/templates/gifts/includes/_add_gift_modal.html:27
+#: gifts/templates/gifts/includes/_edit_gift.html:35
+#: gifts/templates/gifts/includes/_edit_gift.html:36
+#: gifts/templates/gifts/includes/_view_gift.html:26
+#: gifts/templates/groups/includes/_group_modals.html:22
+msgid "Description"
+msgstr ""
+
+#: gifts/bug_reports.py:49 gifts/bug_reports.py:185
+msgid "Steps to reproduce"
+msgstr ""
+
+#: gifts/bug_reports.py:50
+msgid "Describe the actions in order, one step per line."
+msgstr ""
+
+#: gifts/bug_reports.py:52 gifts/bug_reports.py:189
+msgid "Expected result"
+msgstr ""
+
+#: gifts/bug_reports.py:53 gifts/bug_reports.py:193
+msgid "Actual result"
+msgstr ""
+
+#: gifts/bug_reports.py:54 gifts/bug_reports.py:197
+#: gifts/templates/gifts/notification_center.html:112
+msgid "Frequency"
+msgstr ""
+
+#: gifts/bug_reports.py:56
+msgid ""
+"I have checked that my report contains no personal or confidential "
+"information."
+msgstr ""
+
+#: gifts/bug_reports.py:86
+msgid "Example: the Save button does nothing"
+msgstr ""
+
+#: gifts/bug_reports.py:94
+msgid "The report could not be submitted."
+msgstr ""
+
+#: gifts/bug_reports.py:153 gifts/bug_reports.py:174 gifts/bug_reports.py:175
+#: gifts/bug_reports.py:206 gifts/bug_reports.py:207 gifts/bug_reports.py:209
+#: gifts/bug_reports.py:210 gifts/bug_reports.py:211 gifts/bug_reports.py:213
+#: gifts/templates/gifts/balance.html:161
+#: gifts/templates/gifts/bug_report.html:37
+msgid "Unknown"
+msgstr ""
+
+#: gifts/bug_reports.py:157
+msgid "Unknown page"
+msgstr ""
+
+#: gifts/bug_reports.py:171 gifts/templates/gifts/bug_report.html:38
+msgid "Desktop computer"
+msgstr ""
+
+#: gifts/bug_reports.py:172 gifts/templates/gifts/bug_report.html:39
+msgid "Mobile"
+msgstr ""
+
+#: gifts/bug_reports.py:173 gifts/templates/gifts/bug_report.html:40
+msgid "Tablet"
+msgstr ""
+
+#: gifts/bug_reports.py:201
+msgid "Technical context"
+msgstr ""
+
+#: gifts/bug_reports.py:203
+msgid "Report reference"
+msgstr ""
+
+#: gifts/bug_reports.py:204
+msgid "Page route"
+msgstr ""
+
+#: gifts/bug_reports.py:205
+msgid "Reported at"
+msgstr ""
+
+#: gifts/bug_reports.py:206 gifts/templates/gifts/bug_report.html:102
+msgid "Browser"
+msgstr ""
+
+#: gifts/bug_reports.py:207 gifts/templates/gifts/bug_report.html:103
+msgid "Operating system"
+msgstr ""
+
+#: gifts/bug_reports.py:208 gifts/templates/gifts/bug_report.html:104
+msgid "Device"
+msgstr ""
+
+#: gifts/bug_reports.py:209 gifts/templates/gifts/bug_report.html:105
+msgid "Window"
+msgstr ""
+
+#: gifts/bug_reports.py:210 gifts/templates/base.html:47
+#: gifts/templates/gifts/bug_report.html:106
+msgid "Language"
+msgstr ""
+
+#: gifts/bug_reports.py:211 gifts/templates/gifts/bug_report.html:107
+msgid "Time zone"
+msgstr ""
+
+#: gifts/bug_reports.py:212 gifts/templates/gifts/bug_report.html:108
+msgid "Application version"
+msgstr ""
+
+#: gifts/bug_reports.py:213
+msgid "Deployment revision"
+msgstr ""
+
+#: gifts/bug_reports.py:216
+msgid ""
+"Submitted from the public bug report form. Dynamic URL identifiers are "
+"intentionally hidden."
+msgstr ""
+
+#: gifts/bug_reports.py:261
+msgid ""
+"Too many reports have been submitted. Please try again in a few minutes."
+msgstr ""
+
+#: gifts/bug_reports.py:268
+msgid ""
+"GitHub could not create the ticket. Your text has been kept in the form; "
+"please try again."
 msgstr ""
 
 #: gifts/demo.py:24
@@ -302,7 +486,7 @@ msgid "Christmas is in %(days)s day(s): %(name)s's gift list"
 msgstr ""
 
 #: gifts/management/commands/send_notification_digests.py:91
-#: gifts/templates/emails/notification_digest.html:6
+#: gifts/templates/emails/notification_digest.html:8
 msgid "Your nosCadeaux notification digest"
 msgstr ""
 
@@ -368,7 +552,7 @@ msgstr "Event wishlist"
 msgid "Christmas / Secret Santa"
 msgstr "Christmas / Secret Santa"
 
-#: gifts/templates/account/account.html:11 gifts/templates/base.html:112
+#: gifts/templates/account/account.html:11 gifts/templates/base.html:117
 #: gifts/templates/photos/photo_upload.html:203
 msgid "My Profile"
 msgstr ""
@@ -447,10 +631,6 @@ msgstr ""
 msgid "Confirm Delete"
 msgstr ""
 
-#: gifts/templates/base.html:47
-msgid "Language"
-msgstr ""
-
 #: gifts/templates/base.html:77
 msgid "Menu"
 msgstr ""
@@ -475,21 +655,26 @@ msgstr ""
 msgid "Privacy"
 msgstr ""
 
-#: gifts/templates/base.html:105
+#: gifts/templates/base.html:99 gifts/templates/gifts/bug_report.html:4
+#: gifts/templates/gifts/bug_report.html:12
+msgid "Report a bug"
+msgstr ""
+
+#: gifts/templates/base.html:110
 msgid "Administration"
 msgstr ""
 
-#: gifts/templates/base.html:117
+#: gifts/templates/base.html:122
 #: gifts/templates/gifts/notification_center.html:4
 #: gifts/templates/gifts/notification_center.html:11
 msgid "Notification center"
 msgstr ""
 
-#: gifts/templates/base.html:124
+#: gifts/templates/base.html:129
 msgid "Log out"
 msgstr ""
 
-#: gifts/templates/base.html:131 gifts/templates/gifts/welcome.html:25
+#: gifts/templates/base.html:136 gifts/templates/gifts/welcome.html:25
 #: gifts/templates/registration/login.html:53
 #: gifts/templates/registration/password_reset_complete.html:16
 msgid "Log in"
@@ -567,54 +752,54 @@ msgstr ""
 msgid "Unsubscribe from this list:"
 msgstr ""
 
-#: gifts/templates/emails/notification_digest.html:9
+#: gifts/templates/emails/notification_digest.html:24
 #: gifts/templates/emails/notification_digest.txt:2
 #, python-format
 msgid "Your %(frequency)s nosCadeaux digest"
 msgstr ""
 
-#: gifts/templates/emails/notification_digest.html:11
+#: gifts/templates/emails/notification_digest.html:34
 #: gifts/templates/emails/notification_digest.txt:4
 #: gifts/templates/gifts/notification_center.html:142
 msgid "New visible wishes"
 msgstr ""
 
-#: gifts/templates/emails/notification_digest.html:16
+#: gifts/templates/emails/notification_digest.html:45
 #: gifts/templates/emails/notification_digest.txt:6
 msgid "No new visible wish."
 msgstr ""
 
-#: gifts/templates/emails/notification_digest.html:20
+#: gifts/templates/emails/notification_digest.html:60
 #: gifts/templates/emails/notification_digest.txt:9
 #: gifts/templates/gifts/notification_center.html:154
 msgid "Upcoming birthdays"
 msgstr ""
 
-#: gifts/templates/emails/notification_digest.html:25
+#: gifts/templates/emails/notification_digest.html:71
 #: gifts/templates/emails/notification_digest.txt:11
 #: gifts/templates/gifts/notification_center.html:161
 msgid "No upcoming birthday."
 msgstr ""
 
-#: gifts/templates/emails/notification_digest.html:29
+#: gifts/templates/emails/notification_digest.html:86
 #: gifts/templates/emails/notification_digest.txt:14
 #: gifts/templates/gifts/notification_center.html:166
 msgid "What you are expected to give"
 msgstr ""
 
-#: gifts/templates/emails/notification_digest.html:34
+#: gifts/templates/emails/notification_digest.html:97
 #: gifts/templates/emails/notification_digest.txt:16
 #: gifts/templates/gifts/notification_center.html:173
 msgid "No active reservation."
 msgstr ""
 
-#: gifts/templates/emails/notification_digest.html:38
+#: gifts/templates/emails/notification_digest.html:112
 #: gifts/templates/emails/notification_digest.txt:19
 #: gifts/templates/gifts/notification_center.html:178
 msgid "What you should receive or owe"
 msgstr ""
 
-#: gifts/templates/emails/notification_digest.html:44
+#: gifts/templates/emails/notification_digest.html:120
 #: gifts/templates/emails/notification_digest.txt:21
 #: gifts/templates/gifts/dashboard.html:305
 #: gifts/templates/gifts/notification_center.html:184
@@ -622,7 +807,7 @@ msgstr ""
 msgid "You should receive %(amount)s EUR"
 msgstr ""
 
-#: gifts/templates/emails/notification_digest.html:46
+#: gifts/templates/emails/notification_digest.html:122
 #: gifts/templates/emails/notification_digest.txt:21
 #: gifts/templates/gifts/dashboard.html:307
 #: gifts/templates/gifts/notification_center.html:186
@@ -630,13 +815,13 @@ msgstr ""
 msgid "You owe %(amount)s EUR"
 msgstr ""
 
-#: gifts/templates/emails/notification_digest.html:50
+#: gifts/templates/emails/notification_digest.html:129
 #: gifts/templates/emails/notification_digest.txt:22
 #: gifts/templates/gifts/notification_center.html:191
 msgid "No active balance."
 msgstr ""
 
-#: gifts/templates/emails/notification_digest.html:54
+#: gifts/templates/emails/notification_digest.html:145
 msgid "Manage notifications"
 msgstr ""
 
@@ -865,7 +1050,7 @@ msgstr "Guest draws"
 msgid "All"
 msgstr ""
 
-#: gifts/templates/events/event_detail.html:246 gifts/views.py:114
+#: gifts/templates/events/event_detail.html:246 gifts/views.py:116
 msgid "Available"
 msgstr ""
 
@@ -944,11 +1129,11 @@ msgstr ""
 msgid "Transfer to my wish list"
 msgstr ""
 
-#: gifts/templates/events/event_detail.html:374 gifts/views.py:124
+#: gifts/templates/events/event_detail.html:374 gifts/views.py:126
 msgid "Reserved by you"
 msgstr ""
 
-#: gifts/templates/events/event_detail.html:378 gifts/views.py:129
+#: gifts/templates/events/event_detail.html:378 gifts/views.py:131
 msgid "Reserved exclusively"
 msgstr ""
 
@@ -1110,16 +1295,6 @@ msgstr ""
 msgid "optional"
 msgstr ""
 
-#: gifts/templates/events/event_detail.html:697
-#: gifts/templates/gifts/dashboard.html:435
-#: gifts/templates/gifts/includes/_add_gift_modal.html:27
-#: gifts/templates/gifts/includes/_edit_gift.html:35
-#: gifts/templates/gifts/includes/_edit_gift.html:36
-#: gifts/templates/gifts/includes/_view_gift.html:26
-#: gifts/templates/groups/includes/_group_modals.html:22
-msgid "Description"
-msgstr ""
-
 #: gifts/templates/events/event_detail.html:699
 #: gifts/templates/gifts/dashboard.html:437
 msgid "A short message for your guests…"
@@ -1218,10 +1393,6 @@ msgstr ""
 msgid "No expenses recorded yet."
 msgstr ""
 
-#: gifts/templates/gifts/balance.html:161
-msgid "Unknown"
-msgstr ""
-
 #: gifts/templates/gifts/balance.html:184
 msgid "Payer not recorded"
 msgstr ""
@@ -1316,6 +1487,82 @@ msgstr ""
 #: gifts/templates/gifts/balance.html:450
 #: gifts/templates/gifts/dashboard.html:250
 msgid "Hide"
+msgstr ""
+
+#: gifts/templates/gifts/bug_report.html:11
+msgid "Public GitHub ticket"
+msgstr ""
+
+#: gifts/templates/gifts/bug_report.html:14
+msgid ""
+"Describe the problem precisely. After submission, you will receive a link to "
+"follow its resolution on GitHub."
+msgstr ""
+
+#: gifts/templates/gifts/bug_report.html:22
+msgid ""
+"Bug reporting is temporarily unavailable because GitHub is not configured."
+msgstr ""
+
+#: gifts/templates/gifts/bug_report.html:29
+msgid "Your report will be public"
+msgstr ""
+
+#: gifts/templates/gifts/bug_report.html:31
+msgid ""
+"Everything entered below will be published in a public GitHub issue. Do not "
+"include a name, email address, password, invitation link, or any other "
+"confidential information."
+msgstr ""
+
+#: gifts/templates/gifts/bug_report.html:41
+msgid "Current page; dynamic identifiers will be hidden"
+msgstr ""
+
+#: gifts/templates/gifts/bug_report.html:64
+msgid "The problem"
+msgstr ""
+
+#: gifts/templates/gifts/bug_report.html:93
+msgid "Published technical information"
+msgstr ""
+
+#: gifts/templates/gifts/bug_report.html:95
+msgid ""
+"These details help reproduce the problem. URL parameters and dynamic "
+"identifiers are not published."
+msgstr ""
+
+#: gifts/templates/gifts/bug_report.html:101
+msgid "Page"
+msgstr ""
+
+#: gifts/templates/gifts/bug_report.html:123
+msgid "Create the public GitHub ticket"
+msgstr ""
+
+#: gifts/templates/gifts/bug_report_success.html:4
+#: gifts/templates/gifts/bug_report_success.html:11
+msgid "Ticket created"
+msgstr ""
+
+#: gifts/templates/gifts/bug_report_success.html:10
+msgid "GitHub issue"
+msgstr ""
+
+#: gifts/templates/gifts/bug_report_success.html:13
+msgid ""
+"Your report has been published. You can follow its resolution on GitHub."
+msgstr ""
+
+#: gifts/templates/gifts/bug_report_success.html:18
+msgid "Follow the resolution on GitHub"
+msgstr ""
+
+#: gifts/templates/gifts/bug_report_success.html:22
+msgid ""
+"A GitHub account is required to comment or subscribe, but not to read a "
+"public issue."
 msgstr ""
 
 #: gifts/templates/gifts/dashboard.html:4
@@ -1655,7 +1902,7 @@ msgid "Delete this gift from history?"
 msgstr ""
 
 #: gifts/templates/gifts/history.html:163
-#: gifts/templates/gifts/view_list.html:229 gifts/tests.py:1312
+#: gifts/templates/gifts/view_list.html:229 gifts/tests.py:1365
 msgid "An error occurred."
 msgstr ""
 
@@ -1708,7 +1955,7 @@ msgstr ""
 
 #: gifts/templates/gifts/includes/_edit_gift.html:15
 #: gifts/templates/gifts/includes/_reserve_modal_content.html:136
-#: gifts/templates/gifts/includes/_view_gift.html:175
+#: gifts/templates/gifts/includes/_view_gift.html:95
 msgid "Close"
 msgstr ""
 
@@ -1730,6 +1977,54 @@ msgstr ""
 #: gifts/templates/gifts/includes/_edit_price_modal.html:24
 msgid "This helps others to organize collective gifts."
 msgstr ""
+
+#: gifts/templates/gifts/includes/_gift_comments_panel.html:5
+#: gifts/tests.py:464
+msgid "Secret group notes"
+msgstr "Secret group notes"
+
+#: gifts/templates/gifts/includes/_gift_comments_panel.html:8
+msgid "Visible only to this group's members, not to the gift owner."
+msgstr "Visible only to this group's members, not to the gift owner."
+
+#: gifts/templates/gifts/includes/_gift_comments_panel.html:20
+#: gifts/tests.py:559 gifts/tests.py:575
+msgid "edited"
+msgstr "edited"
+
+#: gifts/templates/gifts/includes/_gift_comments_panel.html:24
+#: gifts/tests.py:511 gifts/tests.py:525 gifts/views.py:818
+msgid "Comment deleted."
+msgstr "Comment deleted."
+
+#: gifts/templates/gifts/includes/_gift_comments_panel.html:37
+#: gifts/templates/gifts/includes/_gift_comments_panel.html:55
+msgid "Edit comment"
+msgstr "Edit comment"
+
+#: gifts/templates/gifts/includes/_gift_comments_panel.html:45
+msgid "Update comment"
+msgstr "Update comment"
+
+#: gifts/templates/gifts/includes/_gift_comments_panel.html:67
+msgid "Delete comment"
+msgstr "Delete comment"
+
+#: gifts/templates/gifts/includes/_gift_comments_panel.html:78
+msgid "No note yet."
+msgstr "No note yet."
+
+#: gifts/templates/gifts/includes/_gift_comments_panel.html:89
+msgid "Add a note"
+msgstr "Add a note"
+
+#: gifts/templates/gifts/includes/_gift_comments_panel.html:96
+msgid "He already has it, cheaper link, coordination..."
+msgstr "He already has it, cheaper link, coordination..."
+
+#: gifts/templates/gifts/includes/_gift_comments_panel.html:98
+msgid "Add note"
+msgstr "Add note"
 
 #: gifts/templates/gifts/includes/_gift_modals_logic.html:5
 msgid "Modify the gift"
@@ -1933,7 +2228,7 @@ msgid "Open participation"
 msgstr "Guest participants"
 
 #: gifts/templates/gifts/includes/_reserve_modal_content.html:52
-#: gifts/views.py:140
+#: gifts/views.py:142
 msgid "Participate"
 msgstr ""
 
@@ -1979,52 +2274,7 @@ msgstr ""
 msgid "See on website"
 msgstr ""
 
-#: gifts/templates/gifts/includes/_view_gift.html:63 gifts/tests.py:464
-msgid "Secret group notes"
-msgstr "Secret group notes"
-
-#: gifts/templates/gifts/includes/_view_gift.html:66
-msgid "Visible only to this group's members, not to the gift owner."
-msgstr "Visible only to this group's members, not to the gift owner."
-
-#: gifts/templates/gifts/includes/_view_gift.html:78 gifts/tests.py:535
-msgid "edited"
-msgstr "edited"
-
-#: gifts/templates/gifts/includes/_view_gift.html:82 gifts/tests.py:501
-#: gifts/views.py:790
-msgid "Comment deleted."
-msgstr "Comment deleted."
-
-#: gifts/templates/gifts/includes/_view_gift.html:92
-msgid "Edit comment"
-msgstr "Edit comment"
-
-#: gifts/templates/gifts/includes/_view_gift.html:100
-msgid "Update comment"
-msgstr "Update comment"
-
-#: gifts/templates/gifts/includes/_view_gift.html:112
-msgid "Delete comment"
-msgstr "Delete comment"
-
-#: gifts/templates/gifts/includes/_view_gift.html:123
-msgid "No note yet."
-msgstr "No note yet."
-
-#: gifts/templates/gifts/includes/_view_gift.html:131
-msgid "Add a note"
-msgstr "Add a note"
-
-#: gifts/templates/gifts/includes/_view_gift.html:138
-msgid "He already has it, cheaper link, coordination..."
-msgstr "He already has it, cheaper link, coordination..."
-
-#: gifts/templates/gifts/includes/_view_gift.html:140
-msgid "Add note"
-msgstr "Add note"
-
-#: gifts/templates/gifts/includes/_view_gift.html:168
+#: gifts/templates/gifts/includes/_view_gift.html:88
 msgid "Suggested by"
 msgstr ""
 
@@ -2095,10 +2345,6 @@ msgstr ""
 
 #: gifts/templates/gifts/notification_center.html:105
 msgid "Receive a periodic summary instead of checking every group manually."
-msgstr ""
-
-#: gifts/templates/gifts/notification_center.html:112
-msgid "Frequency"
 msgstr ""
 
 #: gifts/templates/gifts/notification_center.html:119
@@ -3022,143 +3268,143 @@ msgstr ""
 msgid "Invalid amount format."
 msgstr ""
 
-#: gifts/views.py:115
+#: gifts/views.py:51
+msgid "Comment cannot be empty."
+msgstr ""
+
+#: gifts/views.py:52
+msgid "Comment is too long."
+msgstr ""
+
+#: gifts/views.py:117
 msgid "Reserve"
 msgstr ""
 
-#: gifts/views.py:119
+#: gifts/views.py:121
 msgid "Reserved in another group"
 msgstr ""
 
-#: gifts/views.py:120
+#: gifts/views.py:122
 msgid "Reserved elsewhere"
 msgstr ""
 
-#: gifts/views.py:125
+#: gifts/views.py:127
 msgid "My reservation"
 msgstr ""
 
-#: gifts/views.py:130
+#: gifts/views.py:132
 msgid "View reservation"
 msgstr ""
 
-#: gifts/views.py:134
+#: gifts/views.py:136
 #, fuzzy
 #| msgid "No participants yet."
 msgid "You participate"
 msgstr "No participants yet."
 
-#: gifts/views.py:135
+#: gifts/views.py:137
 msgid "My participation"
 msgstr ""
 
-#: gifts/views.py:139
+#: gifts/views.py:141
 msgid "Participation open"
 msgstr ""
 
-#: gifts/views.py:194
+#: gifts/views.py:196
 msgid "This gift is already reserved in another group"
 msgstr ""
 
-#: gifts/views.py:208
+#: gifts/views.py:210
 msgid "Gift comments are hidden from the gift owner."
 msgstr ""
 
-#: gifts/views.py:307 gifts/views.py:338
+#: gifts/views.py:325 gifts/views.py:356
 msgid "Invalid group ID."
 msgstr ""
 
-#: gifts/views.py:336 gifts/views.py:1350
+#: gifts/views.py:354 gifts/views.py:1385
 msgid "GROUP_NOT_FOUND"
 msgstr ""
 
-#: gifts/views.py:591
+#: gifts/views.py:609
 msgid "Subscriptions are disabled for demo accounts."
 msgstr ""
 
-#: gifts/views.py:594
+#: gifts/views.py:612
 msgid "You cannot subscribe to yourself"
 msgstr ""
 
-#: gifts/views.py:620
+#: gifts/views.py:638
 #, python-format
 msgid "You are now subscribed to %(name)s's list"
 msgstr ""
 
-#: gifts/views.py:664
+#: gifts/views.py:682
 msgid "Notification preferences updated."
 msgstr ""
 
-#: gifts/views.py:674
+#: gifts/views.py:692
 msgid "Digest preference updated."
 msgstr ""
 
-#: gifts/views.py:680
+#: gifts/views.py:698
 msgid "Notifications are disabled for demo accounts."
 msgstr ""
 
-#: gifts/views.py:741 gifts/views.py:750
+#: gifts/views.py:759 gifts/views.py:768
 msgid "The unsubscription link is invalid"
 msgstr ""
 
-#: gifts/views.py:764 gifts/views.py:810
-msgid "Comment cannot be empty."
-msgstr ""
-
-#: gifts/views.py:768 gifts/views.py:814
-msgid "Comment is too long."
-msgstr ""
-
-#: gifts/views.py:772
+#: gifts/views.py:797
 msgid "Comment added."
 msgstr "Comment added."
 
-#: gifts/views.py:806
+#: gifts/views.py:834
 msgid "Deleted comments cannot be edited."
 msgstr "Deleted comments cannot be edited."
 
-#: gifts/views.py:820
+#: gifts/views.py:855
 msgid "Comment updated."
 msgstr "Comment updated."
 
-#: gifts/views.py:880
+#: gifts/views.py:915
 #, python-format
 msgid "New gift on %(name)s's list!"
 msgstr ""
 
-#: gifts/views.py:962
+#: gifts/views.py:997
 msgid "Estimated price updated!"
 msgstr ""
 
-#: gifts/views.py:964
+#: gifts/views.py:999
 msgid "Invalid price format."
 msgstr ""
 
-#: gifts/views.py:1005
+#: gifts/views.py:1040
 msgid "The gift owner cannot reserve this gift"
 msgstr ""
 
-#: gifts/views.py:1112
+#: gifts/views.py:1147
 msgid "You cannot mark your own gift as offered"
 msgstr ""
 
-#: gifts/views.py:1237
+#: gifts/views.py:1272
 msgid "Gift put back in the list."
 msgstr ""
 
-#: gifts/views.py:1254
+#: gifts/views.py:1289
 msgid "Gift deleted."
 msgstr ""
 
-#: gifts/views.py:1307 gifts/views.py:1310
+#: gifts/views.py:1342 gifts/views.py:1345
 msgid "Only the gift owner can mark it as received"
 msgstr ""
 
-#: gifts/views.py:1486
+#: gifts/views.py:1521
 msgid "Invalid settlement data."
 msgstr ""
 
-#: gifts/views.py:1489
+#: gifts/views.py:1524
 msgid "Settlement recorded."
 msgstr ""
 

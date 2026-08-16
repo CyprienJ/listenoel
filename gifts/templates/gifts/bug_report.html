@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Report a bug" %} · nosCadeaux{% endblock %}
+
+{% block content %}
+<section class="nc-bug-page py-4 py-md-5">
+    <div class="nc-bug-header mb-4">
+        <span class="nc-bug-icon" aria-hidden="true"><i class="bi bi-bug"></i></span>
+        <div>
+            <p class="nc-bug-eyebrow mb-1">{% trans "Public GitHub ticket" %}</p>
+            <h1 class="nc-bug-title mb-2">{% trans "Report a bug" %}</h1>
+            <p class="nc-bug-intro mb-0">
+                {% trans "Describe the problem precisely. After submission, you will receive a link to follow its resolution on GitHub." %}
+            </p>
+        </div>
+    </div>
+
+    {% if not reporting_configured %}
+        <div class="alert alert-warning border-0 rounded-4" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            {% trans "Bug reporting is temporarily unavailable because GitHub is not configured." %}
+        </div>
+    {% endif %}
+
+    <div class="nc-bug-public-warning mb-4">
+        <i class="bi bi-globe2" aria-hidden="true"></i>
+        <div>
+            <strong>{% trans "Your report will be public" %}</strong>
+            <p class="mb-0">
+                {% trans "Everything entered below will be published in a public GitHub issue. Do not include a name, email address, password, invitation link, or any other confidential information." %}
+            </p>
+        </div>
+    </div>
+
+    <form method="post" class="nc-bug-form" novalidate
+          data-unknown="{% trans 'Unknown' %}"
+          data-desktop="{% trans 'Desktop computer' %}"
+          data-mobile="{% trans 'Mobile' %}"
+          data-tablet="{% trans 'Tablet' %}"
+          data-current-page="{% trans 'Current page; dynamic identifiers will be hidden' %}">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger border-0 rounded-4" role="alert">
+                {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+            </div>
+        {% endif %}
+
+        {{ form.page_path }}
+        {{ form.browser }}
+        {{ form.operating_system }}
+        {{ form.device_type }}
+        {{ form.viewport }}
+        {{ form.browser_language }}
+        {{ form.browser_timezone }}
+
+        <div class="nc-bug-honeypot" aria-hidden="true">
+            {{ form.website.label_tag }}
+            {{ form.website }}
+        </div>
+
+        <div class="nc-bug-card">
+            <h2 class="nc-bug-section-title">{% trans "The problem" %}</h2>
+            <div class="row g-3">
+                <div class="col-12 col-md-8">
+                    {% include "gifts/includes/_bug_field.html" with field=form.title %}
+                </div>
+                <div class="col-12 col-md-4">
+                    {% include "gifts/includes/_bug_field.html" with field=form.category %}
+                </div>
+                <div class="col-12">
+                    {% include "gifts/includes/_bug_field.html" with field=form.description %}
+                </div>
+                <div class="col-12">
+                    {% include "gifts/includes/_bug_field.html" with field=form.reproduction_steps %}
+                </div>
+                <div class="col-12 col-md-6">
+                    {% include "gifts/includes/_bug_field.html" with field=form.expected_result %}
+                </div>
+                <div class="col-12 col-md-6">
+                    {% include "gifts/includes/_bug_field.html" with field=form.actual_result %}
+                </div>
+                <div class="col-12 col-md-5">
+                    {% include "gifts/includes/_bug_field.html" with field=form.frequency %}
+                </div>
+            </div>
+        </div>
+
+        <div class="nc-bug-card mt-4">
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                <div>
+                    <h2 class="nc-bug-section-title mb-1">{% trans "Published technical information" %}</h2>
+                    <p class="nc-bug-help mb-0">
+                        {% trans "These details help reproduce the problem. URL parameters and dynamic identifiers are not published." %}
+                    </p>
+                </div>
+                <i class="bi bi-pc-display-horizontal nc-bug-context-icon" aria-hidden="true"></i>
+            </div>
+            <dl class="nc-bug-context mb-0">
+                <div><dt>{% trans "Page" %}</dt><dd id="bugContextPage">—</dd></div>
+                <div><dt>{% trans "Browser" %}</dt><dd id="bugContextBrowser">—</dd></div>
+                <div><dt>{% trans "Operating system" %}</dt><dd id="bugContextOs">—</dd></div>
+                <div><dt>{% trans "Device" %}</dt><dd id="bugContextDevice">—</dd></div>
+                <div><dt>{% trans "Window" %}</dt><dd id="bugContextViewport">—</dd></div>
+                <div><dt>{% trans "Language" %}</dt><dd id="bugContextLanguage">—</dd></div>
+                <div><dt>{% trans "Time zone" %}</dt><dd id="bugContextTimezone">—</dd></div>
+                <div><dt>{% trans "Application version" %}</dt><dd>{{ app_version }}</dd></div>
+            </dl>
+        </div>
+
+        <div class="nc-bug-submit mt-4">
+            <div class="form-check">
+                {{ form.public_consent }}
+                <label class="form-check-label" for="{{ form.public_consent.id_for_label }}">
+                    {{ form.public_consent.label }}
+                </label>
+                {% for error in form.public_consent.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+            <button type="submit" class="nc-btn nc-btn--primary nc-bug-submit-button"
+                    {% if not reporting_configured %}disabled{% endif %}>
+                <i class="bi bi-github" aria-hidden="true"></i>
+                {% trans "Create the public GitHub ticket" %}
+            </button>
+        </div>
+    </form>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+    {% load static %}
+    <script src="{% static 'gifts/bug_report.js' %}"></script>
+{% endblock %}

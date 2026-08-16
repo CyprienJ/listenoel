@@ -1,0 +1,10 @@
+version = "1.0.3"
+date = 2026-08-18
+
+[fr]
+title = "Signalez un bug depuis le site"
+content = "Un lien présent en bas de chaque page permet désormais de décrire un problème et de créer directement un ticket GitHub public pour suivre sa résolution."
+
+[en]
+title = "Report a bug from the website"
+content = "A link in the footer now lets you describe a problem and create a public GitHub issue to follow its resolution."

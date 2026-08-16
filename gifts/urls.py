@@ -3,7 +3,7 @@ from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.urls import path, reverse_lazy
 
-from . import account, events, groups, views
+from . import account, bug_reports, events, groups, views
 from .feeds import SubscriptionFeed
 
 urlpatterns = [
@@ -12,6 +12,8 @@ urlpatterns = [
     path("privacy/", views.privacy, name="privacy"),
     path("changelog/", views.changelog, name="changelog"),
     path("release-notes/unseen/", views.unseen_release_notes, name="unseen_release_notes"),
+    path("bug-report/", bug_reports.bug_report, name="bug_report"),
+    path("bug-report/success/", bug_reports.bug_report_success, name="bug_report_success"),
     path("dashboard/", views.dashboard, name="dashboard"),
     # Auth
     path("demo/", account.demo_login, name="demo_login"),

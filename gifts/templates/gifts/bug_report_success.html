@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Ticket created" %} · nosCadeaux{% endblock %}
+
+{% block content %}
+<section class="nc-bug-success py-5">
+    <div class="nc-bug-success__card text-center">
+        <span class="nc-bug-success__icon" aria-hidden="true"><i class="bi bi-check-lg"></i></span>
+        <p class="nc-bug-eyebrow mt-3 mb-1">{% trans "GitHub issue" %} #{{ issue_number }}</p>
+        <h1 class="nc-bug-title mb-3">{% trans "Ticket created" %}</h1>
+        <p class="nc-bug-intro mb-4">
+            {% trans "Your report has been published. You can follow its resolution on GitHub." %}
+        </p>
+        <a class="nc-btn nc-btn--primary nc-bug-success__link" href="{{ issue_url }}"
+           target="_blank" rel="noopener noreferrer">
+            <i class="bi bi-github" aria-hidden="true"></i>
+            {% trans "Follow the resolution on GitHub" %}
+            <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+        </a>
+        <p class="nc-bug-help mt-3 mb-0">
+            {% trans "A GitHub account is required to comment or subscribe, but not to read a public issue." %}
+        </p>
+    </div>
+</section>
+{% endblock %}

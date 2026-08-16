@@ -81,6 +81,20 @@ content = "Description shown in the modal and changelog."
 La CI valide automatiquement ces fichiers. La commande peut aussi être lancée
 localement avec `uv run python manage.py validate_release_notes`.
 
+### Signalement public des bugs
+
+Le formulaire `/bug-report/` crée directement une issue GitHub et ne stocke aucun
+signalement dans la base de données. Configurez le service avec :
+
+- `BUG_REPORT_REPOSITORY` : dépôt public au format `propriétaire/dépôt` ;
+- `BUG_REPORT_TOKEN` : jeton finement limité à ce dépôt avec `Issues: write` ;
+- `BUG_REPORT_LABELS` : labels séparés par des virgules (facultatif).
+
+Le jeton doit rester exclusivement côté serveur. Le dépôt doit être public pour que
+les visiteurs sans compte GitHub puissent consulter le ticket créé. Le fichier
+`.env.example` documente les variables sans contenir de secret. La version et la
+révision publiées dans le ticket proviennent automatiquement de l’image déployée.
+
 ## Licence
 
 Ce projet est distribué sous licence GNU Affero General Public License v3.0 ou ultérieure (`AGPL-3.0-or-later`). Consultez le fichier [LICENSE](LICENSE) pour le texte complet de la licence.
