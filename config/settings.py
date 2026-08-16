@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 import sys
+import tomllib
 from pathlib import Path
 
 import dj_database_url
@@ -19,6 +20,12 @@ from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+with (BASE_DIR / "pyproject.toml").open("rb") as pyproject_file:
+    PROJECT_VERSION = tomllib.load(pyproject_file)["project"]["version"]
+
+APP_VERSION = os.environ.get("APP_VERSION", PROJECT_VERSION)
+DEPLOYMENT_REVISION = os.environ.get("DEPLOYMENT_REVISION", "")[:100]
 
 
 # Quick-start development settings - unsuitable for production
@@ -72,6 +79,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "gifts.context_processors.application_version",
             ],
         },
     },

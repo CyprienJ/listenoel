@@ -12,6 +12,52 @@ env:
 
 jobs:
 
+  version-check:
+    name: Version incremented
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check version against the target branch
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        shell: bash
+        run: |
+          base_version="$(
+            git show "${BASE_SHA}:pyproject.toml" |
+            sed -n 's/^version = "\(.*\)"/\1/p'
+          )"
+          pr_version="$(sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml)"
+          base_version_format='^[0-9]+\.[0-9]+(\.[0-9]+)?$'
+          semver='^[0-9]+\.[0-9]+\.[0-9]+$'
+
+          if [[ ! "${base_version}" =~ ${base_version_format} ]]; then
+            echo "::error::Invalid base version '${base_version}'"
+            exit 1
+          fi
+
+          if [[ ! "${pr_version}" =~ ${semver} ]]; then
+            echo "::error::Pull request version '${pr_version}' must use the X.Y.Z format"
+            exit 1
+          fi
+
+          if [[ "${pr_version}" == "${base_version}" ]]; then
+            echo "::error::Version is still ${base_version}. Run: uv version --bump patch"
+            exit 1
+          fi
+
+          highest_version="$(printf '%s\n' "${base_version}" "${pr_version}" | sort -V | tail -n 1)"
+          if [[ "${highest_version}" != "${pr_version}" ]]; then
+            echo "::error::Version ${pr_version} must be greater than ${base_version}"
+            exit 1
+          fi
+
+          echo "Version incremented: ${base_version} -> ${pr_version}"
+
   linter:
     runs-on: ubuntu-latest
     steps:
@@ -65,6 +111,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Read application version
+        id: application-version
+        run: echo "value=$(uv version --short)" >> "${GITHUB_OUTPUT}"
+
       - name: Lowercase image name
         run: |
           echo "IMAGE_NAME_LC=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
@@ -82,3 +135,9 @@ jobs:
           context: .
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:latest
+          build-args: |
+            APP_VERSION=${{ steps.application-version.outputs.value }}
+            DEPLOYMENT_REVISION=${{ github.sha }}
+          labels: |
+            org.opencontainers.image.version=${{ steps.application-version.outputs.value }}
+            org.opencontainers.image.revision=${{ github.sha }}
