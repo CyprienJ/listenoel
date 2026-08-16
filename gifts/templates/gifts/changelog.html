@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Changelog" %} · Nos cadeaux{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 820px">
+    <header class="mb-4">
+        <p class="text-primary fw-bold small text-uppercase mb-2">
+            <i class="bi bi-stars me-1"></i>{% trans "Changelog" %}
+        </p>
+        <h1 class="display-6 fw-bold mb-2">{% trans "What's new" %}</h1>
+        <p class="text-body-secondary mb-0">{% trans "Discover the latest improvements to nosCadeaux." %}</p>
+    </header>
+
+    {% for release in page %}
+        <article class="auth-card rounded-5 shadow-sm p-4 p-md-5 mb-4 nc-changelog-entry">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                <span class="nc-changelog-entry__version">v{{ release.version }}</span>
+                <time class="text-body-secondary small" datetime="{{ release.date }}">{{ release.date }}</time>
+            </div>
+            <h2 class="h3 mb-3">{{ release.title }}</h2>
+            <p class="mb-0">{{ release.content }}</p>
+        </article>
+    {% empty %}
+        <div class="auth-card rounded-5 shadow-sm p-5 text-center">
+            <i class="bi bi-stars fs-2 text-body-secondary"></i>
+            <p class="mt-3 mb-0 text-body-secondary">{% trans "No release notes are available yet." %}</p>
+        </div>
+    {% endfor %}
+
+    {% if page.paginator.num_pages > 1 %}
+        <nav aria-label="{% trans 'Changelog pages' %}" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page.previous_page_number }}">{% trans "Newer" %}</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">{{ page.number }} / {{ page.paginator.num_pages }}</span></li>
+                {% if page.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page.next_page_number }}">{% trans "Older" %}</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+</div>
+{% endblock %}

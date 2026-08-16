@@ -73,6 +73,7 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
                     ("birthday_month", "birthday_day"),
                     "is_verified",
                     "is_managed",
+                    "last_seen_version",
                     "avatar",
                     "avatar_preset",
                 )

@@ -58,6 +58,29 @@ obligatoire dans le ruleset GitHub de `main`. Lors du build, le workflow injecte
 automatiquement cette version et le hash complet du commit dans l'unique image
 Docker `latest`.
 
+### Notes de version
+
+Les nouveautés visibles par les utilisateurs sont définies dans
+`gifts/release_notes/X.Y.Z.toml`. Le nom du fichier et son champ `version`
+doivent correspondre à la version concernée. Une traduction française est
+obligatoire et une traduction anglaise peut être ajoutée :
+
+```toml
+version = "1.2.0"
+date = 2026-08-18
+
+[fr]
+title = "Titre de la nouveauté"
+content = "Description affichée dans la modale et le changelog."
+
+[en]
+title = "Update title"
+content = "Description shown in the modal and changelog."
+```
+
+La CI valide automatiquement ces fichiers. La commande peut aussi être lancée
+localement avec `uv run python manage.py validate_release_notes`.
+
 ## Licence
 
 Ce projet est distribué sous licence GNU Affero General Public License v3.0 ou ultérieure (`AGPL-3.0-or-later`). Consultez le fichier [LICENSE](LICENSE) pour le texte complet de la licence.

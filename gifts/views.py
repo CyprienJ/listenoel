@@ -11,6 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
+from django.core.paginator import Paginator
 from django.db.models import Q, QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -19,10 +20,18 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
 from gifts.demo import demo_scope_forbidden_response, has_same_demo_scope, is_demo_user
+from gifts.release_notes import (
+    ReleaseNoteError,
+    load_release_notes,
+    localized_release_notes,
+    localized_release_notes_between,
+    parse_version,
+)
 
 from .models import (
     BalanceSettlement,
@@ -381,6 +390,41 @@ def welcome(request):
 @require_GET
 def privacy(request):
     return render(request, "gifts/privacy.html", {"contact_email": "cyprien.jorant@pm.me"})
+
+
+@require_GET
+def changelog(request):
+    releases = list(reversed(localized_release_notes(get_language())))
+    page = Paginator(releases, 10).get_page(request.GET.get("page"))
+    return render(request, "gifts/changelog.html", {"page": page})
+
+
+@login_required
+@require_POST
+def unseen_release_notes(request):
+    current_version = settings.APP_VERSION
+    previous_version = request.user.last_seen_version
+
+    try:
+        current_key = parse_version(current_version)
+        previous_key = parse_version(previous_version) if previous_version else None
+        load_release_notes()
+    except ReleaseNoteError as exc:
+        return JsonResponse({"error": str(exc)}, status=500)
+
+    if previous_key is not None and previous_key >= current_key:
+        return JsonResponse({"current_version": current_version, "releases": []})
+
+    claimed = User.objects.filter(pk=request.user.pk, last_seen_version=previous_version).update(
+        last_seen_version=current_version
+    )
+    if not claimed or previous_key is None:
+        return JsonResponse({"current_version": current_version, "releases": []})
+
+    releases = localized_release_notes_between(previous_version, current_version, get_language())
+    response = JsonResponse({"current_version": current_version, "releases": releases})
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 @login_required

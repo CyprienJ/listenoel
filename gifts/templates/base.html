@@ -145,17 +145,89 @@
 
 <footer class="nc-footer">
     <div class="nc-footer__inner">
-        <a class="nc-footer__link" href="{% url 'privacy' %}">
-            <i class="bi bi-shield-check" aria-hidden="true"></i>
-            {% trans "Privacy" %}
-        </a>
+        <div class="nc-footer__links">
+            <a class="nc-footer__link" href="{% url 'privacy' %}">
+                <i class="bi bi-shield-check" aria-hidden="true"></i>
+                {% trans "Privacy" %}
+            </a>
+            <a class="nc-footer__link" href="{% url 'changelog' %}">
+                <i class="bi bi-stars" aria-hidden="true"></i>
+                {% trans "Changelog" %}
+            </a>
+        </div>
         <span class="nc-footer__version"{% if deployment_revision %} title="{{ deployment_revision }}"{% endif %}>
             v{{ app_version }}{% if deployment_revision_short %} ({{ deployment_revision_short }}){% endif %}
         </span>
     </div>
 </footer>
 
+{% if user.is_authenticated and user.is_verified %}
+<div class="modal fade" id="whatsNewModal" tabindex="-1" aria-labelledby="whatsNewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content nc-whats-new">
+            <div class="modal-header">
+                <div>
+                    <p class="nc-whats-new__eyebrow mb-1"><i class="bi bi-stars me-1"></i>{% trans "Latest updates" %}</p>
+                    <h1 class="modal-title fs-3" id="whatsNewModalLabel">{% trans "What's new" %}</h1>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Close' %}"></button>
+            </div>
+            <div class="modal-body" id="whatsNewContent"></div>
+            <div class="modal-footer">
+                <a class="nc-btn nc-btn--ghost" href="{% url 'changelog' %}">{% trans "View the full changelog" %}</a>
+                <button type="button" class="nc-btn nc-btn--primary" data-bs-dismiss="modal">{% trans "Close" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+{% if user.is_authenticated and user.is_verified %}
+<script>
+    (async function () {
+        try {
+            const response = await fetch("{% url 'unseen_release_notes' %}", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            });
+            if (!response.ok) return;
+
+            const payload = await response.json();
+            if (!payload.releases?.length) return;
+
+            const container = document.getElementById("whatsNewContent");
+            payload.releases.forEach(function (release) {
+                const section = document.createElement("section");
+                section.className = "nc-whats-new__release";
+
+                const heading = document.createElement("h2");
+                heading.className = "h4";
+                heading.textContent = release.title;
+
+                const version = document.createElement("span");
+                version.className = "nc-whats-new__version";
+                version.textContent = "v" + release.version;
+
+                const content = document.createElement("p");
+                content.textContent = release.content;
+
+                section.append(heading, version, content);
+                container.append(section);
+            });
+
+            bootstrap.Modal.getOrCreateInstance(document.getElementById("whatsNewModal")).show();
+        } catch (_error) {
+            // A release note must never prevent the page itself from working.
+        }
+    })();
+</script>
+{% endif %}
 
 <script>
     (function () {

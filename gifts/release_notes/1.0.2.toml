@@ -1,0 +1,10 @@
+version = "1.0.2"
+date = 2026-08-18
+
+[fr]
+title = "Un changelog pour suivre les nouveautés"
+content = "Les nouveautés apparaissent désormais lors de votre première visite après une mise à jour. Vous pouvez aussi retrouver l’historique complet depuis le bas de chaque page."
+
+[en]
+title = "A changelog to keep up with updates"
+content = "New features now appear on your first visit after an update. You can also browse the complete history from the bottom of every page."

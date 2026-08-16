@@ -3161,3 +3161,39 @@ msgstr ""
 #: gifts/views.py:1489
 msgid "Settlement recorded."
 msgstr ""
+
+#: gifts/templates/base.html gifts/templates/gifts/changelog.html
+msgid "Changelog"
+msgstr ""
+
+#: gifts/templates/base.html
+msgid "Latest updates"
+msgstr ""
+
+#: gifts/templates/base.html gifts/templates/gifts/changelog.html
+msgid "What's new"
+msgstr ""
+
+#: gifts/templates/base.html
+msgid "View the full changelog"
+msgstr ""
+
+#: gifts/templates/gifts/changelog.html
+msgid "Discover the latest improvements to nosCadeaux."
+msgstr ""
+
+#: gifts/templates/gifts/changelog.html
+msgid "No release notes are available yet."
+msgstr ""
+
+#: gifts/templates/gifts/changelog.html
+msgid "Changelog pages"
+msgstr ""
+
+#: gifts/templates/gifts/changelog.html
+msgid "Newer"
+msgstr ""
+
+#: gifts/templates/gifts/changelog.html
+msgid "Older"
+msgstr ""

@@ -10,6 +10,8 @@ urlpatterns = [
     # Default
     path("", views.welcome, name="welcome"),
     path("privacy/", views.privacy, name="privacy"),
+    path("changelog/", views.changelog, name="changelog"),
+    path("release-notes/unseen/", views.unseen_release_notes, name="unseen_release_notes"),
     path("dashboard/", views.dashboard, name="dashboard"),
     # Auth
     path("demo/", account.demo_login, name="demo_login"),

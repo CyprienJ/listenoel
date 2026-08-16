@@ -72,6 +72,8 @@ jobs:
         run: uv run --no-build --frozen --no-sync ruff check .
       - name: Run formater check
         run: uv run --frozen --no-sync --no-build ruff format --check .
+      - name: Validate release notes
+        run: uv run --frozen --no-sync --no-build python manage.py validate_release_notes
 
   test:
     runs-on: ubuntu-latest
