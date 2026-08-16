@@ -34,6 +34,9 @@ jobs:
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
             DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
             RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
+            BUG_REPORT_TOKEN=${{ secrets.BUG_REPORT_TOKEN }}
+            BUG_REPORT_REPOSITORY=${{ vars.BUG_REPORT_REPOSITORY }}
+            BUG_REPORT_LABELS=${{ vars.BUG_REPORT_LABELS }}
             DEV=False
             EOF
             

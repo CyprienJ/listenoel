@@ -41,6 +41,21 @@ DEBUG = os.environ.get("DEV", "False") == "True"
 ALLOWED_HOSTS = ["noscadeaux.fr", "www.noscadeaux.fr", "127.0.0.1", "localhost"]
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "https://noscadeaux.fr")
 
+# Public bug reports are sent directly to GitHub. No report is stored by Django.
+BUG_REPORT_REPOSITORY = os.environ.get("BUG_REPORT_REPOSITORY", "")
+BUG_REPORT_TOKEN = os.environ.get("BUG_REPORT_TOKEN", "")
+BUG_REPORT_LABELS = [
+    label.strip()
+    for label in os.environ.get(
+        "BUG_REPORT_LABELS",
+        "bug,source:user-report,status:unconfirmed",
+    ).split(",")
+    if label.strip()
+]
+GITHUB_API_URL = os.environ.get("GITHUB_API_URL", "https://api.github.com")
+GITHUB_API_VERSION = os.environ.get("GITHUB_API_VERSION", "2022-11-28")
+BUG_REPORT_TIMEOUT = float(os.environ.get("BUG_REPORT_TIMEOUT", "10"))
+
 # Application definition
 
 INSTALLED_APPS = [

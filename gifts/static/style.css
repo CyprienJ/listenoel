@@ -120,7 +120,7 @@ body {
     text-decoration: none;
 }
 .nc-footer__link:hover { color: var(--nc-accent); }
-.nc-footer__links { display: flex; align-items: center; gap: 16px; }
+.nc-footer__links { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 16px; }
 .nc-footer__version { font-variant-numeric: tabular-nums; }
 
 @media (max-width: 640px) {
@@ -615,6 +615,77 @@ body {
     }
     .nc-callout { flex-direction: column; }
     .nc-welcome-flow { padding: 36px 0; }
+}
+
+/* ── Public bug report ───────────────────────────────────────── */
+.nc-bug-page { width: min(840px, 100%); margin: 0 auto; }
+.nc-bug-header { display: flex; align-items: flex-start; gap: 16px; }
+.nc-bug-icon,
+.nc-bug-success__icon {
+    width: 48px; height: 48px; border-radius: 14px; flex: 0 0 auto;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--nc-accent); background: var(--nc-accent-light); font-size: 22px;
+}
+.nc-bug-eyebrow {
+    color: var(--nc-accent); font-size: 11px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+}
+.nc-bug-title {
+    font-family: 'Lora', Georgia, serif; color: var(--nc-text);
+    font-size: clamp(28px, 5vw, 42px); line-height: 1.05;
+}
+.nc-bug-intro { color: var(--nc-text-sub); max-width: 680px; line-height: 1.6; }
+.nc-bug-public-warning {
+    display: flex; gap: 12px; align-items: flex-start; padding: 16px 18px;
+    border: 1px solid var(--nc-accent-mid); border-radius: 16px;
+    background: var(--nc-accent-light); color: var(--nc-text-sub); font-size: 13px;
+}
+.nc-bug-public-warning > i { color: var(--nc-accent); font-size: 18px; }
+.nc-bug-public-warning strong { display: block; color: var(--nc-text); margin-bottom: 3px; }
+.nc-bug-card,
+.nc-bug-success__card {
+    background: var(--nc-white); border: 1px solid var(--nc-border);
+    border-radius: 20px; padding: clamp(20px, 4vw, 32px);
+}
+.nc-bug-section-title {
+    font-family: 'Lora', Georgia, serif; font-size: 21px;
+    color: var(--nc-text); margin: 0 0 20px;
+}
+.nc-bug-form textarea { resize: vertical; min-height: 90px; }
+.nc-bug-form .form-control,
+.nc-bug-form .form-select { background-color: var(--nc-bg-sub); color: var(--nc-text); padding: 11px 14px; }
+.nc-bug-form .form-control:focus,
+.nc-bug-form .form-select:focus {
+    border-color: var(--nc-accent); box-shadow: 0 0 0 .2rem color-mix(in srgb, var(--nc-accent) 18%, transparent);
+}
+.nc-bug-help { color: var(--nc-text-muted); font-size: 12px; line-height: 1.45; }
+.nc-bug-context-icon { color: var(--nc-text-muted); font-size: 22px; }
+.nc-bug-context { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; }
+.nc-bug-context > div {
+    display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 10px;
+    padding: 9px 0; border-bottom: 1px solid var(--nc-border); font-size: 12px;
+}
+.nc-bug-context > div:nth-last-child(-n+2) { border-bottom: 0; }
+.nc-bug-context > div:nth-child(odd) { margin-right: 20px; }
+.nc-bug-context dt { color: var(--nc-text-muted); font-weight: 500; }
+.nc-bug-context dd { color: var(--nc-text); margin: 0; overflow-wrap: anywhere; }
+.nc-bug-submit { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+.nc-bug-submit .form-check { max-width: 560px; color: var(--nc-text-sub); font-size: 13px; }
+.nc-bug-submit-button { flex: 0 0 auto; }
+.nc-bug-submit-button:disabled { cursor: not-allowed; opacity: .55; }
+.nc-bug-honeypot { position: absolute !important; left: -10000px !important; width: 1px; height: 1px; overflow: hidden; }
+.nc-bug-success { display: grid; place-items: center; min-height: calc(100vh - 150px); }
+.nc-bug-success__card { width: min(620px, 100%); }
+.nc-bug-success__icon { color: var(--nc-sage); background: var(--nc-sage-light); }
+.nc-bug-success__link { justify-content: center; }
+
+@media (max-width: 767px) {
+    .nc-bug-context { grid-template-columns: 1fr; }
+    .nc-bug-context > div,
+    .nc-bug-context > div:nth-child(odd) { margin-right: 0; }
+    .nc-bug-context > div:nth-last-child(2) { border-bottom: 1px solid var(--nc-border); }
+    .nc-bug-submit { flex-direction: column; }
+    .nc-bug-submit-button { width: 100%; justify-content: center; }
 }
 
 @media (min-width: 641px) and (max-width: 900px) {

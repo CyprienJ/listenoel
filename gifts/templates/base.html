@@ -154,6 +154,10 @@
                 <i class="bi bi-stars" aria-hidden="true"></i>
                 {% trans "Changelog" %}
             </a>
+            <a id="bugReportLink" class="nc-footer__link" href="{% url 'bug_report' %}">
+                <i class="bi bi-bug" aria-hidden="true"></i>
+                {% trans "Report a bug" %}
+            </a>
         </div>
         <span class="nc-footer__version"{% if deployment_revision %} title="{{ deployment_revision }}"{% endif %}>
             v{{ app_version }}{% if deployment_revision_short %} ({{ deployment_revision_short }}){% endif %}
@@ -247,6 +251,14 @@
         });
         globalThis.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
             if (localStorage.getItem("theme") === "auto") applyTheme("auto");
+        });
+    })();
+
+    (function () {
+        const link = document.getElementById("bugReportLink");
+        if (!link) return;
+        link.addEventListener("click", function () {
+            sessionStorage.setItem("bugReportSourcePath", window.location.pathname);
         });
     })();
 </script>

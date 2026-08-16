@@ -18,6 +18,8 @@ class EmailVerificationMiddleware:
                 reverse("login"),
                 reverse("welcome"),
                 reverse("privacy"),
+                reverse("bug_report"),
+                reverse("bug_report_success"),
                 reverse("account/password_reset"),
                 reverse("account/password_reset_done"),
                 reverse("account/password_reset_confirm", kwargs={"uidb64": "dummy", "token": "dummy"}).split("dummy")[
