@@ -3598,3 +3598,39 @@ msgstr "Remboursement enregistré."
 
 #~ msgid "No group members found."
 #~ msgstr "Aucun membre de groupe trouvé."
+
+#: gifts/templates/base.html gifts/templates/gifts/changelog.html
+msgid "Changelog"
+msgstr "Nouveautés"
+
+#: gifts/templates/base.html
+msgid "Latest updates"
+msgstr "Dernières nouveautés"
+
+#: gifts/templates/base.html gifts/templates/gifts/changelog.html
+msgid "What's new"
+msgstr "Quoi de neuf ?"
+
+#: gifts/templates/base.html
+msgid "View the full changelog"
+msgstr "Voir toutes les nouveautés"
+
+#: gifts/templates/gifts/changelog.html
+msgid "Discover the latest improvements to nosCadeaux."
+msgstr "Découvrez les dernières améliorations de nosCadeaux."
+
+#: gifts/templates/gifts/changelog.html
+msgid "No release notes are available yet."
+msgstr "Aucune note de version n’est disponible pour le moment."
+
+#: gifts/templates/gifts/changelog.html
+msgid "Changelog pages"
+msgstr "Pages des nouveautés"
+
+#: gifts/templates/gifts/changelog.html
+msgid "Newer"
+msgstr "Plus récentes"
+
+#: gifts/templates/gifts/changelog.html
+msgid "Older"
+msgstr "Plus anciennes"

@@ -26,6 +26,7 @@ with (BASE_DIR / "pyproject.toml").open("rb") as pyproject_file:
 
 APP_VERSION = os.environ.get("APP_VERSION", PROJECT_VERSION)
 DEPLOYMENT_REVISION = os.environ.get("DEPLOYMENT_REVISION", "")[:100]
+RELEASE_NOTES_DIR = BASE_DIR / "gifts" / "release_notes"
 
 
 # Quick-start development settings - unsuitable for production

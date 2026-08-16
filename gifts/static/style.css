@@ -120,6 +120,7 @@ body {
     text-decoration: none;
 }
 .nc-footer__link:hover { color: var(--nc-accent); }
+.nc-footer__links { display: flex; align-items: center; gap: 16px; }
 .nc-footer__version { font-variant-numeric: tabular-nums; }
 
 @media (max-width: 640px) {
@@ -128,6 +129,31 @@ body {
         gap: 8px;
     }
 }
+
+/* ── Release notes ───────────────────────────────────────────── */
+.nc-whats-new { border: 0; border-radius: 22px; overflow: hidden; }
+.nc-whats-new .modal-header,
+.nc-whats-new .modal-footer { border-color: var(--nc-border); padding: 20px 24px; }
+.nc-whats-new .modal-body { padding: 4px 24px; }
+.nc-whats-new__eyebrow {
+    color: var(--nc-accent); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+}
+.nc-whats-new__release { position: relative; padding: 22px 0; }
+.nc-whats-new__release + .nc-whats-new__release { border-top: 1px solid var(--nc-border); }
+.nc-whats-new__release h2 { padding-right: 64px; margin-bottom: 8px; }
+.nc-whats-new__release p { color: var(--nc-text-sub); line-height: 1.65; margin: 0; white-space: pre-line; }
+.nc-whats-new__version {
+    position: absolute; top: 22px; right: 0; padding: 3px 8px;
+    border-radius: 99px; background: var(--nc-accent-light);
+    color: var(--nc-accent); font-size: 10px; font-weight: 700;
+}
+.nc-changelog-entry__version {
+    display: inline-flex; padding: 4px 10px; border-radius: 99px;
+    background: var(--nc-accent-light); color: var(--nc-accent);
+    font-size: 11px; font-weight: 700;
+}
+.nc-changelog-entry p { color: var(--nc-text-sub); line-height: 1.7; white-space: pre-line; }
 
 /* Language selector */
 .nc-lang-select {

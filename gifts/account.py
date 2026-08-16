@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -194,6 +195,8 @@ def register(request):
         form = LocalUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
+            user.last_seen_version = settings.APP_VERSION
+            user.save(update_fields=["last_seen_version"])
 
             login(request, user, backend="gifts.backends.CaseInsensitiveModelBackend")
             send_verification_email(request, user)
