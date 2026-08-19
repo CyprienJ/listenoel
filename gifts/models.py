@@ -264,6 +264,7 @@ class Gift(models.Model):
     )
     event_list = models.ForeignKey("EventList", blank=True, null=True, on_delete=models.CASCADE, related_name="gifts")
     is_hidden = models.BooleanField(default=False)
+    is_draft = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.title} ({self.owner.nickname})"

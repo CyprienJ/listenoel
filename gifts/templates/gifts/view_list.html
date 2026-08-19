@@ -230,6 +230,26 @@
         </div>
     {% endif %}
 
+    {# ── Drafts section (owner only) ── #}
+    {% if is_owner and draft_gifts %}
+        <div class="nc-wish-card">
+            <div class="nc-wish-card__header">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="nc-wish-badge">
+                        <i class="bi bi-pencil-square" style="font-size:12px"></i> {% trans "Drafts" %}
+                    </span>
+                    <span class="nc-wish-count">{{ draft_gifts|length }}</span>
+                </div>
+                <span class="nc-surprises-label">{% trans "Visible only to you" %}</span>
+            </div>
+
+            {% for item in draft_gifts %}
+                {% include "gifts/includes/_wish_row.html" with icon_class="accent" edit_modal_id="editGiftModal" %}
+                {% if not forloop.last %}<div class="nc-wish-divider"></div>{% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
     {# ── Event list gifts section (owner only) ── #}
     {% if event_gifts_by_event %}
     <div class="nc-wish-card">

@@ -333,6 +333,74 @@ class GiftAccessControlTest(TestCase):
             {GiftTag.Slug.BOOKS, GiftTag.Slug.ART_DECOR},
         )
 
+    def test_owner_can_add_private_draft_in_separate_section(self):
+        self.client.force_login(self.user1)
+        response = self.client.post(
+            reverse("add_gift", args=[self.user1.id]),
+            {"title": "Unfinished idea", "is_draft": "1", "visible_in": [self.group.id]},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        draft = Gift.objects.get(title="Unfinished idea")
+        self.assertTrue(draft.is_draft)
+        self.assertFalse(draft.visible_in.exists())
+
+        own_list = self.client.get(reverse("view_list", args=[self.user1.id]))
+        self.assertContains(own_list, _("Drafts"))
+        self.assertContains(own_list, draft.title)
+
+        self.client.force_login(self.user2)
+        other_list = self.client.get(reverse("view_list", args=[self.user1.id]))
+        self.assertNotContains(other_list, draft.title)
+
+    def test_non_owner_cannot_mark_surprise_as_draft(self):
+        self.client.force_login(self.user2)
+        self.client.post(
+            reverse("add_gift", args=[self.user1.id]),
+            {"title": "Published surprise", "is_draft": "1", "visible_in": [self.group.id]},
+        )
+
+        surprise = Gift.objects.get(title="Published surprise")
+        self.assertFalse(surprise.is_draft)
+        self.assertEqual(list(surprise.visible_in.all()), [self.group])
+
+    def test_editing_draft_can_publish_it_to_a_group(self):
+        draft = Gift.objects.create(
+            owner=self.user1,
+            created_by=self.user1,
+            title="Draft to publish",
+            is_draft=True,
+        )
+        self.client.force_login(self.user1)
+
+        response = self.client.post(
+            reverse("edit_gift", args=[draft.id]),
+            {"title": draft.title, "visible_in": [self.group.id]},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        draft.refresh_from_db()
+        self.assertFalse(draft.is_draft)
+        self.assertEqual(list(draft.visible_in.all()), [self.group])
+
+    def test_moving_published_gift_to_drafts_removes_group_state(self):
+        self.gift_user1.visible_in.add(self.group)
+        self.gift_user1.group_reserved_on = self.group
+        self.gift_user1.save()
+        Reservation.objects.create(gift=self.gift_user1, reserver=self.user2)
+        self.client.force_login(self.user1)
+
+        self.client.post(
+            reverse("edit_gift", args=[self.gift_user1.id]),
+            {"title": self.gift_user1.title, "is_draft": "1", "visible_in": [self.group.id]},
+        )
+
+        self.gift_user1.refresh_from_db()
+        self.assertTrue(self.gift_user1.is_draft)
+        self.assertIsNone(self.gift_user1.group_reserved_on)
+        self.assertFalse(self.gift_user1.visible_in.exists())
+        self.assertFalse(self.gift_user1.reservation.exists())
+
     def test_add_gift_rejects_unknown_tag(self):
         self.client.force_login(self.user1)
         response = self.client.post(
@@ -851,6 +919,25 @@ class SubscriptionTest(TestCase):
         self.assertNotContains(response, private_gift.title)
         self.assertIn("application/rss+xml", response["Content-Type"])
 
+    def test_private_rss_feed_excludes_drafts(self):
+        draft = Gift.objects.create(
+            owner=self.user1,
+            created_by=self.user1,
+            title="Private draft",
+            is_draft=True,
+        )
+        subscription = Subscription.objects.create(
+            subscriber=self.user2,
+            owner=self.user1,
+            email_enabled=False,
+            rss_enabled=True,
+        )
+
+        response = self.client.get(reverse("subscription_feed", args=[subscription.feed_token]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, draft.title)
+
     def test_unsubscribe_revokes_private_rss_feed(self):
         subscription = Subscription.objects.create(
             subscriber=self.user2,
@@ -902,6 +989,17 @@ class SubscriptionTest(TestCase):
 
         # Verify unsubscribe link
         self.assertIn("/unsubscribe/", notification_mail.body)
+
+    def test_notification_not_sent_when_owner_adds_draft(self):
+        self.user2.subscriptions.add(self.user1)
+        self.client.force_login(self.user1)
+
+        self.client.post(
+            reverse("add_gift", args=[self.user1.id]),
+            {"title": "Quiet draft", "is_draft": "1"},
+        )
+
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_unsubscribe_token(self):
         self.user2.subscriptions.add(self.user1)

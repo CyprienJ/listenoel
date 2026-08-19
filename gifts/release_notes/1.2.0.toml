@@ -1,0 +1,10 @@
+version = "1.2.0"
+date = 2026-08-19
+
+[fr]
+title = "Mettez vos souhaits de coté"
+content = "Notez vos souhaits comme \"brouillon\" pour que ceux ci n'apparaissent dans aucun groupe"
+
+[en]
+title = "Put wishes aside"
+content = "Mark your wishes as \"draft\" so that they appear on no group"

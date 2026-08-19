@@ -203,6 +203,9 @@ def _gift_item(request, gift, reservations, group_id, other_members=None):
 
 
 def _get_reservation_group(request, gift, group_id):
+    if gift.is_draft:
+        return None, HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+
     try:
         group = Group.objects.get(id=int(group_id))
     except (Group.DoesNotExist, TypeError, ValueError):
@@ -224,6 +227,8 @@ def _get_reservation_group(request, gift, group_id):
 
 
 def _gift_is_visible_in_group(gift, group):
+    if gift.is_draft:
+        return False
     visible_group_ids = set(gift.visible_in.values_list("id", flat=True))
     return not visible_group_ids or group.id in visible_group_ids
 
@@ -450,13 +455,14 @@ def dashboard(request):
     my_reservations_qs = Reservation.objects.filter(
         reserver=request.user,
         gift__offered=False,
+        gift__is_draft=False,
         gift__event_list__isnull=True,
     )
     my_reservations = my_reservations_qs.select_related("gift", "gift__owner", "gift__group_reserved_on").order_by(
         "-created_at"
     )[:4]
     recent_group_gifts = (
-        Gift.objects.filter(visible_in__members=request.user, offered=False, event_list__isnull=True)
+        Gift.objects.filter(visible_in__members=request.user, offered=False, event_list__isnull=True, is_draft=False)
         .exclude(owner=request.user)
         .select_related("owner", "created_by")
         .order_by("-created_at")
@@ -469,7 +475,9 @@ def dashboard(request):
     )
     upcoming_birthdays = _upcoming_birthdays(request.user, user_groups, today)
     balance_summaries = _dashboard_balance_summaries(request.user, user_groups)
-    open_wish_count = Gift.objects.filter(owner=request.user, offered=False, event_list__isnull=True).count()
+    open_wish_count = Gift.objects.filter(
+        owner=request.user, offered=False, event_list__isnull=True, is_draft=False
+    ).count()
     event_count = user_event_lists.count() + participating_event_lists.count()
     my_reservation_count = my_reservations_qs.count()
     current_emoji_set = emojis()
@@ -573,6 +581,8 @@ def view_list(request: HttpRequest, user_id: int):
             return render(request, USER_NOT_FOUND_TEMPLATE, status=403)
 
     all_gifts_query: QuerySet[Gift] = Gift.objects.filter(owner=target_user, offered=False)
+    if not is_owner:
+        all_gifts_query = all_gifts_query.filter(is_draft=False)
 
     # Event gifts are only shown to the owner in a separate section
     event_gifts_by_event: list = []
@@ -580,7 +590,7 @@ def view_list(request: HttpRequest, user_id: int):
         from itertools import groupby as _groupby
 
         event_qs = (
-            all_gifts_query.filter(event_list__isnull=False)
+            all_gifts_query.filter(event_list__isnull=False, is_draft=False)
             .select_related("event_list")
             .order_by("event_list_id", "created_at")
         )
@@ -620,12 +630,17 @@ def view_list(request: HttpRequest, user_id: int):
         user_groups = request.user.gift_groups.all()
 
     gifts: list = []
+    draft_gifts: list = []
     surprises: list = []
 
     if is_owner:
         for g in all_gifts:
             if g.created_by == g.owner:
-                gifts.append({"gift": g, "is_reserved": None, "reservation_state": None})
+                item = {"gift": g, "is_reserved": None, "reservation_state": None}
+                if g.is_draft:
+                    draft_gifts.append(item)
+                else:
+                    gifts.append(item)
     else:
         all_reservations = Reservation.objects.filter(gift__in=all_gifts).select_related("reserver")
         other_members = []
@@ -663,6 +678,7 @@ def view_list(request: HttpRequest, user_id: int):
             "user_being_viewed": target_user,
             "group": group,
             "gifts": gifts,
+            "draft_gifts": draft_gifts,
             "surprises": surprises,
             "event_gifts_by_event": event_gifts_by_event,
             "is_owner": is_owner,
@@ -796,14 +812,16 @@ def notification_center(request):
     user_groups = request.user.gift_groups.prefetch_related("members").all()
     today = timezone.localdate()
     recent_group_gifts = (
-        Gift.objects.filter(visible_in__members=request.user, offered=False, event_list__isnull=True)
+        Gift.objects.filter(visible_in__members=request.user, offered=False, event_list__isnull=True, is_draft=False)
         .exclude(owner=request.user)
         .select_related("owner", "created_by")
         .order_by("-created_at")
         .distinct()[:8]
     )
     my_reservations = (
-        Reservation.objects.filter(reserver=request.user, gift__offered=False, gift__event_list__isnull=True)
+        Reservation.objects.filter(
+            reserver=request.user, gift__offered=False, gift__is_draft=False, gift__event_list__isnull=True
+        )
         .select_related("gift", "gift__owner", "gift__group_reserved_on")
         .order_by("-created_at")[:8]
     )
@@ -966,14 +984,16 @@ def add_gift(request, owner_id):
 
     title = request.POST.get("title", "").strip()
     if title:
+        is_draft = owner == request.user and request.POST.get("is_draft") == "1"
         gift = Gift.objects.create(
             owner=owner,
             title=title,
             description=request.POST.get("description", "").strip(),
             url=request.POST.get("url", "").strip(),
             created_by=request.user,
+            is_draft=is_draft,
         )
-        if group_ids:
+        if group_ids and not is_draft:
             gift.visible_in.set(valid_groups)
         gift.tags.set(selected_tags)
 
@@ -981,7 +1001,7 @@ def add_gift(request, owner_id):
             email_enabled=True,
             subscriber__is_demo=False,
         ).select_related("subscriber")
-        if not owner.is_demo and subscription_records.exists():
+        if not is_draft and not owner.is_demo and subscription_records.exists():
             protocol = "https" if request.is_secure() else "http"
             domain = get_current_site(request).domain
             list_url = f"{protocol}://{domain}{reverse('view_list', args=[owner.id])}"
@@ -1064,18 +1084,29 @@ def edit_gift(request: HttpRequest, gift_id: int):
 
     title = request.POST.get("title", "").strip()
     if title:
+        is_draft = (
+            gift.owner == request.user
+            and not gift.offered
+            and gift.event_list_id is None
+            and request.POST.get("is_draft") == "1"
+        )
         gift.title = title
         gift.description = request.POST.get("description", "").strip()
         gift.url = request.POST.get("url", "").strip()
+        gift.is_draft = is_draft
+        if is_draft:
+            gift.group_reserved_on = None
         gift.save()
         gift.tags.set(selected_tags)
 
         group_ids = request.POST.getlist("visible_in")
-        if group_ids:
+        if group_ids and not is_draft:
             valid_groups = Group.objects.filter(id__in=group_ids, members=request.user, is_demo=request.user.is_demo)
             gift.visible_in.set(valid_groups)
         else:
             gift.visible_in.clear()
+        if is_draft:
+            Reservation.objects.filter(gift=gift).delete()
 
     return _redirect_to_referer_or(request, "view_list", user_id=gift.owner.id)
 
@@ -1241,6 +1272,8 @@ def delete_reservation(request, gift_id):
 @require_POST
 def offer_gift(request, gift_id):
     gift = get_object_or_404(Gift, id=gift_id)
+    if gift.is_draft:
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
     if not has_same_demo_scope(request.user, gift.owner):
         return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
@@ -1439,6 +1472,8 @@ def edit_offered_amounts(request, gift_id):
 @require_POST
 def mark_received(request, gift_id):
     gift = get_object_or_404(Gift, id=gift_id)
+    if gift.is_draft:
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
     if not has_same_demo_scope(request.user, gift.owner):
         return HttpResponseForbidden(_("Only the gift owner can mark it as received"))
 
