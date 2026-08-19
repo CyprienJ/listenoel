@@ -3977,3 +3977,18 @@ msgstr "Essayez de modifier ou d’effacer les filtres sélectionnés."
 
 msgid "Invalid tag selection."
 msgstr "Sélection de tags invalide."
+
+msgid "Save as draft"
+msgstr "Enregistrer comme brouillon"
+
+msgid "Only you can see it. It will not appear in any group."
+msgstr "Vous seul pouvez le voir. Il n’apparaîtra dans aucun groupe."
+
+msgid "Draft"
+msgstr "Brouillon"
+
+msgid "Drafts"
+msgstr "Brouillons"
+
+msgid "Visible only to you"
+msgstr "Visible uniquement par vous"

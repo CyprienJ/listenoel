@@ -3522,3 +3522,18 @@ msgstr ""
 
 msgid "Invalid tag selection."
 msgstr ""
+
+msgid "Save as draft"
+msgstr ""
+
+msgid "Only you can see it. It will not appear in any group."
+msgstr ""
+
+msgid "Draft"
+msgstr ""
+
+msgid "Drafts"
+msgstr ""
+
+msgid "Visible only to you"
+msgstr ""

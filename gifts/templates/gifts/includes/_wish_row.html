@@ -37,6 +37,10 @@
                     <i class="bi bi-person-circle"></i> {{ item.gift.created_by.nickname|capfirst }}
                 </span>
             {% endif %}
+        {% elif item.gift.is_draft %}
+            <span class="nc-wish-meta-chip">
+                <i class="bi bi-pencil-square"></i> {% trans "Draft" %}
+            </span>
         {% elif is_owner %}
             {% with visible_count=item.gift.visible_in.count %}
                 {% if visible_count == 0 or visible_count == user_groups.count %}
@@ -110,7 +114,7 @@
             {% endif %}
         {% endif %}
 
-        {% if not is_surprise and is_owner %}
+        {% if not is_surprise and is_owner and not item.gift.is_draft %}
             <button class="nc-wish-offer-btn"
                     onclick="markReceived('{% url 'mark_received' gift_id=item.gift.id %}', {{ from_group_id|default:'null' }})">
                 <i class="bi bi-check2-circle"></i><span class="nc-btn-label">{% trans "Received!" %}</span>

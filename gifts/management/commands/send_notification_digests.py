@@ -52,7 +52,7 @@ class Command(BaseCommand):
         since = self._since(preference, now)
         groups = user.gift_groups.prefetch_related("members").all()
         recent_group_gifts = (
-            Gift.objects.filter(visible_in__members=user, offered=False, event_list__isnull=True)
+            Gift.objects.filter(visible_in__members=user, offered=False, event_list__isnull=True, is_draft=False)
             .exclude(owner=user)
             .filter(created_at__gte=since)
             .select_related("owner", "created_by")
@@ -60,7 +60,9 @@ class Command(BaseCommand):
             .distinct()
         )
         my_reservations = (
-            Reservation.objects.filter(reserver=user, gift__offered=False, gift__event_list__isnull=True)
+            Reservation.objects.filter(
+                reserver=user, gift__offered=False, gift__is_draft=False, gift__event_list__isnull=True
+            )
             .select_related("gift", "gift__owner", "gift__group_reserved_on")
             .order_by("-created_at")
         )
