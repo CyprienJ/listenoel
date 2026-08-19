@@ -38,6 +38,22 @@
                         </div>
                     </div>
 
+                    <div class="mb-3">
+                        <fieldset>
+                            <legend class="form-label fw-medium small text-muted border-0 p-0 mb-2">
+                                {% trans "Tags" %}
+                            </legend>
+                            <div class="nc-tag-selector" role="group" aria-label="{% trans 'Tags' %}">
+                                {% for tag in available_tags %}
+                                    <input class="btn-check" type="checkbox" name="tags" value="{{ tag.slug }}"
+                                           id="tagAdd{{ tag.slug }}" autocomplete="off">
+                                    <label class="nc-tag-option" for="tagAdd{{ tag.slug }}">{{ tag.label }}</label>
+                                {% endfor %}
+                            </div>
+                            <div class="form-text">{% trans "Choose one or more tags (optional)." %}</div>
+                        </fieldset>
+                    </div>
+
                     <div class="mb-0">
                         <fieldset>
                             <legend class="form-label fw-medium small text-muted border-0 p-0 mb-2">

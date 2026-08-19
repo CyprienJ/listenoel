@@ -3443,3 +3443,82 @@ msgstr ""
 #: gifts/templates/gifts/changelog.html
 msgid "Older"
 msgstr ""
+
+# Gift tags and list filters
+msgid "Books"
+msgstr ""
+
+msgid "Video games"
+msgstr ""
+
+msgid "Board games"
+msgstr ""
+
+msgid "Movies and TV"
+msgstr ""
+
+msgid "Music"
+msgstr ""
+
+msgid "Art and decoration"
+msgstr ""
+
+msgid "Fashion and accessories"
+msgstr ""
+
+msgid "Beauty and wellness"
+msgstr ""
+
+msgid "Sports"
+msgstr ""
+
+msgid "Technology"
+msgstr ""
+
+msgid "Home"
+msgstr ""
+
+msgid "Cooking and food"
+msgstr ""
+
+msgid "Creative hobbies"
+msgstr ""
+
+msgid "Travel and experiences"
+msgstr ""
+
+msgid "Children"
+msgstr ""
+
+msgid "Tags"
+msgstr ""
+
+msgid "Choose one or more tags (optional)."
+msgstr ""
+
+msgid "Sort"
+msgstr ""
+
+msgid "Oldest first"
+msgstr ""
+
+msgid "Newest first"
+msgstr ""
+
+msgid "Name A–Z"
+msgstr ""
+
+msgid "Apply"
+msgstr ""
+
+msgid "Clear filters"
+msgstr ""
+
+msgid "No wish matches these filters."
+msgstr ""
+
+msgid "Try changing or clearing the selected filters."
+msgstr ""
+
+msgid "Invalid tag selection."
+msgstr ""

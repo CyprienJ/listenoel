@@ -1,0 +1,10 @@
+version = "1.1.0"
+date = 2026-08-19
+
+[fr]
+title = "Ajoutez des tags à vos souhaits"
+content = "Ajoutez des tags (livre, cuisine, ...) à vos souhaits ou vos surprises pour plus facilement les trier"
+
+[en]
+title = "Add tags to your wishes"
+content = "Add tags (book, cooking, ...) to your wishes or surprises to sort them more easily"

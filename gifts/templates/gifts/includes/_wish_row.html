@@ -20,6 +20,9 @@
 
     {# Meta chips #}
     <div class="nc-wish-meta">
+        {% for tag in item.gift.tags.all %}
+            <span class="nc-gift-tag">{{ tag.label }}</span>
+        {% endfor %}
         {% if item.gift.url %}
             <a href="{{ item.gift.url }}" target="_blank" class="nc-wish-meta-chip nc-wish-meta-chip--link">
                 <i class="bi bi-link-45deg"></i> {% trans "See link" %}

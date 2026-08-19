@@ -136,6 +136,43 @@
         </div>
     {% endif %}
 
+    <div class="nc-list-tools">
+        <form method="get" class="nc-list-tools__form">
+            {% if from_group_id %}<input type="hidden" name="from_group" value="{{ from_group_id }}">{% endif %}
+
+            <div class="dropdown">
+                <button class="nc-btn nc-btn--outline nc-btn--sm dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+                    <i class="bi bi-tags"></i> {% trans "Tags" %}
+                    {% if selected_tags %}<span class="nc-filter-count">{{ selected_tags|length }}</span>{% endif %}
+                </button>
+                <div class="dropdown-menu nc-tag-filter-menu shadow border-0 rounded-4 p-3">
+                    {% for tag in available_tags %}
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="tags" value="{{ tag.slug }}"
+                                   id="filterTag{{ tag.slug }}" {% if tag.slug in selected_tags %}checked{% endif %}>
+                            <label class="form-check-label small" for="filterTag{{ tag.slug }}">{{ tag.label }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <label class="visually-hidden" for="giftSort">{% trans "Sort" %}</label>
+            <select class="form-select form-select-sm nc-list-sort" id="giftSort" name="sort">
+                <option value="oldest" {% if selected_sort == "oldest" %}selected{% endif %}>{% trans "Oldest first" %}</option>
+                <option value="newest" {% if selected_sort == "newest" %}selected{% endif %}>{% trans "Newest first" %}</option>
+                <option value="title" {% if selected_sort == "title" %}selected{% endif %}>{% trans "Name A–Z" %}</option>
+            </select>
+
+            <button class="nc-btn nc-btn--primary nc-btn--sm" type="submit">{% trans "Apply" %}</button>
+            {% if has_list_filters %}
+                <a class="nc-list-tools__clear" href="{% url 'view_list' user.id %}{% if from_group_id %}?from_group={{ from_group_id }}{% endif %}">
+                    {% trans "Clear filters" %}
+                </a>
+            {% endif %}
+        </form>
+    </div>
+
     {# ── Wishes section ── #}
     <div class="nc-wish-card">
         <div class="nc-wish-card__header">
@@ -157,9 +194,17 @@
         {% else %}
             <div class="nc-wish-empty">
                 <i class="bi bi-gift" style="font-size:36px; color:var(--nc-border)"></i>
-                <div class="nc-wish-empty-title">{% trans "No wishes yet." %}</div>
+                <div class="nc-wish-empty-title">
+                    {% if has_list_filters %}{% trans "No wish matches these filters." %}{% else %}{% trans "No wishes yet." %}{% endif %}
+                </div>
                 <div class="nc-wish-empty-desc">
-                    {% if is_owner %}{% trans "Add your first ideas!" %}{% else %}{{ user.nickname|capfirst }} {% trans "has no list yet." %}{% endif %}
+                    {% if has_list_filters %}
+                        {% trans "Try changing or clearing the selected filters." %}
+                    {% elif is_owner %}
+                        {% trans "Add your first ideas!" %}
+                    {% else %}
+                        {{ user.nickname|capfirst }} {% trans "has no list yet." %}
+                    {% endif %}
                 </div>
             </div>
         {% endif %}

@@ -3898,3 +3898,82 @@ msgstr "Plus récentes"
 #: gifts/templates/gifts/changelog.html
 msgid "Older"
 msgstr "Plus anciennes"
+
+# Gift tags and list filters
+msgid "Books"
+msgstr "Livres"
+
+msgid "Video games"
+msgstr "Jeux vidéo"
+
+msgid "Board games"
+msgstr "Jeux de société"
+
+msgid "Movies and TV"
+msgstr "Films et séries"
+
+msgid "Music"
+msgstr "Musique"
+
+msgid "Art and decoration"
+msgstr "Art et décoration"
+
+msgid "Fashion and accessories"
+msgstr "Mode et accessoires"
+
+msgid "Beauty and wellness"
+msgstr "Beauté et bien-être"
+
+msgid "Sports"
+msgstr "Sport"
+
+msgid "Technology"
+msgstr "Technologie"
+
+msgid "Home"
+msgstr "Maison"
+
+msgid "Cooking and food"
+msgstr "Cuisine et gastronomie"
+
+msgid "Creative hobbies"
+msgstr "Loisirs créatifs"
+
+msgid "Travel and experiences"
+msgstr "Voyages et expériences"
+
+msgid "Children"
+msgstr "Enfants"
+
+msgid "Tags"
+msgstr "Tags"
+
+msgid "Choose one or more tags (optional)."
+msgstr "Choisissez un ou plusieurs tags (facultatif)."
+
+msgid "Sort"
+msgstr "Trier"
+
+msgid "Oldest first"
+msgstr "Plus anciens d’abord"
+
+msgid "Newest first"
+msgstr "Plus récents d’abord"
+
+msgid "Name A–Z"
+msgstr "Nom A–Z"
+
+msgid "Apply"
+msgstr "Appliquer"
+
+msgid "Clear filters"
+msgstr "Effacer les filtres"
+
+msgid "No wish matches these filters."
+msgstr "Aucun souhait ne correspond à ces filtres."
+
+msgid "Try changing or clearing the selected filters."
+msgstr "Essayez de modifier ou d’effacer les filtres sélectionnés."
+
+msgid "Invalid tag selection."
+msgstr "Sélection de tags invalide."
