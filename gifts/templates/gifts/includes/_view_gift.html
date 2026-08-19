@@ -28,6 +28,17 @@
                     </div>
                 {% endif %}
 
+                {% if item.gift.tags.all %}
+                    <div class="mb-4">
+                        <span class="small text-uppercase fw-bold text-muted d-block mb-2">{% trans "Tags" %}</span>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for tag in item.gift.tags.all %}
+                                <span class="nc-gift-tag">{{ tag.label }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
                 {% if item.gift.price %}
                     <div class="mb-4">
                         <span class="small text-uppercase fw-bold text-muted d-block">{% trans "Estimated price" %}</span>

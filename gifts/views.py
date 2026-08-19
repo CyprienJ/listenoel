@@ -13,7 +13,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db.models import Q, QuerySet
-from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, JsonResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -38,6 +38,7 @@ from .models import (
     EventList,
     Gift,
     GiftComment,
+    GiftTag,
     Group,
     NotificationDigestPreference,
     Reservation,
@@ -59,6 +60,7 @@ UNSUBSCRIBE_SUCCESS_MSG = "You are no longer subscribed to %(name)s's list"
 COMMENT_MAX_LENGTH = 1000
 COMMENT_EMPTY_MESSAGE = _("Comment cannot be empty.")
 COMMENT_TOO_LONG_MESSAGE = _("Comment is too long.")
+INVALID_TAG_SELECTION_MESSAGE = _("Invalid tag selection.")
 
 
 # --- Helpers ---
@@ -95,6 +97,18 @@ def _subscription_removed_message(owner_name):
 def _delivery_from_post(request):
     delivery = request.POST.get("delivery")
     return delivery if delivery in {"email", "rss", "both"} else "email"
+
+
+def _gift_tags_from_post(request):
+    requested_slugs = set(request.POST.getlist("tags"))
+    if not requested_slugs:
+        return GiftTag.objects.none()
+    if not requested_slugs.issubset(set(GiftTag.Slug.values)):
+        return None
+    tags = GiftTag.objects.filter(slug__in=requested_slugs)
+    if tags.count() != len(requested_slugs):
+        return None
+    return tags
 
 
 def _check_gift_access(request, gift):
@@ -558,7 +572,7 @@ def view_list(request: HttpRequest, user_id: int):
         if group and group.id not in {g.id for g in common_groups}:
             return render(request, USER_NOT_FOUND_TEMPLATE, status=403)
 
-    all_gifts_query: QuerySet[Gift] = Gift.objects.filter(owner=target_user, offered=False).order_by("created_at")
+    all_gifts_query: QuerySet[Gift] = Gift.objects.filter(owner=target_user, offered=False)
 
     # Event gifts are only shown to the owner in a separate section
     event_gifts_by_event: list = []
@@ -577,12 +591,26 @@ def view_list(request: HttpRequest, user_id: int):
     else:
         all_gifts_query = all_gifts_query.filter(event_list__isnull=True)
 
+    selected_tags = [tag for tag in request.GET.getlist("tags") if tag in GiftTag.Slug.values]
+    if selected_tags:
+        all_gifts_query = all_gifts_query.filter(tags__slug__in=selected_tags).distinct()
+
+    selected_sort = request.GET.get("sort", "oldest")
+    sort_options = {
+        "newest": ("-created_at", "-id"),
+        "oldest": ("created_at", "id"),
+        "title": ("title", "id"),
+    }
+    if selected_sort not in sort_options:
+        selected_sort = "oldest"
+    all_gifts_query = all_gifts_query.order_by(*sort_options[selected_sort])
+
     if from_group_id and not is_owner:
         all_gifts_query = all_gifts_query.filter(
             Q(visible_in__isnull=True) | Q(visible_in__id=from_group_id)
         ).distinct()
 
-    all_gifts = all_gifts_query.prefetch_related("visible_in")
+    all_gifts = all_gifts_query.prefetch_related("visible_in", "tags")
     if target_user.is_managed:
         mm = getattr(target_user, "managed_member_profile", None)
         user_groups = Group.objects.filter(id=mm.group_id) if mm else Group.objects.none()
@@ -643,6 +671,10 @@ def view_list(request: HttpRequest, user_id: int):
             "is_subscribed": subscription is not None,
             "subscription": subscription,
             "rss_url": rss_url,
+            "available_tags": GiftTag.objects.all(),
+            "selected_tags": selected_tags,
+            "selected_sort": selected_sort,
+            "has_list_filters": bool(selected_tags) or selected_sort != "oldest",
         },
     )
 
@@ -913,6 +945,10 @@ def add_gift(request, owner_id):
     if owner != request.user and not Group.objects.filter(members=request.user).filter(members=owner).exists():
         return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
+    selected_tags = _gift_tags_from_post(request)
+    if selected_tags is None:
+        return HttpResponseBadRequest(INVALID_TAG_SELECTION_MESSAGE)
+
     group_ids = request.POST.getlist("visible_in")
     valid_groups = Group.objects.none()
     if group_ids:
@@ -939,6 +975,7 @@ def add_gift(request, owner_id):
         )
         if group_ids:
             gift.visible_in.set(valid_groups)
+        gift.tags.set(selected_tags)
 
         subscription_records = owner.subscriber_records.filter(
             email_enabled=True,
@@ -1021,12 +1058,17 @@ def edit_gift(request: HttpRequest, gift_id: int):
     elif gift.created_by != request.user:
         return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
+    selected_tags = _gift_tags_from_post(request)
+    if selected_tags is None:
+        return HttpResponseBadRequest(INVALID_TAG_SELECTION_MESSAGE)
+
     title = request.POST.get("title", "").strip()
     if title:
         gift.title = title
         gift.description = request.POST.get("description", "").strip()
         gift.url = request.POST.get("url", "").strip()
         gift.save()
+        gift.tags.set(selected_tags)
 
         group_ids = request.POST.getlist("visible_in")
         if group_ids:

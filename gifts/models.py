@@ -207,6 +207,39 @@ class ReminderDelivery(models.Model):
         ]
 
 
+class GiftTag(models.Model):
+    class Slug(models.TextChoices):
+        BOOKS = "books", _("Books")
+        VIDEO_GAMES = "video_games", _("Video games")
+        BOARD_GAMES = "board_games", _("Board games")
+        MOVIES_TV = "movies_tv", _("Movies and TV")
+        MUSIC = "music", _("Music")
+        ART_DECOR = "art_decor", _("Art and decoration")
+        FASHION_ACCESSORIES = "fashion_accessories", _("Fashion and accessories")
+        BEAUTY_WELLNESS = "beauty_wellness", _("Beauty and wellness")
+        SPORTS = "sports", _("Sports")
+        TECHNOLOGY = "technology", _("Technology")
+        HOME = "home", _("Home")
+        COOKING_FOOD = "cooking_food", _("Cooking and food")
+        CREATIVE_HOBBIES = "creative_hobbies", _("Creative hobbies")
+        TRAVEL_EXPERIENCES = "travel_experiences", _("Travel and experiences")
+        CHILDREN = "children", _("Children")
+        OTHER = "other", _("Other")
+
+    slug = models.CharField(max_length=32, choices=Slug.choices, primary_key=True)
+    position = models.PositiveSmallIntegerField(unique=True)
+
+    class Meta:
+        ordering = ("position",)
+
+    @property
+    def label(self):
+        return self.get_slug_display()
+
+    def __str__(self):
+        return str(self.label)
+
+
 class Gift(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="gifts")
     title = models.CharField(max_length=200)
@@ -215,6 +248,7 @@ class Gift(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_gifts")
     visible_in = models.ManyToManyField(Group, related_name="visible_gifts", blank=True)
+    tags = models.ManyToManyField(GiftTag, related_name="gifts", blank=True)
     price = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
     currency = models.CharField(max_length=3, default="EUR")
     image_url = models.URLField(blank=True, max_length=1000)

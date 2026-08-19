@@ -25,6 +25,7 @@ from .models import (
     EventList,
     Gift,
     GiftComment,
+    GiftTag,
     Group,
     GuestReservation,
     ManagedMember,
@@ -317,6 +318,67 @@ class GiftAccessControlTest(TestCase):
         self.assertEqual(response.status_code, 302)
         surprise = Gift.objects.get(title="Shared surprise")
         self.assertEqual(list(surprise.visible_in.all()), [self.group])
+
+    def test_add_gift_accepts_multiple_fixed_tags(self):
+        self.client.force_login(self.user1)
+        response = self.client.post(
+            reverse("add_gift", args=[self.user1.id]),
+            {"title": "Tagged gift", "tags": [GiftTag.Slug.BOOKS, GiftTag.Slug.ART_DECOR]},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        gift = Gift.objects.get(title="Tagged gift")
+        self.assertEqual(
+            set(gift.tags.values_list("slug", flat=True)),
+            {GiftTag.Slug.BOOKS, GiftTag.Slug.ART_DECOR},
+        )
+
+    def test_add_gift_rejects_unknown_tag(self):
+        self.client.force_login(self.user1)
+        response = self.client.post(
+            reverse("add_gift", args=[self.user1.id]),
+            {"title": "Invalid tagged gift", "tags": ["user_created_tag"]},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(Gift.objects.filter(title="Invalid tagged gift").exists())
+
+    def test_edit_gift_replaces_tags(self):
+        self.gift_user1.tags.add(GiftTag.objects.get(slug=GiftTag.Slug.BOOKS))
+        self.client.force_login(self.user1)
+        response = self.client.post(
+            reverse("edit_gift", args=[self.gift_user1.id]),
+            {"title": self.gift_user1.title, "tags": [GiftTag.Slug.TECHNOLOGY]},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(list(self.gift_user1.tags.values_list("slug", flat=True)), [GiftTag.Slug.TECHNOLOGY])
+
+    def test_list_filters_wishes_and_surprises_by_tag(self):
+        self.gift_user1.tags.add(GiftTag.objects.get(slug=GiftTag.Slug.BOOKS))
+        self.surprise_user1.tags.add(GiftTag.objects.get(slug=GiftTag.Slug.TECHNOLOGY))
+        self.client.force_login(self.user2)
+
+        response = self.client.get(
+            reverse("view_list", args=[self.user1.id]),
+            {"tags": GiftTag.Slug.TECHNOLOGY},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([item["gift"] for item in response.context["gifts"]], [])
+        self.assertEqual([item["gift"] for item in response.context["surprises"]], [self.surprise_user1])
+        self.assertContains(response, _("Technology"))
+
+    def test_list_can_sort_wishes_by_title(self):
+        second_gift = Gift.objects.create(owner=self.user1, created_by=self.user1, title="A first gift")
+        self.client.force_login(self.user2)
+
+        response = self.client.get(reverse("view_list", args=[self.user1.id]), {"sort": "title"})
+
+        self.assertEqual(
+            [item["gift"] for item in response.context["gifts"]],
+            [second_gift, self.gift_user1],
+        )
 
     def test_edit_gift_access(self):
         """A user can only edit his gifts or surprises from groups he is in"""

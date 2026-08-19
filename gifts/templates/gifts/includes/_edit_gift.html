@@ -46,6 +46,21 @@
                             </div>
                             <div class="mb-3">
                                 <fieldset>
+                                    <legend class="form-label small fw-bold">{% trans "Tags" %}</legend>
+                                    <div class="nc-tag-selector" role="group" aria-label="{% trans 'Tags' %}">
+                                        {% for tag in available_tags %}
+                                            <input class="btn-check" type="checkbox" name="tags" value="{{ tag.slug }}"
+                                                   id="tagEdit{{ item.gift.id }}{{ tag.slug }}" autocomplete="off"
+                                                   {% if tag in item.gift.tags.all %}checked{% endif %}>
+                                            <label class="nc-tag-option" for="tagEdit{{ item.gift.id }}{{ tag.slug }}">
+                                                {{ tag.label }}
+                                            </label>
+                                        {% endfor %}
+                                    </div>
+                                </fieldset>
+                            </div>
+                            <div class="mb-3">
+                                <fieldset>
                                     <legend class="form-label small fw-bold">{% trans "Visible in" %}</legend>
                                     {% for group in user_groups %}
                                         <div class="form-check">

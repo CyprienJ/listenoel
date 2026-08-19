@@ -146,13 +146,13 @@ class GiftAdmin(ModelAdmin):
     search_fields = ("title", "description", "owner__nickname", "owner__email")
     readonly_fields = ("created_at", "offered_at")
     date_hierarchy = "created_at"
-    filter_horizontal = ("visible_in", "expense_split")
+    filter_horizontal = ("visible_in", "tags", "expense_split")
     inlines = [ReservationInline, GuestReservationInline, GiftCommentInline]
 
     fieldsets = (
         (None, {"fields": ("title", "description", "url", "price")}),
         (_("Ownership"), {"fields": ("owner", "created_by", "managed_member")}),
-        (_("Visibility"), {"fields": ("visible_in", "is_hidden")}),
+        (_("Visibility"), {"fields": ("visible_in", "tags", "is_hidden")}),
         (_("Event"), {"fields": ("event_list",)}),
         (_("Reservation"), {"fields": ("group_reserved_on",)}),
         (_("Status"), {"fields": ("offered", "offered_at", "actual_cost", "expense_split")}),
