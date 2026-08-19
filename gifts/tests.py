@@ -284,6 +284,40 @@ class GiftAccessControlTest(TestCase):
         self.assertContains(managed_list, 'data-bs-target="#addGiftModal"')
         self.assertContains(managed_list, _("New wish"))
 
+    def test_add_surprise_modal_only_lists_groups_shared_with_owner(self):
+        group_without_owner = Group.objects.create(name="Group 2-3")
+        group_without_owner.members.add(self.user2, self.user3)
+
+        self.client.force_login(self.user2)
+        response = self.client.get(reverse("view_list", args=[self.user1.id]))
+
+        self.assertContains(response, f'id="groupAdd{self.group.id}"')
+        self.assertNotContains(response, f'id="groupAdd{group_without_owner.id}"')
+
+    def test_add_surprise_rejects_group_not_shared_with_owner(self):
+        group_without_owner = Group.objects.create(name="Group 2-3")
+        group_without_owner.members.add(self.user2, self.user3)
+
+        self.client.force_login(self.user2)
+        response = self.client.post(
+            reverse("add_gift", args=[self.user1.id]),
+            {"title": "Hidden surprise", "visible_in": [group_without_owner.id]},
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(Gift.objects.filter(title="Hidden surprise").exists())
+
+    def test_add_surprise_accepts_group_shared_with_owner(self):
+        self.client.force_login(self.user2)
+        response = self.client.post(
+            reverse("add_gift", args=[self.user1.id]),
+            {"title": "Shared surprise", "visible_in": [self.group.id]},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        surprise = Gift.objects.get(title="Shared surprise")
+        self.assertEqual(list(surprise.visible_in.all()), [self.group])
+
     def test_edit_gift_access(self):
         """A user can only edit his gifts or surprises from groups he is in"""
         # User1 edits his own gift

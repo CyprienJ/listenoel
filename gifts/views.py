@@ -586,6 +586,8 @@ def view_list(request: HttpRequest, user_id: int):
     if target_user.is_managed:
         mm = getattr(target_user, "managed_member_profile", None)
         user_groups = Group.objects.filter(id=mm.group_id) if mm else Group.objects.none()
+    elif not is_owner:
+        user_groups = common_groups
     else:
         user_groups = request.user.gift_groups.all()
 
@@ -911,6 +913,21 @@ def add_gift(request, owner_id):
     if owner != request.user and not Group.objects.filter(members=request.user).filter(members=owner).exists():
         return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
+    group_ids = request.POST.getlist("visible_in")
+    valid_groups = Group.objects.none()
+    if group_ids:
+        try:
+            requested_group_ids = {int(group_id) for group_id in group_ids}
+        except (TypeError, ValueError):
+            return HttpResponseForbidden(_(PERMISSION_DENIED))
+
+        allowed_groups = Group.objects.filter(members=request.user, is_demo=request.user.is_demo)
+        if owner != request.user:
+            allowed_groups = allowed_groups.filter(members=owner)
+        valid_groups = allowed_groups.filter(id__in=requested_group_ids)
+        if valid_groups.count() != len(requested_group_ids):
+            return HttpResponseForbidden(_(PERMISSION_DENIED))
+
     title = request.POST.get("title", "").strip()
     if title:
         gift = Gift.objects.create(
@@ -920,9 +937,7 @@ def add_gift(request, owner_id):
             url=request.POST.get("url", "").strip(),
             created_by=request.user,
         )
-        group_ids = request.POST.getlist("visible_in")
         if group_ids:
-            valid_groups = Group.objects.filter(id__in=group_ids, members=request.user, is_demo=request.user.is_demo)
             gift.visible_in.set(valid_groups)
 
         subscription_records = owner.subscriber_records.filter(
