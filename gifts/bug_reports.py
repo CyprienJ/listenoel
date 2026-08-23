@@ -3,7 +3,7 @@ import threading
 import time
 import uuid
 from collections import defaultdict, deque
-from urllib.parse import urlparse
+from urllib.parse import urlencode, urlparse
 
 import requests
 from django import forms
@@ -25,6 +25,7 @@ GITHUB_ISSUE_NUMBER = re.compile(r"^[1-9]\d*$", re.ASCII)
 
 class BugReportForm(forms.Form):
     CATEGORY_CHOICES = (
+        ("", _("Not specified")),
         ("display", _("Display")),
         ("navigation", _("Navigation")),
         ("account", _("Account")),
@@ -40,16 +41,19 @@ class BugReportForm(forms.Form):
     )
 
     title = forms.CharField(max_length=120, label=_("Short title"))
-    category = forms.ChoiceField(choices=CATEGORY_CHOICES, label=_("Category"))
+    category = forms.ChoiceField(choices=CATEGORY_CHOICES, required=False, label=_("Category"))
     description = forms.CharField(max_length=2000, widget=forms.Textarea, label=_("Description"))
     reproduction_steps = forms.CharField(
         max_length=3000,
+        required=False,
         widget=forms.Textarea,
         label=_("Steps to reproduce"),
         help_text=_("Describe the actions in order, one step per line."),
     )
-    expected_result = forms.CharField(max_length=1500, widget=forms.Textarea, label=_("Expected result"))
-    actual_result = forms.CharField(max_length=1500, widget=forms.Textarea, label=_("Actual result"))
+    expected_result = forms.CharField(
+        max_length=1500, required=False, widget=forms.Textarea, label=_("Expected result")
+    )
+    actual_result = forms.CharField(max_length=1500, required=False, widget=forms.Textarea, label=_("Actual result"))
     frequency = forms.ChoiceField(choices=FREQUENCY_CHOICES, required=False, label=_("Frequency"))
     public_consent = forms.BooleanField(
         label=_("I have checked that my report contains no personal or confidential information."),
@@ -175,28 +179,19 @@ def _issue_body(form, reference):
     reported_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     route = _public_route(data["page_path"])
 
-    return "\n".join(
+    body = [f"## {_('Description')}", "", _safe_text(data["description"]), ""]
+    optional_sections = (
+        (_("Steps to reproduce"), _numbered_steps(data["reproduction_steps"])),
+        (_("Expected result"), _safe_text(data["expected_result"])),
+        (_("Actual result"), _safe_text(data["actual_result"])),
+        (_("Frequency"), str(frequency) if data["frequency"] else ""),
+    )
+    for heading, content in optional_sections:
+        if content:
+            body.extend((f"## {heading}", "", content, ""))
+
+    body.extend(
         [
-            f"## {_('Description')}",
-            "",
-            _safe_text(data["description"]),
-            "",
-            f"## {_('Steps to reproduce')}",
-            "",
-            _numbered_steps(data["reproduction_steps"]),
-            "",
-            f"## {_('Expected result')}",
-            "",
-            _safe_text(data["expected_result"]),
-            "",
-            f"## {_('Actual result')}",
-            "",
-            _safe_text(data["actual_result"]),
-            "",
-            f"## {_('Frequency')}",
-            "",
-            str(frequency),
-            "",
             f"## {_('Technical context')}",
             "",
             f"- {_('Report reference')}: `{reference}`",
@@ -215,6 +210,7 @@ def _issue_body(form, reference):
             str(_("Submitted from the public bug report form. Dynamic URL identifiers are intentionally hidden.")),
         ]
     )
+    return "\n".join(body)
 
 
 def _create_github_issue(form):
@@ -224,8 +220,10 @@ def _create_github_issue(form):
         raise RuntimeError("GitHub bug reporting is not configured")
 
     reference = f"REPORT-{uuid.uuid4().hex[:12].upper()}"
-    category = dict(BugReportForm.CATEGORY_CHOICES)[form.cleaned_data["category"]]
-    title = f"[Bug][{category}] {_safe_text(form.cleaned_data['title'])}"
+    category_value = form.cleaned_data["category"]
+    category = dict(BugReportForm.CATEGORY_CHOICES)[category_value]
+    prefix = f"[Bug][{category}]" if category_value else "[Bug]"
+    title = f"{prefix} {_safe_text(form.cleaned_data['title'])}"
     payload = {
         "title": title[:256],
         "body": _issue_body(form, reference),
@@ -276,8 +274,16 @@ def bug_report(request: HttpRequest) -> HttpResponse:
             "form": form,
             "app_version": settings.APP_VERSION,
             "reporting_configured": bool(settings.BUG_REPORT_TOKEN and settings.BUG_REPORT_REPOSITORY),
+            "known_bugs_url": _known_bugs_url(settings.BUG_REPORT_REPOSITORY),
         },
     )
+
+
+def _known_bugs_url(repository):
+    if repository.count("/") != 1:
+        return ""
+    query = urlencode({"q": "is:issue state:open label:bug"})
+    return f"https://github.com/{repository}/issues?{query}"
 
 
 @require_GET

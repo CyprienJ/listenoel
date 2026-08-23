@@ -52,6 +52,17 @@ class BugReportTest(SimpleTestCase):
         self.assertContains(response, 'name="public_consent"')
         self.assertNotContains(response, 'type="file"')
 
+    def test_form_links_to_open_known_bugs(self):
+        response = self.client.get(self.url)
+        document = BeautifulSoup(response.content, "html.parser")
+
+        link = document.find("a", href=lambda href: href and "label%3Abug" in href)
+        self.assertIsNotNone(link)
+        self.assertEqual(
+            link["href"],
+            "https://github.com/example/public-bugs/issues?q=is%3Aissue+state%3Aopen+label%3Abug",
+        )
+
     def test_bug_report_link_is_in_footer_and_not_navigation(self):
         response = self.client.get(self.url)
         document = BeautifulSoup(response.content, "html.parser")
@@ -95,6 +106,33 @@ class BugReportTest(SimpleTestCase):
         self.assertIn("2.8.3", payload["body"])
         self.assertIn("a37bd82", payload["body"])
         self.assertIn("## Contexte technique", payload["body"])
+
+    @patch("gifts.bug_reports.requests.post")
+    def test_only_title_description_and_public_consent_are_required(self, post):
+        github_response = Mock()
+        github_response.raise_for_status.return_value = None
+        github_response.json.return_value = {
+            "number": 319,
+            "html_url": "https://github.com/example/public-bugs/issues/319",
+        }
+        post.return_value = github_response
+
+        response = self.client.post(
+            self.url,
+            {
+                "title": "A concise report",
+                "description": "Something went wrong.",
+                "public_consent": "on",
+            },
+        )
+
+        self.assertRedirects(response, f"{reverse('bug_report_success')}?issue=319", fetch_redirect_response=False)
+        payload = post.call_args.kwargs["json"]
+        self.assertEqual(payload["title"], "[Bug] A concise report")
+        self.assertNotIn("## Étapes pour reproduire", payload["body"])
+        self.assertNotIn("## Résultat attendu", payload["body"])
+        self.assertNotIn("## Résultat obtenu", payload["body"])
+        self.assertNotIn("## Fréquence", payload["body"])
 
     def test_success_page_links_to_created_issue(self):
         response = self.client.get(reverse("bug_report_success"), {"issue": "317"})

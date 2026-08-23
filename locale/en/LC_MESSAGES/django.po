@@ -233,6 +233,18 @@ msgstr ""
 msgid "The report could not be submitted."
 msgstr ""
 
+#: gifts/templates/gifts/bug_report.html
+msgid "Check known bugs first"
+msgstr ""
+
+#: gifts/templates/gifts/bug_report.html
+msgid "The problem may already have been reported."
+msgstr ""
+
+#: gifts/templates/gifts/bug_report.html
+msgid "View open bug tickets"
+msgstr ""
+
 #: gifts/bug_reports.py:153 gifts/bug_reports.py:174 gifts/bug_reports.py:175
 #: gifts/bug_reports.py:206 gifts/bug_reports.py:207 gifts/bug_reports.py:209
 #: gifts/bug_reports.py:210 gifts/bug_reports.py:211 gifts/bug_reports.py:213
