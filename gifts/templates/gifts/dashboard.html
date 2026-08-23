@@ -41,7 +41,7 @@
         <div class="nc-list-banner__body">
             <div class="nc-list-banner__title">{% trans "My gift list" %}</div>
             <div class="nc-list-banner__sub">
-                {% blocktrans count count=request.user.gifts.count %}{{ count }} idea{% plural %}{{ count }} ideas{% endblocktrans %}
+                {% blocktrans count count=open_wish_count %}{{ count }} idea{% plural %}{{ count }} ideas{% endblocktrans %}
                 {% if user_groups %}
                     · {% blocktrans count count=user_groups.count %}{{ count }} group{% plural %}{{ count }} groups{% endblocktrans %}
                 {% endif %}

@@ -188,6 +188,27 @@ class AccessControlTest(TestCase):
         self.assertEqual(self.client.get(reverse("create_group")).status_code, 405)
 
 
+class DashboardGiftCountTest(TestCase):
+    def setUp(self):
+        self.user, self.other_user, _ = create_users()
+
+    def test_wish_count_excludes_surprises_created_by_other_users(self):
+        Gift.objects.create(owner=self.user, created_by=self.user, title="My wish")
+        Gift.objects.create(owner=self.user, created_by=self.other_user, title="A surprise")
+
+        activate("en")
+        try:
+            self.client.force_login(self.user)
+            response = self.client.get(reverse("dashboard"))
+        finally:
+            deactivate()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["open_wish_count"], 1)
+        self.assertContains(response, "1 idea")
+        self.assertNotContains(response, "2 ideas")
+
+
 class PasswordResetTest(TestCase):
     def setUp(self):
 

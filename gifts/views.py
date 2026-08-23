@@ -476,7 +476,11 @@ def dashboard(request):
     upcoming_birthdays = _upcoming_birthdays(request.user, user_groups, today)
     balance_summaries = _dashboard_balance_summaries(request.user, user_groups)
     open_wish_count = Gift.objects.filter(
-        owner=request.user, offered=False, event_list__isnull=True, is_draft=False
+        owner=request.user,
+        created_by=request.user,
+        offered=False,
+        event_list__isnull=True,
+        is_draft=False,
     ).count()
     event_count = user_event_lists.count() + participating_event_lists.count()
     my_reservation_count = my_reservations_qs.count()
