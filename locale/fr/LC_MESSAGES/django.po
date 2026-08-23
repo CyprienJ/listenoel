@@ -236,6 +236,18 @@ msgstr "Exemple : le bouton Enregistrer ne fait rien"
 msgid "The report could not be submitted."
 msgstr "Le signalement n’a pas pu être envoyé."
 
+#: gifts/templates/gifts/bug_report.html
+msgid "Check known bugs first"
+msgstr "Consultez d’abord les bugs connus"
+
+#: gifts/templates/gifts/bug_report.html
+msgid "The problem may already have been reported."
+msgstr "Le problème a peut-être déjà été signalé."
+
+#: gifts/templates/gifts/bug_report.html
+msgid "View open bug tickets"
+msgstr "Voir les tickets de bug ouverts"
+
 #: gifts/bug_reports.py:153 gifts/bug_reports.py:174 gifts/bug_reports.py:175
 #: gifts/bug_reports.py:206 gifts/bug_reports.py:207 gifts/bug_reports.py:209
 #: gifts/bug_reports.py:210 gifts/bug_reports.py:211 gifts/bug_reports.py:213
