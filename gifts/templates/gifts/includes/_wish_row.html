@@ -14,7 +14,7 @@
          data-bs-target="#viewGiftModal{{ item.gift.id }}">
         <div class="nc-wish-name">{{ item.gift.title }}</div>
         <div class="nc-wish-desc {% if not item.gift.description %}nc-wish-desc--empty{% endif %}">
-            {{ item.gift.description|default:_("No description") }}
+            {{ item.gift.description|default:"" }}
         </div>
     </div>
 
