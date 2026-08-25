@@ -3,70 +3,70 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Quick Add</title>
+  <title data-i18n="quickAdd">Quick Add</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="topbar">
     <div>
-      <strong>Quick Add</strong>
-      <span id="account" class="account">Not connected</span>
+      <strong data-i18n="quickAdd">Quick Add</strong>
+      <span id="account" class="account" data-i18n="notConnected">Not connected</span>
     </div>
     <div class="topbar-actions">
-      <button id="refresh" class="link-button" type="button" title="Scan the active page again">Refresh</button>
-      <button id="connect" class="link-button" type="button">Connect</button>
+      <button id="refresh" class="link-button" type="button" title="Scan the active page again" data-i18n="refresh" data-i18n-title="scanAgain">Refresh</button>
+      <button id="connect" class="link-button" type="button" data-i18n="connect">Connect</button>
     </div>
   </header>
 
   <main>
-    <output id="notice" class="notice">Click the toolbar button on a product page.</output>
+    <output id="notice" class="notice" data-i18n="clickToolbar">Click the toolbar button on a product page.</output>
 
     <form id="product-form" hidden>
       <div id="image-frame" class="image-frame" hidden>
-        <img id="product-image" alt="Extracted product">
+        <img id="product-image" alt="Extracted product" data-i18n-alt="extractedProduct">
       </div>
 
-      <label for="title">Title</label>
+      <label for="title" data-i18n="title">Title</label>
       <input id="title" name="title" maxlength="200" required list="title-candidates">
       <datalist id="title-candidates"></datalist>
 
-      <label for="url">Product URL</label>
+      <label for="url" data-i18n="productUrl">Product URL</label>
       <input id="url" name="url" type="url" required>
 
-      <label for="image-url">Image URL</label>
+      <label for="image-url" data-i18n="imageUrl">Image URL</label>
       <input id="image-url" name="image_url" type="url" list="image-candidates">
       <datalist id="image-candidates"></datalist>
 
       <div class="price-row">
         <div>
-          <label for="price">Price</label>
+          <label for="price" data-i18n="price">Price</label>
           <input id="price" name="price" inputmode="decimal" list="price-candidates">
           <datalist id="price-candidates"></datalist>
         </div>
         <div class="currency-field">
-          <label for="currency">Currency</label>
+          <label for="currency" data-i18n="currency">Currency</label>
           <input id="currency" name="currency" maxlength="3" pattern="[A-Za-z]{3}">
         </div>
       </div>
 
       <fieldset id="groups" hidden>
-        <legend>Visible in</legend>
-        <p>If none are selected, the product is visible in all your groups.</p>
+        <legend data-i18n="visibleIn">Visible in</legend>
+        <p data-i18n="visibleInAllGroups">If none are selected, the product is visible in all your groups.</p>
         <div id="group-list"></div>
       </fieldset>
 
-      <button id="submit" class="primary" type="submit">Add to my list</button>
+      <button id="submit" class="primary" type="submit" data-i18n="addToMyList">Add to my list</button>
     </form>
 
     <section id="success" class="success" hidden>
-      <strong>Product added.</strong>
-      <button id="open-list" class="primary" type="button">Open my list</button>
+      <strong data-i18n="productAdded">Product added.</strong>
+      <button id="open-list" class="primary" type="button" data-i18n="openMyList">Open my list</button>
     </section>
   </main>
 
   <footer>
-    <button id="settings" class="link-button" type="button">Settings</button>
-    <button id="disconnect" class="link-button danger" type="button" hidden>Disconnect</button>
+    <button id="settings" class="link-button" type="button" data-i18n="settings">Settings</button>
+    <button id="disconnect" class="link-button danger" type="button" hidden data-i18n="disconnect">Disconnect</button>
   </footer>
 
   <script type="module" src="index.js"></script>

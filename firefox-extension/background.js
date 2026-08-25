@@ -1,3 +1,5 @@
+const t = (key, substitutions) => browser.i18n.getMessage(key, substitutions);
+
 browser.action.onClicked.addListener(async (tab) => {
   if (!tab.id || !tab.windowId) {
     return;
@@ -22,11 +24,11 @@ browser.action.onClicked.addListener(async (tab) => {
     if (permissionResult.status === "rejected") throw permissionResult.reason;
     const granted = permissionResult.value;
     if (!granted) {
-      throw new Error("Site access was not granted.");
+      throw new Error(t("siteAccessNotGranted"));
     }
     await scanTab(tab, key);
   } catch (error) {
-    const message = `Quick Add needs permission to read this shop page. Click the toolbar button again and choose Allow. Firefox reported: ${error.message || error}`;
+    const message = t("permissionNeeded", error.message || String(error));
     await browser.storage.session.set({
       [key]: { status: "error", tabId: tab.id, message }
     });
@@ -54,17 +56,17 @@ async function scanTab(tab, key) {
     const [, results] = await Promise.all([settingLoadingState, execution]);
     const injection = results.find((item) => item.frameId === 0) || results[0];
     if (injection?.error) {
-      throw new Error(`Extractor execution failed: ${formatInjectionError(injection.error)}`);
+      throw new Error(t("extractorFailed", formatInjectionError(injection.error)));
     }
     const product = injection?.result;
     if (product?.extractionError) {
-      throw new Error(`Extractor execution failed: ${product.extractionError}`);
+      throw new Error(t("extractorFailed", product.extractionError));
     }
     if (!product?.title || !product?.url) {
-      throw new Error("No product information was found on this page.");
+      throw new Error(t("noProductInformation"));
     }
     if (!product.detection?.isProduct) {
-      throw new Error("This page does not appear to be a product page.");
+      throw new Error(t("notProductPage"));
     }
     await browser.storage.session.set({
       [key]: { status: "ready", tabId: tab.id, product }
@@ -92,16 +94,16 @@ function formatInjectionError(error) {
 function friendlyError(error) {
   const message = String(error?.message || error);
   if (message.includes("Missing host permission") || message.includes("Cannot access")) {
-    return `Firefox blocked access to this page. Wait until it has finished loading, then click the Quick Add toolbar button again. Firefox reported: ${message}`;
+    return t("firefoxBlockedAccess", message);
   }
-  return message || "The product could not be extracted.";
+  return message || t("couldNotExtract");
 }
 
 function requestTabPermission(urlValue) {
   try {
     const url = new URL(urlValue);
     if (!["http:", "https:"].includes(url.protocol)) {
-      return Promise.reject(new Error("This type of Firefox page cannot be scanned."));
+      return Promise.reject(new Error(t("unsupportedPage")));
     }
     // Firefox match patterns intentionally omit ports.
     const origin = `${url.protocol}//${url.hostname}/*`;

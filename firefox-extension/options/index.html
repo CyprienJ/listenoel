@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Quick Add settings</title>
+  <title data-i18n="quickAddSettings">Quick Add settings</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <form id="settings-form">
-    <h1>Quick Add settings</h1>
-    <label for="base-url">nosCadeaux server</label>
+    <h1 data-i18n="quickAddSettings">Quick Add settings</h1>
+    <label for="base-url" data-i18n="server">nosCadeaux server</label>
     <input id="base-url" type="url" required>
-    <p>Use <code>http://127.0.0.1:8000</code> for local development.</p>
-    <button type="submit">Save</button>
+    <p><span data-i18n="useForLocalDevelopment">Use</span> <code>http://127.0.0.1:8000</code> <span data-i18n="forLocalDevelopment">for local development.</span></p>
+    <button type="submit" data-i18n="save">Save</button>
     <output id="status"></output>
   </form>
   <script type="module" src="index.js"></script>
