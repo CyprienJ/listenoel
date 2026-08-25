@@ -1,0 +1,7 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+<!doctype html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head><title>{% trans "You were removed from a shared list" %}</title></head>
+<body><p>{% blocktrans with name=shared_list.name %}You are no longer a member of the shared list <strong>{{ name }}</strong>.{% endblocktrans %}</p></body>
+</html>

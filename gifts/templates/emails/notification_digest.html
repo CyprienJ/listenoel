@@ -89,7 +89,7 @@
                                                 <tr>
                                                     <td style="padding: 8px 0; border-top: 1px solid #f0dddd; color: #44474E; font-size: 15px; line-height: 22px;">
                                                         <strong style="color: #1A1C1E;">{{ reservation.gift.title }}</strong><br>
-                                                        <span style="font-size: 13px;">{{ reservation.gift.owner.nickname }}</span>
+                                                        <span style="font-size: 13px;">{% if reservation.gift.shared_list_id %}{{ reservation.gift.shared_list.name }}{% else %}{{ reservation.gift.owner.nickname }}{% endif %}</span>
                                                     </td>
                                                 </tr>
                                             {% empty %}

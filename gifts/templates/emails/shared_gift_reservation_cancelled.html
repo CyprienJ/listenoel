@@ -1,0 +1,6 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+<!doctype html>
+<html lang="{{ LANGUAGE_CODE }}"><head><title>{% trans "A reservation was cancelled" %}</title></head><body>
+<p>{% blocktrans %}The wish <strong>{{ gift_title }}</strong> was moved to the shared list <strong>{{ shared_list.name }}</strong>. Your reservation or participation has therefore been cancelled.{% endblocktrans %}</p>
+</body></html>

@@ -12,7 +12,7 @@
 {% endfor %}
 
 {% trans "What you are expected to give" %}
-{% for reservation in my_reservations %}- {{ reservation.gift.title }} — {{ reservation.gift.owner.nickname }}
+{% for reservation in my_reservations %}- {{ reservation.gift.title }} — {% if reservation.gift.shared_list_id %}{{ reservation.gift.shared_list.name }}{% else %}{{ reservation.gift.owner.nickname }}{% endif %}
 {% empty %}- {% trans "No active reservation." %}
 {% endfor %}
 

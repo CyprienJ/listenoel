@@ -55,6 +55,31 @@
 
     <div class="nc-dashboard-shell">
         <aside class="nc-dashboard-groups-sidebar">
+    <!-- Shared lists -->
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <div class="nc-section-label mb-0">
+            {% trans "Shared lists" %}{% if user_shared_lists %} · {{ user_shared_lists.count }}{% endif %}
+        </div>
+        <button type="button" class="nc-btn nc-btn--ghost nc-btn--sm"
+                data-bs-toggle="modal" data-bs-target="#createSharedListModal"
+                title="{% trans 'New shared list' %}" aria-label="{% trans 'New shared list' %}">
+            <i class="bi bi-plus-lg"></i>
+        </button>
+    </div>
+    {% if user_shared_lists %}
+        <div class="nc-groups-grid">
+            {% for list in user_shared_lists %}
+                <a href="{% url 'shared_list_detail' list.id %}" class="nc-group-card">
+                    <div class="nc-group-avatar nc-color-3"><i class="bi bi-people-fill"></i></div>
+                    <div class="nc-group-card__name">{{ list.name }}</div>
+                    <div class="nc-group-card__meta">
+                        {% blocktrans count count=list.members.count %}{{ count }} member{% plural %}{{ count }} members{% endblocktrans %}
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <!-- Groups -->
     {% if user_groups %}
         <div class="nc-section-label">{% trans "My groups" %} · {{ user_groups.count }}</div>
@@ -267,12 +292,12 @@
                     </button>
                     <div class="d-none" id="dashboardReservationsRows">
                         {% for reservation in my_reservations %}
-                            <a href="{% url 'view_list' reservation.gift.owner.id %}{% if reservation.gift.group_reserved_on_id %}?from_group={{ reservation.gift.group_reserved_on_id }}{% endif %}"
+                            <a href="{% if reservation.gift.shared_list_id %}{% url 'shared_list_detail' reservation.gift.shared_list_id %}{% else %}{% url 'view_list' reservation.gift.owner.id %}{% endif %}{% if reservation.gift.group_reserved_on_id %}?from_group={{ reservation.gift.group_reserved_on_id }}{% endif %}"
                                class="nc-dashboard-list-row">
                                 <span class="nc-dashboard-row-icon nc-dashboard-row-icon--reservation"><i class="bi bi-lock-fill"></i></span>
                                 <span class="nc-dashboard-row-body">
                                     <strong>{{ reservation.gift.title }}</strong>
-                                    <small>{{ reservation.gift.owner.nickname }}{% if reservation.exclusivity %} · {% trans "exclusive" %}{% endif %}</small>
+                                    <small>{% if reservation.gift.shared_list_id %}{{ reservation.gift.shared_list.name }}{% else %}{{ reservation.gift.owner.nickname }}{% endif %}{% if reservation.exclusivity %} · {% trans "exclusive" %}{% endif %}</small>
                                 </span>
                             </a>
                         {% endfor %}
@@ -472,7 +497,33 @@
                 </div>
             </div>
         </div>
+</div>
+
+<div class="modal fade" id="createSharedListModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-5 shadow-lg auth-card">
+            <form method="post" action="{% url 'create_shared_list' %}">
+                {% csrf_token %}
+                <div class="modal-header border-0 p-4 pb-0">
+                    <h5 class="modal-title fw-bold text-primary">{% trans "New shared list" %}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <label for="sharedListName" class="form-label">{% trans "List name" %}</label>
+                    <input id="sharedListName" name="name" maxlength="200" required
+                           class="form-control rounded-4 bg-body-tertiary border-0 p-3"
+                           placeholder="{% trans 'e.g. Our new home' %}">
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">
+                        {% trans "Cancel" %}
+                    </button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">{% trans "Create" %}</button>
+                </div>
+            </form>
+        </div>
     </div>
+</div>
 
 {% endblock %}
 

@@ -1,0 +1,204 @@
+{% extends from_group_id|yesno:"groups/group_detail.html,base.html" %}
+{% load i18n %}
+
+{% block group_main_content %}
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            {% if group %}<div class="text-muted small mb-1">{{ group.name }} · {{ published_by.nickname|capfirst }}</div>{% endif %}
+            <h1 class="h2 fw-bold mb-1"><i class="bi bi-people-fill me-2"></i>{{ shared_list.name }}</h1>
+            <div class="text-muted">
+                {% for member in shared_list.members.all %}
+                    {{ member.nickname|capfirst }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% if is_management_view %}
+            <button class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#addSharedGiftModal">
+                <i class="bi bi-plus-lg me-1"></i>{% trans "Add a wish" %}
+            </button>
+        {% endif %}
+    </div>
+
+    {% if is_management_view %}
+    <form method="post" action="{% url 'rename_shared_list' shared_list.id %}" class="d-flex gap-2 mb-3">
+        {% csrf_token %}
+        <input name="name" value="{{ shared_list.name }}" maxlength="200" required
+               class="form-control rounded-pill" aria-label="{% trans 'List name' %}">
+        <button class="btn btn-outline-primary rounded-pill">{% trans "Rename" %}</button>
+    </form>
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <h2 class="h6 fw-bold">{% trans "Members" %}</h2>
+                    <div class="d-flex flex-column gap-2 mb-3">
+                        {% for member in shared_list.members.all %}
+                            <div class="d-flex justify-content-between align-items-center bg-body-tertiary rounded-3 p-2">
+                                <span><i class="bi bi-person-circle me-2"></i>{{ member.nickname|capfirst }}</span>
+                                {% if shared_list.members.count > 2 %}
+                                    <form method="post" action="{% url 'remove_shared_list_member' shared_list.id member.id %}">
+                                        {% csrf_token %}
+                                        <button class="btn btn-sm btn-outline-danger rounded-pill btn-delete"
+                                                onclick="return confirm(this.dataset.confirmMsg)"
+                                                data-confirm-msg="{% trans 'Remove this member?' %}">{% trans "Remove" %}</button>
+                                    </form>
+                                {% elif member.id != request.user.id %}
+                                    <form method="post" action="{% url 'remove_shared_list_member' shared_list.id member.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="resolution" value="transfer">
+                                        <button class="btn btn-sm btn-outline-danger rounded-pill btn-delete"
+                                                onclick="return confirm(this.dataset.confirmMsg)"
+                                                data-confirm-msg="{% trans 'This will end the shared list and transfer its wishes to your personal list.' %}">
+                                            {% trans "Remove and transfer" %}
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% if candidate_members %}
+                        <form method="post" action="{% url 'add_shared_list_member' shared_list.id %}" class="d-flex gap-2">
+                            {% csrf_token %}
+                            <label for="sharedListMember" class="visually-hidden">{% trans "Add someone…" %}</label>
+                            <select id="sharedListMember" name="user_id" class="form-select rounded-pill" required>
+                                <option value="">{% trans "Add someone…" %}</option>
+                                {% for candidate in candidate_members %}
+                                    <option value="{{ candidate.id }}">{{ candidate.nickname|capfirst }}</option>
+                                {% endfor %}
+                            </select>
+                            <button class="btn btn-outline-primary rounded-pill">{% trans "Add" %}</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-transparent border-0 p-4 pb-2 d-flex justify-content-between align-items-center">
+            <h2 class="h5 fw-bold mb-0">{% trans "Wishes" %}</h2>
+            <span class="badge text-bg-light rounded-pill">{{ gift_items|length }}</span>
+        </div>
+        <div class="card-body p-4 pt-2">
+            {% for item in gift_items %}
+                <div class="border rounded-4 p-3 mb-3">
+                    <div class="d-flex flex-wrap justify-content-between gap-3">
+                        <div class="flex-grow-1">
+                            <h3 class="h6 fw-bold mb-1">{{ item.gift.title }}</h3>
+                            {% if item.gift.description %}<p class="text-muted mb-2">{{ item.gift.description }}</p>{% endif %}
+                            <div class="d-flex flex-wrap gap-2 small text-muted">
+                                <span><i class="bi bi-person-circle me-1"></i>{% trans "Added by" %} {{ item.gift.created_by.nickname|capfirst }}</span>
+                                {% for tag in item.gift.tags.all %}<span class="badge text-bg-light">{{ tag.label }}</span>{% endfor %}
+                                {% if is_management_view %}
+                                    {% for publication in item.publication_groups %}
+                                        <span><i class="bi bi-eye me-1"></i>{{ publication.member.nickname|capfirst }} :
+                                            {% for g in publication.groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                                        </span>
+                                    {% empty %}
+                                        <span><i class="bi bi-eye-slash me-1"></i>{% trans "Not visible in any group" %}</span>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if item.gift.url %}
+                                <a href="{{ item.gift.url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary rounded-pill">
+                                    <i class="bi bi-link-45deg"></i> {% trans "Link" %}
+                                </a>
+                            {% endif %}
+                            {% if is_management_view %}
+                                <button class="btn btn-sm btn-outline-primary rounded-pill" data-bs-toggle="modal"
+                                        data-bs-target="#editSharedGift{{ item.gift.id }}">{% trans "Edit" %}</button>
+                                <form method="post" action="{% url 'delete_shared_gift' shared_list.id item.gift.id %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill btn-delete"
+                                            onclick="return confirm(this.dataset.confirmMsg)"
+                                            data-confirm-msg="{% trans 'Delete this gift?' %}">{% trans "Delete" %}</button>
+                                </form>
+                            {% elif not is_manager %}
+                                {% with state=item.reservation_state %}
+                                    <button class="btn btn-sm {% if state.is_mine %}btn-outline-primary{% else %}btn-primary{% endif %} rounded-pill"
+                                            {% if state.can_open %}data-bs-toggle="modal" data-bs-target="#reserveModal{{ item.gift.id }}"{% else %}disabled{% endif %}>
+                                        <i class="bi {{ state.icon }} me-1"></i>{{ state.action_label }}
+                                    </button>
+                                {% endwith %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% if is_management_view %}
+                    <div class="modal fade" id="editSharedGift{{ item.gift.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0 rounded-5 shadow-lg">
+                            <form method="post" action="{% url 'edit_shared_gift' shared_list.id item.gift.id %}">
+                                {% csrf_token %}
+                                <div class="modal-header border-0"><h5 class="modal-title">{% trans "Edit wish" %}</h5><button class="btn-close" type="button" data-bs-dismiss="modal"></button></div>
+                                <div class="modal-body">
+                                    <label for="sharedGiftTitle{{ item.gift.id }}" class="visually-hidden">{% trans "Wish name" %}</label>
+                                    <input id="sharedGiftTitle{{ item.gift.id }}" name="title" value="{{ item.gift.title }}" required maxlength="200" class="form-control mb-3">
+                                    <label for="sharedGiftDescription{{ item.gift.id }}" class="visually-hidden">{% trans "Description" %}</label>
+                                    <textarea id="sharedGiftDescription{{ item.gift.id }}" name="description" class="form-control mb-3" rows="3">{{ item.gift.description }}</textarea>
+                                    <label for="sharedGiftUrl{{ item.gift.id }}" class="visually-hidden">{% trans "Link" %}</label>
+                                    <input id="sharedGiftUrl{{ item.gift.id }}" name="url" value="{{ item.gift.url }}" type="url" class="form-control mb-3" placeholder="https://…">
+                                    <div class="mb-3"><div class="small fw-bold mb-2">{% trans "Tags" %}</div>
+                                        {% for tag in available_tags %}<label class="me-2"><input type="checkbox" name="tags" value="{{ tag.slug }}" {% if tag in item.gift.tags.all %}checked{% endif %}> {{ tag.label }}</label>{% endfor %}
+                                    </div>
+                                    <div><div class="small fw-bold mb-2">{% trans "Show this wish under my list in these groups" %}</div>
+                                        {% for g in my_groups %}<label class="d-block"><input type="checkbox" name="visible_in" value="{{ g.id }}" {% if g.id in item.my_publication_ids %}checked{% endif %}> {{ g.name }}</label>{% empty %}<span class="text-muted small">{% trans "You do not belong to any group yet." %}</span>{% endfor %}
+                                    </div>
+                                </div>
+                                <div class="modal-footer border-0"><button class="btn btn-primary rounded-pill">{% trans "Save" %}</button></div>
+                            </form>
+                        </div></div>
+                    </div>
+                {% elif not is_manager %}
+                    {% include "gifts/includes/_reserve_modal.html" with item=item %}
+                {% endif %}
+            {% empty %}
+                <div class="text-center text-muted py-5">{% trans "No wishes yet." %}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if is_management_view %}
+        <div class="text-end mt-4">
+            <form method="post" action="{% url 'delete_shared_list' shared_list.id %}">
+                {% csrf_token %}
+                <button class="btn btn-outline-danger rounded-pill btn-delete"
+                        onclick="return confirm(this.dataset.confirmMsg)"
+                        data-confirm-msg="{% trans 'Delete this shared list? It can be restored for 48 hours.' %}">
+                    <i class="bi bi-trash3 me-1"></i>{% trans "Delete shared list" %}
+                </button>
+            </form>
+        </div>
+    {% endif %}
+</div>
+
+{% if is_management_view %}
+<div class="modal fade" id="addSharedGiftModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0 rounded-5 shadow-lg">
+        <form method="post" action="{% url 'add_shared_gift' shared_list.id %}">
+            {% csrf_token %}
+            <div class="modal-header border-0"><h5 class="modal-title">{% trans "New wish" %}</h5><button class="btn-close" type="button" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <label for="newSharedGiftTitle" class="visually-hidden">{% trans "Wish name" %}</label>
+                <input id="newSharedGiftTitle" name="title" required maxlength="200" class="form-control mb-3" placeholder="{% trans 'Wish name' %}">
+                <label for="newSharedGiftDescription" class="visually-hidden">{% trans "Description" %}</label>
+                <textarea id="newSharedGiftDescription" name="description" class="form-control mb-3" rows="3" placeholder="{% trans 'Description' %}"></textarea>
+                <label for="newSharedGiftUrl" class="visually-hidden">{% trans "Link" %}</label>
+                <input id="newSharedGiftUrl" name="url" type="url" class="form-control mb-3" placeholder="https://…">
+                <div class="mb-3"><div class="small fw-bold mb-2">{% trans "Tags" %}</div>
+                    {% for tag in available_tags %}<label class="me-2"><input type="checkbox" name="tags" value="{{ tag.slug }}"> {{ tag.label }}</label>{% endfor %}
+                </div>
+                <div><div class="small fw-bold mb-2">{% trans "Show this wish under my list in these groups" %}</div>
+                    {% for g in my_groups %}<label class="d-block"><input type="checkbox" name="visible_in" value="{{ g.id }}"> {{ g.name }}</label>{% empty %}<span class="text-muted small">{% trans "You do not belong to any group yet." %}</span>{% endfor %}
+                </div>
+            </div>
+            <div class="modal-footer border-0"><button class="btn btn-primary rounded-pill">{% trans "Add" %}</button></div>
+        </form>
+    </div></div>
+</div>
+{% endif %}
+{% endblock %}

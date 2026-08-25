@@ -31,7 +31,16 @@
         <span class="nc-wish-meta-chip">
             <i class="bi bi-calendar3"></i> {{ item.gift.created_at|date:"d M Y" }}
         </span>
-        {% if is_surprise %}
+        {% if item.is_shared_wish %}
+            <span class="nc-wish-meta-chip nc-wish-meta-chip--sage">
+                <i class="bi bi-people-fill"></i> {{ item.gift.shared_list.name }}
+            </span>
+            {% if item.gift.created_by %}
+                <span class="nc-wish-meta-chip">
+                    <i class="bi bi-person-circle"></i> {% trans "Added by" %} {{ item.gift.created_by.nickname|capfirst }}
+                </span>
+            {% endif %}
+        {% elif is_surprise %}
             {% if item.gift.created_by %}
                 <span class="nc-wish-meta-chip">
                     <i class="bi bi-person-circle"></i> {{ item.gift.created_by.nickname|capfirst }}
@@ -94,6 +103,7 @@
 
     {# Actions #}
     <div class="nc-wish-actions">
+        {% if not item.hide_shared_reservation %}
         {% if is_surprise or not is_owner %}
             {% if state.can_open %}
                 <button class="nc-wish-reserve-btn nc-wish-reserve-btn--{{ state.status }}"
@@ -113,14 +123,16 @@
                 </button>
             {% endif %}
         {% endif %}
+        {% endif %}
 
-        {% if not is_surprise and is_owner and not item.gift.is_draft %}
+        {% if not item.is_shared_wish and not is_surprise and is_owner and not item.gift.is_draft %}
             <button class="nc-wish-offer-btn"
                     onclick="markReceived('{% url 'mark_received' gift_id=item.gift.id %}', {{ from_group_id|default:'null' }})">
                 <i class="bi bi-check2-circle"></i><span class="nc-btn-label">{% trans "Received!" %}</span>
             </button>
         {% endif %}
 
+        {% if not item.is_shared_wish %}
         {% if is_owner or user.is_managed or item.gift.created_by.id == request.user.id %}
             <div class="dropdown">
                 <button class="nc-wish-more-btn" type="button"
@@ -137,6 +149,21 @@
                             <i class="bi bi-pencil me-2"></i> {% trans "Modify" %}
                         </button>
                     </li>
+                    {% if is_owner and shared_lists_for_move and not item.gift.shared_list_id %}
+                        <li><h6 class="dropdown-header">{% trans "Move to a shared list" %}</h6></li>
+                        {% for list in shared_lists_for_move %}
+                            <li>
+                                <form method="post" action="{% url 'move_gift_to_shared_list' item.gift.id list.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item py-2 btn-delete"
+                                            onclick="return confirm(this.dataset.confirmMsg)"
+                                            data-confirm-msg="{% trans 'Move this wish? Any existing reservation will be cancelled.' %}">
+                                        <i class="bi bi-people me-2"></i> {{ list.name }}
+                                    </button>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    {% endif %}
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <form method="post" action="{% url 'delete_gift' item.gift.id %}" class="m-0">
@@ -150,6 +177,7 @@
                     </li>
                 </ul>
             </div>
+        {% endif %}
         {% endif %}
     </div>
 </div>

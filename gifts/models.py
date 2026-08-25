@@ -207,6 +207,54 @@ class ReminderDelivery(models.Model):
         ]
 
 
+class SharedList(models.Model):
+    name = models.CharField(max_length=200)
+    members = models.ManyToManyField(
+        User,
+        related_name="shared_lists",
+        through="SharedListMembership",
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+    deleted_at = models.DateTimeField(blank=True, null=True)
+    restore_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    is_demo = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ("name", "id")
+
+    def __str__(self):
+        return self.name
+
+
+class SharedListMembership(models.Model):
+    shared_list = models.ForeignKey(SharedList, on_delete=models.CASCADE, related_name="memberships")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="shared_list_memberships")
+    joined_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=("shared_list", "user"), name="unique_shared_list_member"),
+        ]
+
+
+class SharedGiftPublication(models.Model):
+    gift = models.ForeignKey("Gift", on_delete=models.CASCADE, related_name="shared_publications")
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="shared_gift_publications")
+    published_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="shared_gift_publications")
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("gift", "group", "published_by"),
+                name="unique_shared_gift_publication",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.gift.title} → {self.group.name} ({self.published_by.nickname})"
+
+
 class GiftTag(models.Model):
     class Slug(models.TextChoices):
         BOOKS = "books", _("Books")
@@ -263,6 +311,13 @@ class Gift(models.Model):
         "ManagedMember", blank=True, null=True, on_delete=models.CASCADE, related_name="gifts"
     )
     event_list = models.ForeignKey("EventList", blank=True, null=True, on_delete=models.CASCADE, related_name="gifts")
+    shared_list = models.ForeignKey(
+        SharedList,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="gifts",
+    )
     is_hidden = models.BooleanField(default=False)
     is_draft = models.BooleanField(default=False)
 

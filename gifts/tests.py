@@ -34,6 +34,8 @@ from .models import (
     SecretSantaAssignment,
     SecretSantaExclusion,
     SecretSantaGuestParticipant,
+    SharedGiftPublication,
+    SharedList,
     Subscription,
     User,
 )
@@ -2509,6 +2511,14 @@ class EventTransferAndLeaveTest(TestCase):
 
 
 class PublicDemoTest(TestCase):
+    def test_demo_button_is_translated_in_french(self):
+        activate("fr")
+        try:
+            response = self.client.get(reverse("welcome"))
+            self.assertContains(response, "Essayer la démo", count=2)
+        finally:
+            deactivate()
+
     def test_demo_login_creates_and_logs_in_demo_user(self):
         response = self.client.get(reverse("demo_login"))
 
@@ -2520,6 +2530,15 @@ class PublicDemoTest(TestCase):
         self.assertTrue(Group.objects.filter(is_demo=True, members=demo_user).exists())
         self.assertTrue(EventList.objects.filter(is_demo=True, owner=demo_user).exists())
         self.assertTrue(Gift.objects.filter(owner__is_demo=True).exists())
+        shared_list = SharedList.objects.get(is_demo=True, members=demo_user)
+        self.assertEqual(shared_list.members.count(), 3)
+        self.assertEqual(shared_list.gifts.count(), 2)
+        self.assertTrue(
+            SharedGiftPublication.objects.filter(
+                gift__shared_list=shared_list,
+                published_by=demo_user,
+            ).exists()
+        )
 
     def test_lazy_reset_keeps_fresh_demo_data(self):
         call_command("reset_demo")

@@ -11,7 +11,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from gifts.demo import demo_scope_forbidden_response, has_same_demo_scope
 from gifts.forms import GroupForm
-from gifts.models import EventList, Group, ManagedMember, User
+from gifts.models import EventList, Group, ManagedMember, SharedGiftPublication, User
 from gifts.photo_presets import is_valid_photo_preset, list_photo_presets
 
 NOT_A_MEMBER = "You are not a member of this group."
@@ -171,6 +171,7 @@ def delete_managed_member(request, group_id, member_id):
 def leave_group(request, group_id):
     group = get_object_or_404(Group, id=group_id)
     if request.user in group.members.all():
+        SharedGiftPublication.objects.filter(group=group, published_by=request.user).delete()
         group.members.remove(request.user)
         messages.success(request, _("You have left the group '%s'.") % group.name)
     if group.members.count() == 0:

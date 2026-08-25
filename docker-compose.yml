@@ -46,6 +46,7 @@ services:
                while true; do
                  python manage.py send_notification_digests;
                  python manage.py send_event_reminders;
+                 python manage.py purge_deleted_shared_lists;
                  sleep 3600;
                done"
       environment:

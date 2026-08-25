@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Restore shared list" %}{% endblock %}
+{% block content %}
+<div class="container py-5"><div class="card border-0 shadow-sm rounded-5 mx-auto" style="max-width:600px"><div class="card-body p-5 text-center">
+    <i class="bi bi-arrow-counterclockwise fs-1 text-primary"></i>
+    <h1 class="h3 fw-bold mt-3">{% trans "Restore the shared list?" %}</h1>
+    <p class="text-muted">{{ shared_list.name }}</p>
+    <form method="post" action="{% url 'restore_shared_list' shared_list.id token %}">{% csrf_token %}
+        <button class="btn btn-primary rounded-pill px-4">{% trans "Restore the list" %}</button>
+    </form>
+</div></div></div>
+{% endblock %}

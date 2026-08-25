@@ -278,7 +278,7 @@ def extension_quick_add(request):
         return _api_error(str(exc))
 
     user = request.extension_user
-    if Gift.objects.filter(owner=user, url=source_url, offered=False).exists():
+    if Gift.objects.filter(owner=user, shared_list__isnull=True, url=source_url, offered=False).exists():
         return _api_error("This product is already on your list", status=409)
 
     with transaction.atomic():
