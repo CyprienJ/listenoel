@@ -59,6 +59,7 @@ jobs:
           echo "Version incremented: ${base_version} -> ${pr_version}"
 
   linter:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -76,6 +77,7 @@ jobs:
         run: uv run --frozen --no-sync --no-build python manage.py validate_release_notes
 
   test:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -89,6 +91,7 @@ jobs:
         run: uv run --frozen --no-sync --no-build python manage.py test
 
   extension-test:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -100,11 +103,9 @@ jobs:
         run: node --test firefox-extension/tests/*.test.js
 
   build-and-push:
-    needs:
-      - test
-      - linter
-      - extension-test
-    if: github.ref == 'refs/heads/main'
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     permissions:
       contents: read
