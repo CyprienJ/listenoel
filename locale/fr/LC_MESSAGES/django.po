@@ -2095,10 +2095,6 @@ msgstr "Aucune note pour le moment."
 msgid "Add a note"
 msgstr "Ajouter une note"
 
-#: gifts/templates/gifts/includes/_gift_comments_panel.html:96
-msgid "He already has it, cheaper link, coordination..."
-msgstr "Il l'a déjà, lien moins cher, coordination..."
-
 #: gifts/templates/gifts/includes/_gift_comments_panel.html:98
 msgid "Add note"
 msgstr "Ajouter la note"
