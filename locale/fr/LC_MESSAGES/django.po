@@ -3426,6 +3426,18 @@ msgstr "Déjà inscrit ?"
 msgid "Log in here"
 msgstr "Se connecter"
 
+#: gifts/account.py
+msgid "Human verification failed. Please try again."
+msgstr "La vérification humaine a échoué. Veuillez réessayer."
+
+#: gifts/templates/gifts/privacy.html
+msgid "Account creation is protected by Cloudflare Turnstile, which processes the technical data needed to distinguish people from automated requests."
+msgstr "La création de compte est protégée par Cloudflare Turnstile, qui traite les données techniques nécessaires pour distinguer les personnes des requêtes automatisées."
+
+#: gifts/templates/gifts/privacy.html
+msgid "Cloudflare Turnstile Privacy Addendum"
+msgstr "Addendum de confidentialité de Cloudflare Turnstile"
+
 #: gifts/views.py:48
 msgid "Invalid amount format."
 msgstr "Format du montant invalide."

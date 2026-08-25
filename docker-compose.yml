@@ -30,6 +30,8 @@ services:
       - BUG_REPORT_REPOSITORY=${BUG_REPORT_REPOSITORY:-}
       - BUG_REPORT_TOKEN=${BUG_REPORT_TOKEN:-}
       - BUG_REPORT_LABELS=${BUG_REPORT_LABELS:-bug,source:user-report,status:unconfirmed}
+      - TURNSTILE_SITE_KEY=${TURNSTILE_SITE_KEY:-}
+      - TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY:-}
     depends_on:
       db:
         condition: service_healthy

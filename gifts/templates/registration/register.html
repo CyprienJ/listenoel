@@ -16,6 +16,14 @@
                 <form method="post" novalidate>
                     {% csrf_token %}
 
+                    {% if form.non_field_errors %}
+                        {% for error in form.non_field_errors %}
+                            <div class="alert alert-danger" role="alert">
+                                <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
                     {% for field in form %}
                         <div class="mb-3">
                             <div class="input-group">
@@ -53,6 +61,13 @@
                         </div>
                     {% endfor %}
 
+                    {% if turnstile_site_key %}
+                        <div class="cf-turnstile"
+                             data-sitekey="{{ turnstile_site_key }}"
+                             data-action="register"
+                             data-appearance="interaction-only"></div>
+                    {% endif %}
+
                     <button type="submit" class="btn btn-success btn-lg w-100 rounded-pill shadow-sm mt-3 mb-3">
                         {% trans "Register" %}
                     </button>
@@ -70,6 +85,9 @@
 {% endblock %}
 
 {% block extra_js %}
+    {% if turnstile_site_key %}
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    {% endif %}
     <script>
         function togglePassword(fieldId, btn) {
             const field = document.getElementById(fieldId);
@@ -83,4 +101,4 @@
             }
         }
     </script>
-    {% endblock %}
+{% endblock %}
