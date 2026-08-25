@@ -2717,7 +2717,7 @@ msgstr "Créer un compte"
 
 #: gifts/templates/gifts/welcome.html:28 gifts/templates/gifts/welcome.html:186
 msgid "Try the demo"
-msgstr ""
+msgstr "Essayer la démo"
 
 #: gifts/templates/gifts/welcome.html:32
 msgid "Go to dashboard"
@@ -4004,3 +4004,19 @@ msgstr "Brouillons"
 
 msgid "Visible only to you"
 msgstr "Visible uniquement par vous"
+
+#: gifts/templates/gifts/view_list.html
+msgid "Shared wishes"
+msgstr "Souhaits partagés"
+
+#: gifts/templates/emails/shared_list_deleted.html
+msgid "Shared list deleted"
+msgstr "Liste partagée supprimée"
+
+#: gifts/templates/emails/shared_gift_reservation_cancelled.html
+msgid "A reservation was cancelled"
+msgstr "Une réservation a été annulée"
+
+#: gifts/templates/emails/shared_list_member_removed.html
+msgid "You were removed from a shared list"
+msgstr "Vous avez été retiré d’une liste partagée"

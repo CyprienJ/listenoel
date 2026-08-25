@@ -3,7 +3,7 @@ from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.urls import path, reverse_lazy
 
-from . import account, bug_reports, events, groups, views
+from . import account, bug_reports, events, groups, shared_lists, views
 from .feeds import SubscriptionFeed
 
 urlpatterns = [
@@ -105,6 +105,38 @@ urlpatterns = [
     path("gift/<int:gift_id>/mark-received/", views.mark_received, name="mark_received"),
     path("balance/<int:group_id>/", views.balance_view, name="balance_group"),
     path("group/<int:group_id>/add-settlement/", views.add_settlement, name="add_settlement"),
+    # Shared lists
+    path("shared-list/create/", shared_lists.create_shared_list, name="create_shared_list"),
+    path("shared-list/<int:list_id>/", shared_lists.shared_list_detail, name="shared_list_detail"),
+    path("shared-list/<int:list_id>/rename/", shared_lists.rename_shared_list, name="rename_shared_list"),
+    path("shared-list/<int:list_id>/gift/add/", shared_lists.add_shared_gift, name="add_shared_gift"),
+    path(
+        "shared-list/<int:list_id>/gift/<int:gift_id>/edit/",
+        shared_lists.edit_shared_gift,
+        name="edit_shared_gift",
+    ),
+    path(
+        "shared-list/<int:list_id>/gift/<int:gift_id>/delete/",
+        shared_lists.delete_shared_gift,
+        name="delete_shared_gift",
+    ),
+    path("shared-list/<int:list_id>/member/add/", shared_lists.add_shared_list_member, name="add_shared_list_member"),
+    path(
+        "shared-list/<int:list_id>/member/<int:user_id>/remove/",
+        shared_lists.remove_shared_list_member,
+        name="remove_shared_list_member",
+    ),
+    path(
+        "gift/<int:gift_id>/move-to-shared-list/<int:list_id>/",
+        shared_lists.move_gift_to_shared_list,
+        name="move_gift_to_shared_list",
+    ),
+    path("shared-list/<int:list_id>/delete/", shared_lists.delete_shared_list, name="delete_shared_list"),
+    path(
+        "shared-list/<int:list_id>/restore/<uuid:token>/",
+        shared_lists.restore_shared_list,
+        name="restore_shared_list",
+    ),
     # Event lists
     path("event/create/", events.create_event_list, name="create_event_list"),
     path("event/<str:token>/", events.event_detail, name="event_detail"),

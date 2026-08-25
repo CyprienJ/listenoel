@@ -33,7 +33,13 @@ class SubscriptionFeed(Feed):
 
     def items(self, subscription):
         return (
-            Gift.objects.filter(owner=subscription.owner, offered=False, event_list__isnull=True, is_draft=False)
+            Gift.objects.filter(
+                owner=subscription.owner,
+                shared_list__isnull=True,
+                offered=False,
+                event_list__isnull=True,
+                is_draft=False,
+            )
             .filter(Q(visible_in__isnull=True) | Q(visible_in__members=subscription.subscriber))
             .distinct()
             .order_by("-created_at")[:50]

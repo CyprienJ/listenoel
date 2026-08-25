@@ -65,7 +65,7 @@ class Command(BaseCommand):
                 else subscription.christmas_reminder_days_before
             )
             gifts = list(
-                Gift.objects.filter(owner=owner, is_hidden=False, is_draft=False)
+                Gift.objects.filter(owner=owner, shared_list__isnull=True, is_hidden=False, is_draft=False)
                 .filter(Q(visible_in__isnull=True) | Q(visible_in__members=subscriber))
                 .distinct()
                 .order_by("created_at")

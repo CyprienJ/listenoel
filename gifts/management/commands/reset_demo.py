@@ -6,7 +6,17 @@ from django.db import transaction
 from django.utils import timezone
 
 from gifts.demo import DEMO_EMAIL, demo_reset_due
-from gifts.models import EventList, Gift, Group, Reservation, SecretSantaExclusion, User
+from gifts.models import (
+    EventList,
+    Gift,
+    Group,
+    Reservation,
+    SecretSantaExclusion,
+    SharedGiftPublication,
+    SharedList,
+    SharedListMembership,
+    User,
+)
 
 
 class Command(BaseCommand):
@@ -33,6 +43,7 @@ class Command(BaseCommand):
 
     def _delete_demo_data(self):
         EventList.objects.filter(is_demo=True).delete()
+        SharedList.objects.filter(is_demo=True).delete()
         Group.objects.filter(is_demo=True).delete()
         User.objects.filter(is_demo=True).delete()
 
@@ -75,6 +86,40 @@ class Command(BaseCommand):
             is_demo=True,
         )
         friends.members.add(demo, sam, alex)
+
+        shared_list = SharedList.objects.create(name="Maison & week-ends", is_demo=True)
+        SharedListMembership.objects.bulk_create(
+            [
+                SharedListMembership(shared_list=shared_list, user=demo),
+                SharedListMembership(shared_list=shared_list, user=lea),
+                SharedListMembership(shared_list=shared_list, user=sam),
+            ]
+        )
+        raclette = Gift.objects.create(
+            owner=demo,
+            shared_list=shared_list,
+            created_by=demo,
+            title="Appareil à raclette",
+            description="Pour les repas de famille et les week-ends entre amis.",
+            price=Decimal("69.90"),
+        )
+        speaker = Gift.objects.create(
+            owner=sam,
+            shared_list=shared_list,
+            created_by=sam,
+            title="Enceinte portable",
+            description="Une enceinte résistante pour les sorties et les vacances.",
+            price=Decimal("59.00"),
+        )
+        SharedGiftPublication.objects.bulk_create(
+            [
+                SharedGiftPublication(gift=raclette, group=family, published_by=demo),
+                SharedGiftPublication(gift=raclette, group=friends, published_by=sam),
+                SharedGiftPublication(gift=speaker, group=family, published_by=demo),
+                SharedGiftPublication(gift=speaker, group=family, published_by=lea),
+                SharedGiftPublication(gift=speaker, group=friends, published_by=sam),
+            ]
+        )
 
         camera = Gift.objects.create(
             owner=demo,

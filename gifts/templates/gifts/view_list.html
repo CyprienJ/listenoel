@@ -210,6 +210,24 @@
         {% endif %}
     </div>
 
+    {# ── Shared wishes section ── #}
+    {% if shared_gifts %}
+        <div class="nc-wish-card">
+            <div class="nc-wish-card__header">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="nc-wish-badge nc-wish-badge--sage">
+                        <i class="bi bi-people-fill" style="font-size:12px"></i> {% trans "Shared wishes" %}
+                    </span>
+                    <span class="nc-wish-count">{{ shared_gifts|length }}</span>
+                </div>
+            </div>
+            {% for item in shared_gifts %}
+                {% include "gifts/includes/_wish_row.html" with icon_class="sage" %}
+                {% if not forloop.last %}<div class="nc-wish-divider"></div>{% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
     {# ── Surprises section ── #}
     {% if surprises %}
         <div class="nc-wish-card">

@@ -116,6 +116,8 @@ def _check_gift_access(request, gift):
         return demo_scope_forbidden_response()
 
     is_owner = gift.owner == request.user
+    if gift.shared_list_id and gift.shared_list.members.filter(id=request.user.id).exists():
+        is_owner = True
     is_reserver = Reservation.objects.filter(gift=gift, reserver=request.user).exists()
     if gift.owner.is_managed:
         mm = getattr(gift.owner, "managed_member_profile", None)
@@ -211,10 +213,19 @@ def _get_reservation_group(request, gift, group_id):
     except (Group.DoesNotExist, TypeError, ValueError):
         return None, JsonResponse({"success": False, "error": _(GROUP_NOT_FOUND)}, status=400)
 
-    if not group.members.filter(id=request.user.id).exists() or not group.members.filter(id=gift.owner_id).exists():
+    if not group.members.filter(id=request.user.id).exists():
         return None, HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
-    if not has_same_demo_scope(request.user, group) or not has_same_demo_scope(request.user, gift.owner):
+    if gift.shared_list_id:
+        if gift.shared_list.members.filter(id=request.user.id).exists():
+            return None, HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+        if not gift.shared_publications.filter(group=group).exists():
+            return None, HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+    elif not group.members.filter(id=gift.owner_id).exists():
+        return None, HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+
+    recipient = gift.shared_list if gift.shared_list_id else gift.owner
+    if not has_same_demo_scope(request.user, group) or not has_same_demo_scope(request.user, recipient):
         return None, demo_scope_forbidden_response()
 
     if gift.group_reserved_on_id and gift.group_reserved_on_id != group.id:
@@ -234,7 +245,9 @@ def _gift_is_visible_in_group(gift, group):
 
 
 def _get_comment_group(request, gift, group_id):
-    if gift.owner == request.user:
+    if gift.owner == request.user or (
+        gift.shared_list_id and gift.shared_list.members.filter(id=request.user.id).exists()
+    ):
         return None, HttpResponseForbidden(_("Gift comments are hidden from the gift owner."))
 
     try:
@@ -242,10 +255,17 @@ def _get_comment_group(request, gift, group_id):
     except (Group.DoesNotExist, TypeError, ValueError):
         return None, JsonResponse({"success": False, "error": _(GROUP_NOT_FOUND)}, status=400)
 
-    if not group.members.filter(id=request.user.id).exists() or not group.members.filter(id=gift.owner_id).exists():
+    if not group.members.filter(id=request.user.id).exists():
         return None, HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
-    if not has_same_demo_scope(request.user, group) or not has_same_demo_scope(request.user, gift.owner):
+    if gift.shared_list_id:
+        if not gift.shared_publications.filter(group=group).exists():
+            return None, HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+    elif not group.members.filter(id=gift.owner_id).exists():
+        return None, HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+
+    recipient = gift.shared_list if gift.shared_list_id else gift.owner
+    if not has_same_demo_scope(request.user, group) or not has_same_demo_scope(request.user, recipient):
         return None, demo_scope_forbidden_response()
 
     if not _gift_is_visible_in_group(gift, group):
@@ -294,7 +314,11 @@ def _reservation_group_for_gift(gift, common_groups):
 def _render_reservation_modal(request, gift, group_id, reservations, extra_exclude_ids=None):
     user_res = next((r for r in reservations if r.reserver_id == request.user.id), None)
     group = get_object_or_404(Group, id=group_id)
-    exclude_ids = [request.user.id, gift.owner.id]
+    if gift.shared_list_id:
+        recipient_ids = list(gift.shared_list.members.values_list("id", flat=True))
+    else:
+        recipient_ids = [gift.owner_id]
+    exclude_ids = [request.user.id, *recipient_ids]
     if extra_exclude_ids:
         exclude_ids += list(extra_exclude_ids)
     other_members = group.members.exclude(id__in=exclude_ids)
@@ -450,6 +474,7 @@ def unseen_release_notes(request):
 def dashboard(request):
     user_groups = request.user.gift_groups.prefetch_related("members").all()
     user_event_lists = EventList.objects.filter(owner=request.user).order_by("-created_at")
+    user_shared_lists = request.user.shared_lists.filter(deleted_at__isnull=True).prefetch_related("members")
     participating_event_lists = EventList.objects.filter(participants=request.user).exclude(owner=request.user)
     today = timezone.localdate()
     my_reservations_qs = Reservation.objects.filter(
@@ -458,11 +483,17 @@ def dashboard(request):
         gift__is_draft=False,
         gift__event_list__isnull=True,
     )
-    my_reservations = my_reservations_qs.select_related("gift", "gift__owner", "gift__group_reserved_on").order_by(
-        "-created_at"
-    )[:4]
+    my_reservations = my_reservations_qs.select_related(
+        "gift", "gift__owner", "gift__shared_list", "gift__group_reserved_on"
+    ).order_by("-created_at")[:4]
     recent_group_gifts = (
-        Gift.objects.filter(visible_in__members=request.user, offered=False, event_list__isnull=True, is_draft=False)
+        Gift.objects.filter(
+            visible_in__members=request.user,
+            offered=False,
+            event_list__isnull=True,
+            shared_list__isnull=True,
+            is_draft=False,
+        )
         .exclude(owner=request.user)
         .select_related("owner", "created_by")
         .order_by("-created_at")
@@ -477,6 +508,7 @@ def dashboard(request):
     balance_summaries = _dashboard_balance_summaries(request.user, user_groups)
     open_wish_count = Gift.objects.filter(
         owner=request.user,
+        shared_list__isnull=True,
         created_by=request.user,
         offered=False,
         event_list__isnull=True,
@@ -491,6 +523,7 @@ def dashboard(request):
         {
             "user_groups": user_groups,
             "user_event_lists": user_event_lists,
+            "user_shared_lists": user_shared_lists,
             "participating_event_lists": participating_event_lists,
             "open_wish_count": open_wish_count,
             "event_count": event_count,
@@ -584,7 +617,11 @@ def view_list(request: HttpRequest, user_id: int):
         if group and group.id not in {g.id for g in common_groups}:
             return render(request, USER_NOT_FOUND_TEMPLATE, status=403)
 
-    all_gifts_query: QuerySet[Gift] = Gift.objects.filter(owner=target_user, offered=False)
+    all_gifts_query: QuerySet[Gift] = Gift.objects.filter(
+        owner=target_user,
+        shared_list__isnull=True,
+        offered=False,
+    )
     if not is_owner:
         all_gifts_query = all_gifts_query.filter(is_draft=False)
 
@@ -635,6 +672,7 @@ def view_list(request: HttpRequest, user_id: int):
 
     gifts: list = []
     draft_gifts: list = []
+    shared_gifts: list = []
     surprises: list = []
 
     if is_owner:
@@ -667,6 +705,63 @@ def view_list(request: HttpRequest, user_id: int):
             else:
                 surprises.append(item)
 
+    if group:
+        shared_gifts_query = (
+            Gift.objects.filter(
+                shared_list__deleted_at__isnull=True,
+                shared_list__members=target_user,
+                shared_publications__group=group,
+                shared_publications__published_by=target_user,
+                offered=False,
+                is_draft=False,
+                event_list__isnull=True,
+            )
+            .select_related("created_by", "shared_list")
+            .prefetch_related("tags", "shared_list__members")
+            .distinct()
+        )
+        if selected_tags:
+            shared_gifts_query = shared_gifts_query.filter(tags__slug__in=selected_tags).distinct()
+        shared_gifts_query = shared_gifts_query.order_by(*sort_options[selected_sort])
+
+        if is_owner:
+            shared_gifts = [
+                {
+                    "gift": gift,
+                    "is_shared_wish": True,
+                    "is_reserved": None,
+                    "reservation_state": None,
+                    "comments": [],
+                }
+                for gift in shared_gifts_query
+            ]
+        else:
+            shared_gift_list = list(shared_gifts_query)
+            reservations_by_gift = defaultdict(list)
+            for reservation in Reservation.objects.filter(gift__in=shared_gift_list).select_related("reserver"):
+                reservations_by_gift[reservation.gift_id].append(reservation)
+            for gift in shared_gift_list:
+                shared_member_ids = [member.id for member in gift.shared_list.members.all()]
+                if request.user.id in shared_member_ids:
+                    item = {
+                        "gift": gift,
+                        "is_reserved": None,
+                        "reservation_state": None,
+                        "comments": [],
+                        "hide_shared_reservation": True,
+                    }
+                else:
+                    excluded_ids = shared_member_ids + [request.user.id]
+                    item = _gift_item(
+                        request,
+                        gift,
+                        reservations_by_gift[gift.id],
+                        str(group.id),
+                        group.members.exclude(id__in=excluded_ids),
+                    )
+                item["is_shared_wish"] = True
+                shared_gifts.append(item)
+
     subscription = None
     rss_url = None
     if not is_owner:
@@ -683,6 +778,7 @@ def view_list(request: HttpRequest, user_id: int):
             "group": group,
             "gifts": gifts,
             "draft_gifts": draft_gifts,
+            "shared_gifts": shared_gifts,
             "surprises": surprises,
             "event_gifts_by_event": event_gifts_by_event,
             "is_owner": is_owner,
@@ -695,6 +791,7 @@ def view_list(request: HttpRequest, user_id: int):
             "selected_tags": selected_tags,
             "selected_sort": selected_sort,
             "has_list_filters": bool(selected_tags) or selected_sort != "oldest",
+            "shared_lists_for_move": request.user.shared_lists.filter(deleted_at__isnull=True) if is_owner else [],
         },
     )
 
@@ -816,7 +913,13 @@ def notification_center(request):
     user_groups = request.user.gift_groups.prefetch_related("members").all()
     today = timezone.localdate()
     recent_group_gifts = (
-        Gift.objects.filter(visible_in__members=request.user, offered=False, event_list__isnull=True, is_draft=False)
+        Gift.objects.filter(
+            visible_in__members=request.user,
+            shared_list__isnull=True,
+            offered=False,
+            event_list__isnull=True,
+            is_draft=False,
+        )
         .exclude(owner=request.user)
         .select_related("owner", "created_by")
         .order_by("-created_at")
@@ -826,7 +929,7 @@ def notification_center(request):
         Reservation.objects.filter(
             reserver=request.user, gift__offered=False, gift__is_draft=False, gift__event_list__isnull=True
         )
-        .select_related("gift", "gift__owner", "gift__group_reserved_on")
+        .select_related("gift", "gift__owner", "gift__shared_list", "gift__group_reserved_on")
         .order_by("-created_at")[:8]
     )
 
@@ -1137,6 +1240,28 @@ def edit_gift_price(request, gift_id):
     return redirect("view_list", user_id=gift.owner.id)
 
 
+def _validate_reservation_participants(request, gift, user, group):
+    recipient = gift.shared_list if gift.shared_list_id else gift.owner
+    if not has_same_demo_scope(request.user, recipient) or not has_same_demo_scope(request.user, user):
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+    if gift.owner == request.user and not gift.shared_list_id:
+        return HttpResponseForbidden("Impossible on your own list")
+    if gift.shared_list_id:
+        if gift.shared_list.members.filter(id__in=[request.user.id, user.id]).exists():
+            return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+    elif not Group.objects.filter(members=request.user).filter(members=gift.owner).exists():
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+    if not group.members.filter(id=user.id).exists():
+        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
+    if user == gift.owner and not gift.shared_list_id:
+        return JsonResponse({"success": False, "error": _("The gift owner cannot reserve this gift")}, status=400)
+    if Reservation.objects.filter(gift=gift, reserver=user).exists():
+        return JsonResponse({"success": False, "error": "This person already joined this gift"}, status=409)
+    if Reservation.objects.filter(gift=gift, exclusivity=True).exists():
+        return JsonResponse({"success": False, "error": "Someone else reserved exclusively this gift"}, status=409)
+    return None
+
+
 @login_required
 def reserve_gift(request: HttpRequest, gift_id: int):
     if request.method != "POST":
@@ -1146,40 +1271,18 @@ def reserve_gift(request: HttpRequest, gift_id: int):
     if err:
         return err
 
-    try:
-        exclusivity = data.get("exclusivity")
-        user_id = data.get("user_id")
-    except (ValueError, TypeError):
-        return JsonResponse({"success": False, "error": "Unable to find exclusivity"}, status=400)
-
+    exclusivity = data.get("exclusivity")
+    user_id = data.get("user_id")
     gift = get_object_or_404(Gift, id=gift_id)
     user = get_object_or_404(User, id=user_id)
-
-    if not has_same_demo_scope(request.user, gift.owner) or not has_same_demo_scope(request.user, user):
-        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
-
-    if gift.owner == request.user:
-        return HttpResponseForbidden("Impossible on your own list")
-
-    if not Group.objects.filter(members=request.user).filter(members=gift.owner).exists():
-        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
     group_id = data.get("group_id")
     group, err = _get_reservation_group(request, gift, group_id)
     if err:
         return err
-
-    if not group.members.filter(id=user.id).exists():
-        return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
-
-    if user == gift.owner:
-        return JsonResponse({"success": False, "error": _("The gift owner cannot reserve this gift")}, status=400)
-
-    if Reservation.objects.filter(gift=gift, reserver=user).exists():
-        return JsonResponse({"success": False, "error": "This person already joined this gift"}, status=409)
-
-    if Reservation.objects.filter(gift=gift, exclusivity=True).exists():
-        return JsonResponse({"success": False, "error": "Someone else reserved exclusively this gift"}, status=409)
+    validation_error = _validate_reservation_participants(request, gift, user, group)
+    if validation_error:
+        return validation_error
 
     Reservation.objects.create(gift=gift, reserver=user, exclusivity=exclusivity)
 
@@ -1201,7 +1304,8 @@ def modify_reservation(request: HttpRequest, gift_id: int):
         return err
 
     gift = get_object_or_404(Gift, id=gift_id)
-    if not has_same_demo_scope(request.user, gift.owner):
+    recipient = gift.shared_list if gift.shared_list_id else gift.owner
+    if not has_same_demo_scope(request.user, recipient):
         return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
     group_id = data.get("group_id")
@@ -1245,7 +1349,8 @@ def delete_reservation(request, gift_id):
         return err
 
     gift = get_object_or_404(Gift, id=gift_id)
-    if not has_same_demo_scope(request.user, gift.owner):
+    recipient = gift.shared_list if gift.shared_list_id else gift.owner
+    if not has_same_demo_scope(request.user, recipient):
         return HttpResponseForbidden(_(ACCESS_REFUSED_MSG))
 
     group_id = data.get("group_id")

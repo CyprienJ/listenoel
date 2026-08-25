@@ -1,0 +1,3 @@
+{% load i18n %}{% blocktrans with name=shared_list.name %}The shared list "{{ name }}" was deleted. It can be restored for 48 hours using this link:{% endblocktrans %}
+
+{{ restore_url }}

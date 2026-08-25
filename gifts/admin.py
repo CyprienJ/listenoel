@@ -15,6 +15,9 @@ from .models import (
     ManagedMember,
     NotificationDigestPreference,
     Reservation,
+    SharedGiftPublication,
+    SharedList,
+    SharedListMembership,
     Subscription,
     User,
 )
@@ -141,7 +144,17 @@ class GroupAdmin(ModelAdmin):
 
 @admin.register(Gift)
 class GiftAdmin(ModelAdmin):
-    list_display = ("title", "owner", "created_by", "price", "offered", "is_draft", "is_hidden", "created_at")
+    list_display = (
+        "title",
+        "owner",
+        "shared_list",
+        "created_by",
+        "price",
+        "offered",
+        "is_draft",
+        "is_hidden",
+        "created_at",
+    )
     list_filter = ("offered", "is_draft", "is_hidden", ("created_at", RangeDateFilter))
     search_fields = ("title", "description", "owner__nickname", "owner__email")
     readonly_fields = ("created_at", "offered_at")
@@ -151,7 +164,7 @@ class GiftAdmin(ModelAdmin):
 
     fieldsets = (
         (None, {"fields": ("title", "description", "url", "price")}),
-        (_("Ownership"), {"fields": ("owner", "created_by", "managed_member")}),
+        (_("Ownership"), {"fields": ("owner", "shared_list", "created_by", "managed_member")}),
         (_("Visibility"), {"fields": ("visible_in", "tags", "is_draft", "is_hidden")}),
         (_("Event"), {"fields": ("event_list",)}),
         (_("Reservation"), {"fields": ("group_reserved_on",)}),
@@ -166,6 +179,32 @@ class ReservationAdmin(ModelAdmin):
     list_filter = ("exclusivity", ("created_at", RangeDateFilter))
     search_fields = ("gift__title", "reserver__nickname", "reserver__email")
     readonly_fields = ("created_at",)
+
+
+class SharedListMembershipInline(TabularInline):
+    model = SharedListMembership
+    extra = 0
+
+
+@admin.register(SharedGiftPublication)
+class SharedGiftPublicationAdmin(ModelAdmin):
+    list_display = ("gift", "group", "published_by", "created_at")
+    list_filter = ("group", ("created_at", RangeDateFilter))
+    search_fields = ("gift__title", "group__name", "published_by__nickname", "published_by__email")
+    readonly_fields = ("created_at",)
+
+
+@admin.register(SharedList)
+class SharedListAdmin(ModelAdmin):
+    list_display = ("name", "member_count", "deleted_at", "is_demo", "created_at")
+    list_filter = ("is_demo", ("created_at", RangeDateFilter))
+    search_fields = ("name", "members__nickname", "members__email")
+    readonly_fields = ("restore_token", "created_at")
+    inlines = (SharedListMembershipInline,)
+
+    @admin.display(description=_("Members"))
+    def member_count(self, obj):
+        return obj.members.count()
 
 
 @admin.register(GiftComment)

@@ -165,9 +165,9 @@
                     <div class="nc-notification-summary-section">
                         <div class="nc-notification-summary-title">{% trans "What you are expected to give" %}</div>
                         {% for reservation in my_reservations %}
-                            <a class="nc-notification-summary-link" href="{% url 'view_list' reservation.gift.owner.id %}">
+                            <a class="nc-notification-summary-link" href="{% if reservation.gift.shared_list_id %}{% url 'shared_list_detail' reservation.gift.shared_list_id %}{% else %}{% url 'view_list' reservation.gift.owner.id %}{% endif %}{% if reservation.gift.group_reserved_on_id %}?from_group={{ reservation.gift.group_reserved_on_id }}{% endif %}">
                                 <strong>{{ reservation.gift.title }}</strong>
-                                <span>{{ reservation.gift.owner.nickname }}</span>
+                                <span>{% if reservation.gift.shared_list_id %}{{ reservation.gift.shared_list.name }}{% else %}{{ reservation.gift.owner.nickname }}{% endif %}</span>
                             </a>
                         {% empty %}
                             <div class="nc-notification-summary-empty">{% trans "No active reservation." %}</div>

@@ -2045,6 +2045,7 @@ body {
     font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 99px;
 }
 .nc-wish-badge--accent { background: var(--nc-accent-light); color: var(--nc-accent); }
+.nc-wish-badge--sage   { background: var(--nc-sage-light);   color: var(--nc-sage); }
 .nc-wish-badge--gold   { background: oklch(96% 0.04 80);     color: oklch(68% 0.14 80); }
 .nc-wish-count {
     font-size: 12px; color: var(--nc-text-muted); background: var(--nc-bg-sub);

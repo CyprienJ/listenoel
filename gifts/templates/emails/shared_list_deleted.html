@@ -1,0 +1,7 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+<!doctype html>
+<html lang="{{ LANGUAGE_CODE }}"><head><title>{% trans "Shared list deleted" %}</title></head><body>
+<p>{% blocktrans with name=shared_list.name %}The shared list <strong>{{ name }}</strong> was deleted. It can be restored for 48 hours.{% endblocktrans %}</p>
+<p><a href="{{ restore_url }}" style="display:inline-block;padding:12px 20px;border-radius:999px;background:#6f5bd3;color:#fff;text-decoration:none">{% trans "Restore the list" %}</a></p>
+</body></html>

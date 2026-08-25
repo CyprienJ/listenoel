@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Restoration expired" %}{% endblock %}
+{% block content %}
+<div class="container py-5 text-center">
+    <h1 class="h3 fw-bold">{% trans "This restoration link has expired." %}</h1>
+    <a href="{% url 'dashboard' %}" class="btn btn-primary rounded-pill mt-3">{% trans "Back to dashboard" %}</a>
+</div>
+{% endblock %}

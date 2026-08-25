@@ -1,0 +1,1 @@
+{% load i18n %}{% blocktrans %}The wish "{{ gift_title }}" was moved to the shared list "{{ shared_list.name }}". Your reservation or participation has therefore been cancelled.{% endblocktrans %}
