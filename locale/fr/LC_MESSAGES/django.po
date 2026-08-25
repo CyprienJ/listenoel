@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Nos Cadeaux\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-17 14:13+0000\n"
+"POT-Creation-Date: 2026-08-26 13:07+0000\n"
 "PO-Revision-Date: 2026-07-15 00:00+0200\n"
 "Last-Translator: Nos Cadeaux\n"
 "Language-Team: French\n"
@@ -17,128 +17,139 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: config/settings.py:143
+#: config/settings.py:158
 msgid "French"
 msgstr "Français"
 
-#: config/settings.py:144
+#: config/settings.py:159
 msgid "English"
 msgstr "Anglais"
 
-#: gifts/account.py:32
+#: gifts/account.py:34
 msgid "Verify your email address on Nos Cadeaux!"
 msgstr "Vérifiez votre adresse email sur Nos Cadeaux !"
 
-#: gifts/account.py:55
+#: gifts/account.py:57
 msgid "Profile updated! Please verify your new email address."
 msgstr "Profil mis à jour ! Veuillez vérifier votre nouvelle adresse email."
 
-#: gifts/account.py:59
+#: gifts/account.py:61
 msgid "Your profile has been updated!"
 msgstr "Votre profil a été mis à jour !"
 
-#: gifts/account.py:67
+#: gifts/account.py:69
 msgid "The public demo account profile cannot be changed."
-msgstr ""
+msgstr "Le profil du compte de démonstration public ne peut pas être modifié."
 
-#: gifts/account.py:87
+#: gifts/account.py:89
 msgid "The public demo account cannot be deleted."
-msgstr ""
+msgstr "Le compte de démonstration public ne peut pas être supprimé."
 
-#: gifts/account.py:92
+#: gifts/account.py:94
 msgid "Your account has been successfully deleted."
 msgstr "Votre compte a bien été supprimé."
 
-#: gifts/account.py:118
+#: gifts/account.py:120
 msgid "Your account is now verified !"
 msgstr "Votre compte est maintenant vérifié !"
 
-#: gifts/account.py:121
+#: gifts/account.py:123
 msgid "The verification link is invalid"
 msgstr "Le lien de vérification est invalide"
 
-#: gifts/account.py:131
+#: gifts/account.py:133
 msgid "Your email is already verified."
 msgstr "Votre email est déjà vérifié."
 
-#: gifts/account.py:134
+#: gifts/account.py:136
 msgid "A new verification email has been sent."
 msgstr "Un nouvel email de vérification a été envoyé."
 
-#: gifts/account.py:140 gifts/groups.py:227
-#, fuzzy
-#| msgid "Invalid price format."
+#: gifts/account.py:142 gifts/groups.py:228
 msgid "Invalid preset photo."
-msgstr "Format du prix invalide"
+msgstr "Photo prédéfinie invalide."
 
-#: gifts/account.py:165
+#: gifts/account.py:167
 msgid "The public demo profile picture cannot be changed."
 msgstr ""
+"La photo de profil de démonstration publique ne peut pas être modifiée."
 
-#: gifts/account.py:212
+#: gifts/account.py:199 gifts/test_turnstile.py:38
+msgid "Human verification failed. Please try again."
+msgstr "La vérification humaine a échoué. Veuillez réessayer."
+
+#: gifts/account.py:230
 msgid "You are using a public demo account. Demo data resets every 15 minutes."
 msgstr ""
+"Vous utilisez un compte de démonstration public. Les données sont "
+"réinitialisées toutes les 15 minutes."
 
-#: gifts/account.py:219
+#: gifts/account.py:237
 msgid "The public demo account password cannot be changed."
 msgstr ""
+"Le mot de passe du compte de démonstration public ne peut pas être modifié."
 
-#: gifts/admin.py:69
+#: gifts/admin.py:72
 msgid "More information"
 msgstr "Plus d'informations"
 
-#: gifts/admin.py:84
+#: gifts/admin.py:88
 msgid "Avatar"
 msgstr "Avatar"
 
-#: gifts/admin.py:131 gifts/admin.py:136
+#: gifts/admin.py:135 gifts/admin.py:140 gifts/admin.py:205
 #: gifts/templates/groups/group_detail.html:13
 #: gifts/templates/groups/group_detail.html:196
+#: gifts/templates/shared_lists/detail.html:34
 msgid "Members"
 msgstr "Membres"
 
-#: gifts/admin.py:132
+#: gifts/admin.py:136
 msgid "Options"
 msgstr "Options"
 
-#: gifts/admin.py:133 gifts/admin.py:158 gifts/admin.py:213
+#: gifts/admin.py:137 gifts/admin.py:172 gifts/admin.py:253
 msgid "Dates"
 msgstr "Dates"
 
-#: gifts/admin.py:153
+#: gifts/admin.py:167
 msgid "Ownership"
 msgstr "Propriété"
 
-#: gifts/admin.py:154
+#: gifts/admin.py:168
 msgid "Visibility"
 msgstr "Visibilité"
 
-#: gifts/admin.py:155
+#: gifts/admin.py:169
 msgid "Event"
 msgstr "Événement"
 
-#: gifts/admin.py:156
+#: gifts/admin.py:170
 #: gifts/templates/gifts/includes/_reserve_modal_content.html:5
-#: gifts/templates/gifts/includes/_view_gift.html:50
+#: gifts/templates/gifts/includes/_view_gift.html:61
 msgid "Reservation"
 msgstr "Réservation"
 
-#: gifts/admin.py:157
+#: gifts/admin.py:171
 msgid "Status"
 msgstr "Statut"
 
-#: gifts/admin.py:193
+#: gifts/admin.py:233
 msgid "Color"
 msgstr "Couleur"
 
-#: gifts/admin.py:212
+#: gifts/admin.py:252
 msgid "Owner & participants"
 msgstr "Propriétaire et participants"
 
-#: gifts/admin.py:216 gifts/templates/events/event_detail.html:128
+#: gifts/admin.py:256 gifts/templates/events/event_detail.html:128
 #: gifts/templates/gifts/includes/_reserve_modal_content.html:83
 msgid "Participants"
 msgstr "Participants"
+
+#: gifts/bug_reports.py:28 gifts/bug_reports.py:37 gifts/bug_reports.py:172
+msgid "Not specified"
+msgstr "Non précisée"
 
 #: gifts/bug_reports.py:29
 msgid "Display"
@@ -160,13 +171,9 @@ msgstr "Contenu"
 msgid "Performance"
 msgstr "Performance"
 
-#: gifts/bug_reports.py:34
+#: gifts/bug_reports.py:34 gifts/models.py:275
 msgid "Other"
 msgstr "Autre"
-
-#: gifts/bug_reports.py:37 gifts/bug_reports.py:169
-msgid "Not specified"
-msgstr "Non précisée"
 
 #: gifts/bug_reports.py:38
 msgid "Every time"
@@ -188,39 +195,42 @@ msgstr "Titre court"
 msgid "Category"
 msgstr "Catégorie"
 
-#: gifts/bug_reports.py:45 gifts/bug_reports.py:181
+#: gifts/bug_reports.py:45 gifts/bug_reports.py:182
 #: gifts/templates/events/event_detail.html:697
-#: gifts/templates/gifts/dashboard.html:435
+#: gifts/templates/gifts/dashboard.html:460
 #: gifts/templates/gifts/includes/_add_gift_modal.html:27
 #: gifts/templates/gifts/includes/_edit_gift.html:35
 #: gifts/templates/gifts/includes/_edit_gift.html:36
 #: gifts/templates/gifts/includes/_view_gift.html:26
 #: gifts/templates/groups/includes/_group_modals.html:22
+#: gifts/templates/shared_lists/detail.html:141
+#: gifts/templates/shared_lists/detail.html:188
+#: gifts/templates/shared_lists/detail.html:189
 msgid "Description"
 msgstr "Description"
 
-#: gifts/bug_reports.py:49 gifts/bug_reports.py:185
+#: gifts/bug_reports.py:50 gifts/bug_reports.py:184
 msgid "Steps to reproduce"
 msgstr "Étapes pour reproduire"
 
-#: gifts/bug_reports.py:50
+#: gifts/bug_reports.py:51
 msgid "Describe the actions in order, one step per line."
 msgstr "Décrivez les actions dans l’ordre, une étape par ligne."
 
-#: gifts/bug_reports.py:52 gifts/bug_reports.py:189
+#: gifts/bug_reports.py:54 gifts/bug_reports.py:185
 msgid "Expected result"
 msgstr "Résultat attendu"
 
-#: gifts/bug_reports.py:53 gifts/bug_reports.py:193
+#: gifts/bug_reports.py:56 gifts/bug_reports.py:186
 msgid "Actual result"
 msgstr "Résultat obtenu"
 
-#: gifts/bug_reports.py:54 gifts/bug_reports.py:197
+#: gifts/bug_reports.py:57 gifts/bug_reports.py:187
 #: gifts/templates/gifts/notification_center.html:112
 msgid "Frequency"
 msgstr "Fréquence"
 
-#: gifts/bug_reports.py:56
+#: gifts/bug_reports.py:59
 msgid ""
 "I have checked that my report contains no personal or confidential "
 "information."
@@ -228,100 +238,88 @@ msgstr ""
 "J’ai vérifié que mon signalement ne contient aucune information personnelle "
 "ou confidentielle."
 
-#: gifts/bug_reports.py:86
+#: gifts/bug_reports.py:89
 msgid "Example: the Save button does nothing"
 msgstr "Exemple : le bouton Enregistrer ne fait rien"
 
-#: gifts/bug_reports.py:94
+#: gifts/bug_reports.py:97
 msgid "The report could not be submitted."
 msgstr "Le signalement n’a pas pu être envoyé."
 
-#: gifts/templates/gifts/bug_report.html
-msgid "Check known bugs first"
-msgstr "Consultez d’abord les bugs connus"
-
-#: gifts/templates/gifts/bug_report.html
-msgid "The problem may already have been reported."
-msgstr "Le problème a peut-être déjà été signalé."
-
-#: gifts/templates/gifts/bug_report.html
-msgid "View open bug tickets"
-msgstr "Voir les tickets de bug ouverts"
-
-#: gifts/bug_reports.py:153 gifts/bug_reports.py:174 gifts/bug_reports.py:175
-#: gifts/bug_reports.py:206 gifts/bug_reports.py:207 gifts/bug_reports.py:209
-#: gifts/bug_reports.py:210 gifts/bug_reports.py:211 gifts/bug_reports.py:213
+#: gifts/bug_reports.py:156 gifts/bug_reports.py:177 gifts/bug_reports.py:178
+#: gifts/bug_reports.py:200 gifts/bug_reports.py:201 gifts/bug_reports.py:203
+#: gifts/bug_reports.py:204 gifts/bug_reports.py:205 gifts/bug_reports.py:207
 #: gifts/templates/gifts/balance.html:161
-#: gifts/templates/gifts/bug_report.html:37
+#: gifts/templates/gifts/bug_report.html:52
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: gifts/bug_reports.py:157
+#: gifts/bug_reports.py:160
 msgid "Unknown page"
 msgstr "Page inconnue"
 
-#: gifts/bug_reports.py:171 gifts/templates/gifts/bug_report.html:38
+#: gifts/bug_reports.py:174 gifts/templates/gifts/bug_report.html:53
 msgid "Desktop computer"
 msgstr "Ordinateur"
 
-#: gifts/bug_reports.py:172 gifts/templates/gifts/bug_report.html:39
+#: gifts/bug_reports.py:175 gifts/templates/gifts/bug_report.html:54
 msgid "Mobile"
 msgstr "Mobile"
 
-#: gifts/bug_reports.py:173 gifts/templates/gifts/bug_report.html:40
+#: gifts/bug_reports.py:176 gifts/templates/gifts/bug_report.html:55
 msgid "Tablet"
 msgstr "Tablette"
 
-#: gifts/bug_reports.py:201
+#: gifts/bug_reports.py:195
 msgid "Technical context"
 msgstr "Contexte technique"
 
-#: gifts/bug_reports.py:203
+#: gifts/bug_reports.py:197
 msgid "Report reference"
 msgstr "Référence du signalement"
 
-#: gifts/bug_reports.py:204
+#: gifts/bug_reports.py:198
 msgid "Page route"
 msgstr "Route de la page"
 
-#: gifts/bug_reports.py:205
+#: gifts/bug_reports.py:199
 msgid "Reported at"
 msgstr "Signalé le"
 
-#: gifts/bug_reports.py:206 gifts/templates/gifts/bug_report.html:102
+#: gifts/bug_reports.py:200 gifts/templates/gifts/bug_report.html:117
 msgid "Browser"
 msgstr "Navigateur"
 
-#: gifts/bug_reports.py:207 gifts/templates/gifts/bug_report.html:103
+#: gifts/bug_reports.py:201 gifts/templates/gifts/bug_report.html:118
 msgid "Operating system"
 msgstr "Système d’exploitation"
 
-#: gifts/bug_reports.py:208 gifts/templates/gifts/bug_report.html:104
+#: gifts/bug_reports.py:202 gifts/templates/gifts/bug_report.html:119
 msgid "Device"
 msgstr "Appareil"
 
-#: gifts/bug_reports.py:209 gifts/templates/gifts/bug_report.html:105
+#: gifts/bug_reports.py:203 gifts/templates/gifts/bug_report.html:120
 msgid "Window"
 msgstr "Fenêtre"
 
-#: gifts/bug_reports.py:210 gifts/templates/base.html:47
-#: gifts/templates/gifts/bug_report.html:106
+#: gifts/bug_reports.py:204 gifts/templates/base.html:47
+#: gifts/templates/gifts/bug_report.html:121
 msgid "Language"
 msgstr "Langue"
 
-#: gifts/bug_reports.py:211 gifts/templates/gifts/bug_report.html:107
+#: gifts/bug_reports.py:205 gifts/templates/gifts/bug_report.html:122
 msgid "Time zone"
 msgstr "Fuseau horaire"
 
-#: gifts/bug_reports.py:212 gifts/templates/gifts/bug_report.html:108
+#: gifts/bug_reports.py:206 gifts/templates/gifts/bug_report.html:123
 msgid "Application version"
 msgstr "Version de l’application"
 
-#: gifts/bug_reports.py:213
+#: gifts/bug_reports.py:207
 msgid "Deployment revision"
 msgstr "Révision du déploiement"
 
-#: gifts/bug_reports.py:216
+#: gifts/bug_reports.py:210
 msgid ""
 "Submitted from the public bug report form. Dynamic URL identifiers are "
 "intentionally hidden."
@@ -329,12 +327,12 @@ msgstr ""
 "Envoyé depuis le formulaire public de signalement. Les identifiants "
 "dynamiques des URL sont volontairement masqués."
 
-#: gifts/bug_reports.py:261
+#: gifts/bug_reports.py:258
 msgid ""
 "Too many reports have been submitted. Please try again in a few minutes."
 msgstr "Trop de signalements ont été envoyés. Réessayez dans quelques minutes."
 
-#: gifts/bug_reports.py:268
+#: gifts/bug_reports.py:265
 msgid ""
 "GitHub could not create the ticket. Your text has been kept in the form; "
 "please try again."
@@ -345,6 +343,8 @@ msgstr ""
 #: gifts/demo.py:24
 msgid "Demo and real accounts cannot be mixed."
 msgstr ""
+"Les comptes de démonstration et les comptes réels ne peuvent pas être "
+"mélangés."
 
 #: gifts/events.py:256
 msgid "Name required"
@@ -475,12 +475,12 @@ msgstr "Aucun groupe trouvé avec ce code."
 msgid "Name is required."
 msgstr "Le prénom est requis."
 
-#: gifts/groups.py:175
+#: gifts/groups.py:176
 #, python-format
 msgid "You have left the group '%s'."
 msgstr "Vous avez quitté le groupe '%s'."
 
-#: gifts/groups.py:269
+#: gifts/groups.py:270
 msgid "New invitation code generated !"
 msgstr "Nouveau code d'invitation généré !"
 
@@ -504,7 +504,7 @@ msgstr "L'anniversaire de %(name)s est dans %(days)s jour(s)"
 msgid "Christmas is in %(days)s day(s): %(name)s's gift list"
 msgstr "Noël est dans %(days)s jour(s) : la liste de cadeaux de %(name)s"
 
-#: gifts/management/commands/send_notification_digests.py:91
+#: gifts/management/commands/send_notification_digests.py:99
 #: gifts/templates/emails/notification_digest.html:8
 msgid "Your nosCadeaux notification digest"
 msgstr "Votre récapitulatif de notifications nosCadeaux"
@@ -513,65 +513,201 @@ msgstr "Votre récapitulatif de notifications nosCadeaux"
 msgid "A user with that email already exists."
 msgstr "Un utilisateur avec cet email existe déjà"
 
-#: gifts/models.py:137 gifts/templates/gifts/view_list.html:87
+#: gifts/models.py:138 gifts/templates/gifts/view_list.html:87
 #: gifts/templates/gifts/view_list.html:98
 msgid "On the day"
 msgstr "Le jour même"
 
-#: gifts/models.py:138 gifts/templates/gifts/view_list.html:88
+#: gifts/models.py:139 gifts/templates/gifts/view_list.html:88
 #: gifts/templates/gifts/view_list.html:99
 msgid "1 day before"
 msgstr "1 jour avant"
 
-#: gifts/models.py:139 gifts/templates/gifts/view_list.html:89
+#: gifts/models.py:140 gifts/templates/gifts/view_list.html:89
 #: gifts/templates/gifts/view_list.html:100
 msgid "1 week before"
 msgstr "1 semaine avant"
 
-#: gifts/models.py:140 gifts/templates/gifts/view_list.html:90
+#: gifts/models.py:141 gifts/templates/gifts/view_list.html:90
 #: gifts/templates/gifts/view_list.html:101
 msgid "2 weeks before"
 msgstr "2 semaines avant"
 
-#: gifts/models.py:141 gifts/templates/gifts/view_list.html:91
+#: gifts/models.py:142 gifts/templates/gifts/view_list.html:91
 #: gifts/templates/gifts/view_list.html:102
 msgid "1 month before"
 msgstr "1 mois avant"
 
-#: gifts/models.py:178
+#: gifts/models.py:179
 msgid "Disabled"
 msgstr "Désactivé"
 
-#: gifts/models.py:179
+#: gifts/models.py:180
 msgid "Daily"
 msgstr "Quotidien"
 
-#: gifts/models.py:180
+#: gifts/models.py:181
 msgid "Weekly"
 msgstr "Hebdomadaire"
 
-#: gifts/models.py:181
+#: gifts/models.py:182
 msgid "Monthly"
 msgstr "Mensuel"
 
-#: gifts/models.py:194 gifts/templates/gifts/notification_center.html:58
+#: gifts/models.py:195 gifts/templates/gifts/notification_center.html:58
 msgid "Birthday"
 msgstr "Anniversaire"
 
-#: gifts/models.py:194 gifts/templates/gifts/notification_center.html:75
+#: gifts/models.py:195 gifts/templates/gifts/notification_center.html:75
 #: gifts/templates/gifts/view_list.html:96
 msgid "Christmas"
 msgstr "Noël"
 
-#: gifts/models.py:339
+# Gift tags and list filters
+#: gifts/models.py:260
+msgid "Books"
+msgstr "Livres"
+
+#: gifts/models.py:261
+msgid "Video games"
+msgstr "Jeux vidéo"
+
+#: gifts/models.py:262
+msgid "Board games"
+msgstr "Jeux de société"
+
+#: gifts/models.py:263
+msgid "Movies and TV"
+msgstr "Films et séries"
+
+#: gifts/models.py:264
+msgid "Music"
+msgstr "Musique"
+
+#: gifts/models.py:265
+msgid "Art and decoration"
+msgstr "Art et décoration"
+
+#: gifts/models.py:266
+msgid "Fashion and accessories"
+msgstr "Mode et accessoires"
+
+#: gifts/models.py:267
+msgid "Beauty and wellness"
+msgstr "Beauté et bien-être"
+
+#: gifts/models.py:268
+msgid "Sports"
+msgstr "Sport"
+
+#: gifts/models.py:269 gifts/tests.py:461
+msgid "Technology"
+msgstr "Technologie"
+
+#: gifts/models.py:270
+msgid "Home"
+msgstr "Maison"
+
+#: gifts/models.py:271
+msgid "Cooking and food"
+msgstr "Cuisine et gastronomie"
+
+#: gifts/models.py:272
+msgid "Creative hobbies"
+msgstr "Loisirs créatifs"
+
+#: gifts/models.py:273
+msgid "Travel and experiences"
+msgstr "Voyages et expériences"
+
+#: gifts/models.py:274
+msgid "Children"
+msgstr "Enfants"
+
+#: gifts/models.py:430
 msgid "Event wishlist"
 msgstr "Liste d'événement"
 
-#: gifts/models.py:340
+#: gifts/models.py:431
 msgid "Christmas / Secret Santa"
 msgstr "Noël / Secret Santa"
 
-#: gifts/templates/account/account.html:11 gifts/templates/base.html:117
+#: gifts/shared_lists.py:31
+msgid "You do not have permission to perform this action."
+msgstr "Vous n’avez pas l’autorisation d’effectuer cette action."
+
+#: gifts/shared_lists.py:82 gifts/shared_lists.py:96
+msgid "A list name is required."
+msgstr "Le nom de la liste est obligatoire."
+
+#: gifts/shared_lists.py:86
+msgid "Shared list created."
+msgstr "Liste partagée créée."
+
+#: gifts/shared_lists.py:100
+msgid "Shared list renamed."
+msgstr "Liste partagée renommée."
+
+#: gifts/shared_lists.py:242 gifts/shared_lists.py:269
+msgid "Invalid wish data."
+msgstr "Données du souhait invalides."
+
+#: gifts/shared_lists.py:256
+msgid "Wish added."
+msgstr "Souhait ajouté."
+
+#: gifts/shared_lists.py:280
+msgid "Wish updated."
+msgstr "Souhait mis à jour."
+
+#: gifts/shared_lists.py:289
+msgid "Wish deleted."
+msgstr "Souhait supprimé."
+
+#: gifts/shared_lists.py:314
+msgid "Member added."
+msgstr "Membre ajouté."
+
+#: gifts/shared_lists.py:346
+msgid "Choose whether to transfer the wishes or delete the list."
+msgstr "Choisissez de transférer les souhaits ou de supprimer la liste."
+
+#: gifts/shared_lists.py:353
+#, python-format
+msgid "The wishes were transferred to %(name)s's personal list."
+msgstr "Les souhaits ont été transférés vers la liste personnelle de %(name)s."
+
+#: gifts/shared_lists.py:361
+#: gifts/templates/emails/shared_list_member_removed.html:5
+msgid "You were removed from a shared list"
+msgstr "Vous avez été retiré d’une liste partagée"
+
+#: gifts/shared_lists.py:367
+msgid "Member removed."
+msgstr "Membre retiré."
+
+#: gifts/shared_lists.py:408
+#: gifts/templates/emails/shared_gift_reservation_cancelled.html:4
+msgid "A reservation was cancelled"
+msgstr "Une réservation a été annulée"
+
+#: gifts/shared_lists.py:416
+msgid "Wish moved to the shared list."
+msgstr "Souhait déplacé vers la liste partagée."
+
+#: gifts/shared_lists.py:432
+msgid "Shared list deleted — restoration available for 48 hours"
+msgstr "Liste partagée supprimée — restauration possible pendant 48 heures"
+
+#: gifts/shared_lists.py:439
+msgid "The list can be restored for 48 hours."
+msgstr "La liste peut être restaurée pendant 48 heures."
+
+#: gifts/shared_lists.py:459
+msgid "Shared list restored."
+msgstr "Liste partagée restaurée."
+
+#: gifts/templates/account/account.html:11 gifts/templates/base.html:104
 #: gifts/templates/photos/photo_upload.html:203
 msgid "My Profile"
 msgstr "Mon profil"
@@ -637,8 +773,9 @@ msgstr ""
 #: gifts/templates/events/event_detail.html:703
 #: gifts/templates/events/event_detail.html:734
 #: gifts/templates/gifts/balance.html:377
-#: gifts/templates/gifts/includes/_add_gift_modal.html:74
-#: gifts/templates/gifts/includes/_edit_gift.html:68
+#: gifts/templates/gifts/dashboard.html:519
+#: gifts/templates/gifts/includes/_add_gift_modal.html:100
+#: gifts/templates/gifts/includes/_edit_gift.html:93
 #: gifts/templates/gifts/includes/_edit_offered_amounts_content.html:14
 #: gifts/templates/gifts/includes/_edit_price_modal.html:29
 #: gifts/templates/gifts/includes/_mark_received_content.html:61
@@ -677,34 +814,58 @@ msgstr "Clair"
 msgid "Dark"
 msgstr "Sombre"
 
-#: gifts/templates/base.html:94 gifts/templates/gifts/privacy.html:10
-msgid "Privacy"
-msgstr "Confidentialité"
-
-#: gifts/templates/base.html:99 gifts/templates/gifts/bug_report.html:4
-#: gifts/templates/gifts/bug_report.html:12
-msgid "Report a bug"
-msgstr "Signaler un bug"
-
-#: gifts/templates/base.html:110
+#: gifts/templates/base.html:97
 msgid "Administration"
 msgstr "Administration"
 
-#: gifts/templates/base.html:122
+#: gifts/templates/base.html:109
 #: gifts/templates/gifts/notification_center.html:4
 #: gifts/templates/gifts/notification_center.html:11
 msgid "Notification center"
 msgstr "Centre de notifications"
 
-#: gifts/templates/base.html:129
+#: gifts/templates/base.html:116
 msgid "Log out"
 msgstr "Se déconnecter"
 
-#: gifts/templates/base.html:136 gifts/templates/gifts/welcome.html:25
+#: gifts/templates/base.html:123 gifts/templates/gifts/welcome.html:25
 #: gifts/templates/registration/login.html:53
 #: gifts/templates/registration/password_reset_complete.html:16
 msgid "Log in"
 msgstr "Se connecter"
+
+#: gifts/templates/base.html:151 gifts/templates/gifts/privacy.html:10
+msgid "Privacy"
+msgstr "Confidentialité"
+
+#: gifts/templates/base.html:155 gifts/templates/gifts/changelog.html:4
+#: gifts/templates/gifts/changelog.html:10
+msgid "Changelog"
+msgstr "Nouveautés"
+
+#: gifts/templates/base.html:159 gifts/templates/gifts/bug_report.html:4
+#: gifts/templates/gifts/bug_report.html:12
+msgid "Report a bug"
+msgstr "Signaler un bug"
+
+#: gifts/templates/base.html:174
+msgid "Latest updates"
+msgstr "Dernières nouveautés"
+
+#: gifts/templates/base.html:175 gifts/templates/gifts/changelog.html:12
+msgid "What's new"
+msgstr "Quoi de neuf ?"
+
+#: gifts/templates/base.html:177 gifts/templates/base.html:182
+#: gifts/templates/gifts/includes/_edit_gift.html:15
+#: gifts/templates/gifts/includes/_reserve_modal_content.html:136
+#: gifts/templates/gifts/includes/_view_gift.html:106
+msgid "Close"
+msgstr "Fermer"
+
+#: gifts/templates/base.html:181
+msgid "View the full changelog"
+msgstr "Voir toutes les nouveautés"
 
 #: gifts/templates/emails/event_reminder.html:3
 #: gifts/templates/emails/event_reminder.txt:1
@@ -830,7 +991,7 @@ msgstr "Ce que vous devriez recevoir ou devez"
 
 #: gifts/templates/emails/notification_digest.html:120
 #: gifts/templates/emails/notification_digest.txt:21
-#: gifts/templates/gifts/dashboard.html:305
+#: gifts/templates/gifts/dashboard.html:330
 #: gifts/templates/gifts/notification_center.html:184
 #, python-format
 msgid "You should receive %(amount)s EUR"
@@ -838,7 +999,7 @@ msgstr "Vous devriez recevoir %(amount)s EUR"
 
 #: gifts/templates/emails/notification_digest.html:122
 #: gifts/templates/emails/notification_digest.txt:21
-#: gifts/templates/gifts/dashboard.html:307
+#: gifts/templates/gifts/dashboard.html:332
 #: gifts/templates/gifts/notification_center.html:186
 #, python-format
 msgid "You owe %(amount)s EUR"
@@ -909,6 +1070,67 @@ msgstr "À bientôt,"
 msgid "The Nos Cadeaux team"
 msgstr "L'équipe nos cadeaux"
 
+#: gifts/templates/emails/shared_gift_reservation_cancelled.html:5
+#, python-format
+msgid ""
+"The wish <strong>%(gift_title)s</strong> was moved to the shared list "
+"<strong>%(shared_list.name)s</strong>. Your reservation or participation has "
+"therefore been cancelled."
+msgstr ""
+"Le souhait <strong>%(gift_title)s</strong> a été déplacé vers la liste "
+"partagée <strong>%(shared_list.name)s</strong>. Votre réservation ou votre "
+"participation a donc été annulée."
+
+#: gifts/templates/emails/shared_gift_reservation_cancelled.txt:1
+#, python-format
+msgid ""
+"The wish \"%(gift_title)s\" was moved to the shared list "
+"\"%(shared_list.name)s\". Your reservation or participation has therefore "
+"been cancelled."
+msgstr ""
+"Le souhait « %(gift_title)s » a été déplacé vers la liste partagée "
+"« %(shared_list.name)s ». Votre réservation ou votre participation a donc "
+"été annulée."
+
+#: gifts/templates/emails/shared_list_deleted.html:4
+msgid "Shared list deleted"
+msgstr "Liste partagée supprimée"
+
+#: gifts/templates/emails/shared_list_deleted.html:5
+#, python-format
+msgid ""
+"The shared list <strong>%(name)s</strong> was deleted. It can be restored "
+"for 48 hours."
+msgstr ""
+"La liste partagée <strong>%(name)s</strong> a été supprimée. Elle peut être "
+"restaurée pendant 48 heures."
+
+#: gifts/templates/emails/shared_list_deleted.html:6
+#: gifts/templates/shared_lists/restore.html:10
+msgid "Restore the list"
+msgstr "Restaurer la liste"
+
+#: gifts/templates/emails/shared_list_deleted.txt:1
+#, python-format
+msgid ""
+"The shared list \"%(name)s\" was deleted. It can be restored for 48 hours "
+"using this link:"
+msgstr ""
+"La liste partagée « %(name)s » a été supprimée. Elle peut être restaurée "
+"pendant 48 heures à l’aide de ce lien :"
+
+#: gifts/templates/emails/shared_list_member_removed.html:6
+#, python-format
+msgid ""
+"You are no longer a member of the shared list <strong>%(name)s</strong>."
+msgstr ""
+"Vous n’êtes plus membre de la liste partagée <strong>%(name)s</strong>."
+
+#: gifts/templates/emails/shared_list_member_removed.txt:1
+#, python-format
+msgid "You are no longer a member of the shared list \"%(name)s\"."
+msgstr "Vous n’êtes plus membre de la liste partagée « %(name)s »."
+
 #: gifts/templates/emails/verify_email.html:39
 msgid ""
 "We're excited to have you! Your account has been successfully created. "
@@ -943,12 +1165,12 @@ msgstr ""
 
 #: gifts/templates/events/event_detail.html:18
 #: gifts/templates/events/event_detail.html:92
-#: gifts/templates/gifts/dashboard.html:376
+#: gifts/templates/gifts/dashboard.html:401
 msgid "Secret Santa"
 msgstr "Secret Santa"
 
 #: gifts/templates/events/event_detail.html:18
-#: gifts/templates/gifts/dashboard.html:371
+#: gifts/templates/gifts/dashboard.html:396
 msgid "Event list"
 msgstr "Liste d'événement"
 
@@ -963,6 +1185,7 @@ msgstr "À propos"
 #: gifts/templates/events/event_detail.html:38
 #: gifts/templates/events/event_detail.html:348
 #: gifts/templates/gifts/dashboard.html:52
+#: gifts/templates/shared_lists/detail.html:113
 msgid "Edit"
 msgstr "Modifier"
 
@@ -977,7 +1200,7 @@ msgstr "Date de l'événement"
 
 #: gifts/templates/events/event_detail.html:63
 #: gifts/templates/events/event_detail.html:688
-#: gifts/templates/gifts/dashboard.html:427
+#: gifts/templates/gifts/dashboard.html:452
 msgid "Max budget"
 msgstr "Budget max"
 
@@ -1054,8 +1277,9 @@ msgstr ""
 #: gifts/templates/events/event_detail.html:584
 #: gifts/templates/gifts/history.html:76
 #: gifts/templates/gifts/includes/_gift_table.html:162
-#: gifts/templates/gifts/includes/_wish_row.html:140
+#: gifts/templates/gifts/includes/_wish_row.html:174
 #: gifts/templates/groups/includes/_group_modals.html:201
+#: gifts/templates/shared_lists/detail.html:118
 msgid "Delete"
 msgstr "Supprimer"
 
@@ -1093,7 +1317,7 @@ msgstr "Tirages des invités"
 msgid "All"
 msgstr "Tout"
 
-#: gifts/templates/events/event_detail.html:246 gifts/views.py:116
+#: gifts/templates/events/event_detail.html:246 gifts/views.py:141
 msgid "Available"
 msgstr "Disponible"
 
@@ -1106,7 +1330,8 @@ msgid "Reserved by me"
 msgstr "Réservé par moi"
 
 #: gifts/templates/events/event_detail.html:257
-#: gifts/templates/gifts/dashboard.html:159
+#: gifts/templates/gifts/dashboard.html:184
+#: gifts/templates/shared_lists/detail.html:18
 msgid "Add a wish"
 msgstr "Ajouter un souhait"
 
@@ -1134,7 +1359,7 @@ msgid "I'm…"
 msgstr "Je suis…"
 
 #: gifts/templates/events/event_detail.html:309
-#: gifts/templates/gifts/view_list.html:215
+#: gifts/templates/gifts/view_list.html:298
 msgid "Hidden"
 msgstr "Masqué"
 
@@ -1143,7 +1368,10 @@ msgstr "Masqué"
 #: gifts/templates/events/event_detail.html:525
 #: gifts/templates/gifts/includes/_edit_gift.html:43
 #: gifts/templates/gifts/includes/_edit_gift.html:44
-#: gifts/templates/gifts/includes/_view_gift.html:40
+#: gifts/templates/gifts/includes/_view_gift.html:51
+#: gifts/templates/shared_lists/detail.html:108
+#: gifts/templates/shared_lists/detail.html:143
+#: gifts/templates/shared_lists/detail.html:190
 msgid "Link"
 msgstr "Lien"
 
@@ -1173,11 +1401,11 @@ msgstr "Masquer aux visiteurs"
 msgid "Transfer to my wish list"
 msgstr "Transférer vers ma liste"
 
-#: gifts/templates/events/event_detail.html:374 gifts/views.py:126
+#: gifts/templates/events/event_detail.html:374 gifts/views.py:151
 msgid "Reserved by you"
 msgstr "Réservé par vous"
 
-#: gifts/templates/events/event_detail.html:378 gifts/views.py:131
+#: gifts/templates/events/event_detail.html:378 gifts/views.py:156
 msgid "Reserved exclusively"
 msgstr "Réservé exclusivement"
 
@@ -1223,8 +1451,9 @@ msgid "Continue"
 msgstr "Continuer"
 
 #: gifts/templates/events/event_detail.html:475
-#: gifts/templates/gifts/includes/_add_gift_modal.html:9 gifts/tests.py:265
-#: gifts/tests.py:285
+#: gifts/templates/gifts/includes/_add_gift_modal.html:9
+#: gifts/templates/shared_lists/detail.html:184 gifts/tests.py:289
+#: gifts/tests.py:309
 msgid "New wish"
 msgstr "Nouveau souhait"
 
@@ -1243,13 +1472,16 @@ msgid "Size, color, details…"
 msgstr "Taille, couleur, détails…"
 
 #: gifts/templates/events/event_detail.html:500
-#: gifts/templates/gifts/includes/_add_gift_modal.html:77
+#: gifts/templates/gifts/includes/_add_gift_modal.html:103
 #: gifts/templates/gifts/view_list.html:40
 #: gifts/templates/groups/includes/_group_modals.html:145
+#: gifts/templates/shared_lists/detail.html:70
+#: gifts/templates/shared_lists/detail.html:199
 msgid "Add"
 msgstr "Ajouter"
 
 #: gifts/templates/events/event_detail.html:511
+#: gifts/templates/shared_lists/detail.html:137
 msgid "Edit wish"
 msgstr "Modifier le souhait"
 
@@ -1262,6 +1494,7 @@ msgstr "Modifier le souhait"
 #: gifts/templates/groups/includes/_group_modals.html:184
 #: gifts/templates/photos/photo_upload.html:337
 #: gifts/templates/photos/photo_upload.html:660
+#: gifts/templates/shared_lists/detail.html:152
 msgid "Save"
 msgstr "Enregistrer"
 
@@ -1336,14 +1569,14 @@ msgstr "Modifier les informations"
 #: gifts/templates/events/event_detail.html:682
 #: gifts/templates/events/event_detail.html:688
 #: gifts/templates/events/event_detail.html:697
-#: gifts/templates/gifts/dashboard.html:423
-#: gifts/templates/gifts/dashboard.html:427
-#: gifts/templates/gifts/dashboard.html:435
+#: gifts/templates/gifts/dashboard.html:448
+#: gifts/templates/gifts/dashboard.html:452
+#: gifts/templates/gifts/dashboard.html:460
 msgid "optional"
 msgstr "optionnel"
 
 #: gifts/templates/events/event_detail.html:699
-#: gifts/templates/gifts/dashboard.html:437
+#: gifts/templates/gifts/dashboard.html:462
 msgid "A short message for your guests…"
 msgstr "Un court message pour vos invités…"
 
@@ -1393,7 +1626,7 @@ msgid "My balance"
 msgstr "Mon solde"
 
 #: gifts/templates/gifts/balance.html:63
-#: gifts/templates/gifts/dashboard.html:293
+#: gifts/templates/gifts/dashboard.html:318
 msgid "Balances"
 msgstr "Soldes"
 
@@ -1493,8 +1726,8 @@ msgstr "L'afficher révèle les montants des cadeaux"
 
 #: gifts/templates/gifts/balance.html:287
 #: gifts/templates/gifts/balance.html:467
-#: gifts/templates/gifts/dashboard.html:249
-#: gifts/templates/gifts/dashboard.html:252
+#: gifts/templates/gifts/dashboard.html:274
+#: gifts/templates/gifts/dashboard.html:277
 msgid "Show"
 msgstr "Afficher"
 
@@ -1536,7 +1769,7 @@ msgid "Show anyway"
 msgstr "Afficher quand même"
 
 #: gifts/templates/gifts/balance.html:450
-#: gifts/templates/gifts/dashboard.html:250
+#: gifts/templates/gifts/dashboard.html:275
 msgid "Hide"
 msgstr "Masquer"
 
@@ -1560,11 +1793,23 @@ msgstr ""
 "Le signalement est temporairement indisponible car GitHub n’est pas "
 "configuré."
 
-#: gifts/templates/gifts/bug_report.html:29
+#: gifts/templates/gifts/bug_report.html:30
+msgid "Check known bugs first"
+msgstr "Consultez d’abord les bugs connus"
+
+#: gifts/templates/gifts/bug_report.html:32
+msgid "The problem may already have been reported."
+msgstr "Le problème a peut-être déjà été signalé."
+
+#: gifts/templates/gifts/bug_report.html:34
+msgid "View open bug tickets"
+msgstr "Voir les tickets de bug ouverts"
+
+#: gifts/templates/gifts/bug_report.html:44
 msgid "Your report will be public"
 msgstr "Votre signalement sera public"
 
-#: gifts/templates/gifts/bug_report.html:31
+#: gifts/templates/gifts/bug_report.html:46
 msgid ""
 "Everything entered below will be published in a public GitHub issue. Do not "
 "include a name, email address, password, invitation link, or any other "
@@ -1574,19 +1819,19 @@ msgstr ""
 "N’indiquez aucun nom, adresse e-mail, mot de passe, lien d’invitation ou "
 "autre information confidentielle."
 
-#: gifts/templates/gifts/bug_report.html:41
+#: gifts/templates/gifts/bug_report.html:56
 msgid "Current page; dynamic identifiers will be hidden"
 msgstr "Page actuelle ; les identifiants dynamiques seront masqués"
 
-#: gifts/templates/gifts/bug_report.html:64
+#: gifts/templates/gifts/bug_report.html:79
 msgid "The problem"
 msgstr "Le problème"
 
-#: gifts/templates/gifts/bug_report.html:93
+#: gifts/templates/gifts/bug_report.html:108
 msgid "Published technical information"
 msgstr "Informations techniques publiées"
 
-#: gifts/templates/gifts/bug_report.html:95
+#: gifts/templates/gifts/bug_report.html:110
 msgid ""
 "These details help reproduce the problem. URL parameters and dynamic "
 "identifiers are not published."
@@ -1594,11 +1839,11 @@ msgstr ""
 "Ces détails facilitent la reproduction du problème. Les paramètres d’URL et "
 "les identifiants dynamiques ne sont pas publiés."
 
-#: gifts/templates/gifts/bug_report.html:101
+#: gifts/templates/gifts/bug_report.html:116
 msgid "Page"
 msgstr "Page"
 
-#: gifts/templates/gifts/bug_report.html:123
+#: gifts/templates/gifts/bug_report.html:138
 msgid "Create the public GitHub ticket"
 msgstr "Créer le ticket GitHub public"
 
@@ -1628,6 +1873,26 @@ msgid ""
 msgstr ""
 "Un compte GitHub est nécessaire pour commenter ou s’abonner, mais pas pour "
 "consulter une issue publique."
+
+#: gifts/templates/gifts/changelog.html:13
+msgid "Discover the latest improvements to nosCadeaux."
+msgstr "Découvrez les dernières améliorations de nosCadeaux."
+
+#: gifts/templates/gifts/changelog.html:28
+msgid "No release notes are available yet."
+msgstr "Aucune note de version n’est disponible pour le moment."
+
+#: gifts/templates/gifts/changelog.html:33
+msgid "Changelog pages"
+msgstr "Pages des nouveautés"
+
+#: gifts/templates/gifts/changelog.html:36
+msgid "Newer"
+msgstr "Plus récentes"
+
+#: gifts/templates/gifts/changelog.html:40
+msgid "Older"
+msgstr "Plus anciennes"
 
 #: gifts/templates/gifts/dashboard.html:4
 #: gifts/templates/gifts/notification_center.html:15
@@ -1659,7 +1924,8 @@ msgid "Join"
 msgstr "Rejoindre"
 
 #: gifts/templates/gifts/dashboard.html:33
-#: gifts/templates/gifts/dashboard.html:356
+#: gifts/templates/gifts/dashboard.html:381
+#: gifts/templates/gifts/dashboard.html:521
 msgid "Create"
 msgstr "Créer"
 
@@ -1681,221 +1947,239 @@ msgid_plural "%(count)s groups"
 msgstr[0] "%(count)s groupe"
 msgstr[1] "%(count)s groupes"
 
-#: gifts/templates/gifts/dashboard.html:60
+#: gifts/templates/gifts/dashboard.html:61
+msgid "Shared lists"
+msgstr "Listes partagées"
+
+#: gifts/templates/gifts/dashboard.html:65
+#: gifts/templates/gifts/dashboard.html:508
+msgid "New shared list"
+msgstr "Nouvelle liste partagée"
+
+#: gifts/templates/gifts/dashboard.html:76
+#, python-format
+msgid "%(count)s member"
+msgid_plural "%(count)s members"
+msgstr[0] "%(count)s membre"
+msgstr[1] "%(count)s membres"
+
+#: gifts/templates/gifts/dashboard.html:85
 msgid "My groups"
 msgstr "Mes groupes"
 
-#: gifts/templates/gifts/dashboard.html:76
+#: gifts/templates/gifts/dashboard.html:101
 msgid "members"
 msgstr "membres"
 
-#: gifts/templates/gifts/dashboard.html:83
-#: gifts/templates/gifts/dashboard.html:123
+#: gifts/templates/gifts/dashboard.html:108
+#: gifts/templates/gifts/dashboard.html:148
 msgid "New"
 msgstr "Nouveau"
 
-#: gifts/templates/gifts/dashboard.html:90
+#: gifts/templates/gifts/dashboard.html:115
 msgid "No groups yet"
 msgstr "Aucun groupe pour l'instant"
 
-#: gifts/templates/gifts/dashboard.html:92
+#: gifts/templates/gifts/dashboard.html:117
 msgid "Create or join a group to start sharing your gift ideas."
 msgstr ""
 "Créez ou rejoignez un groupe pour commencer à partager vos idées de cadeaux."
 
-#: gifts/templates/gifts/dashboard.html:97
-#: gifts/templates/gifts/dashboard.html:456
+#: gifts/templates/gifts/dashboard.html:122
+#: gifts/templates/gifts/dashboard.html:481
 msgid "Join a group"
 msgstr "Rejoindre un groupe"
 
-#: gifts/templates/gifts/dashboard.html:101
+#: gifts/templates/gifts/dashboard.html:126
 msgid "Create a group"
 msgstr "Créer un groupe"
 
-#: gifts/templates/gifts/dashboard.html:108
+#: gifts/templates/gifts/dashboard.html:133
 msgid "My event lists"
 msgstr "Mes listes d'événement"
 
-#: gifts/templates/gifts/dashboard.html:129
+#: gifts/templates/gifts/dashboard.html:154
 msgid "Event lists I'm following"
 msgstr "Listes d'événements que je suis"
 
-#: gifts/templates/gifts/dashboard.html:143
+#: gifts/templates/gifts/dashboard.html:168
 msgid "Remove from my dashboard"
 msgstr "Retirer du tableau de bord"
 
-#: gifts/templates/gifts/dashboard.html:164
+#: gifts/templates/gifts/dashboard.html:189
 msgid "Firefox extension"
 msgstr "Extension Firefox"
 
-#: gifts/templates/gifts/dashboard.html:171
+#: gifts/templates/gifts/dashboard.html:196
 msgid "active wishes"
 msgstr "souhaits actifs"
 
-#: gifts/templates/gifts/dashboard.html:178
+#: gifts/templates/gifts/dashboard.html:203
 msgid "current reservations"
 msgstr "réservations en cours"
 
-#: gifts/templates/gifts/dashboard.html:187
+#: gifts/templates/gifts/dashboard.html:212
 msgid "Getting started"
 msgstr "Premiers pas"
 
-#: gifts/templates/gifts/dashboard.html:188
+#: gifts/templates/gifts/dashboard.html:213
 msgid "Set up your first gift space"
 msgstr "Configurez votre premier espace cadeaux"
 
-#: gifts/templates/gifts/dashboard.html:192
+#: gifts/templates/gifts/dashboard.html:217
 msgid "Create or join a group"
 msgstr "Créer ou rejoindre un groupe"
 
-#: gifts/templates/gifts/dashboard.html:193
+#: gifts/templates/gifts/dashboard.html:218
 msgid "Add a few ideas to your list"
 msgstr "Ajouter quelques idées à votre liste"
 
-#: gifts/templates/gifts/dashboard.html:194
+#: gifts/templates/gifts/dashboard.html:219
 msgid "Invite people to reserve gifts secretly"
 msgstr "Inviter des proches à réserver des cadeaux en secret"
 
-#: gifts/templates/gifts/dashboard.html:203
+#: gifts/templates/gifts/dashboard.html:228
 msgid "Upcoming"
 msgstr "À venir"
 
-#: gifts/templates/gifts/dashboard.html:204
+#: gifts/templates/gifts/dashboard.html:229
 msgid "Dates to watch"
 msgstr "Dates à surveiller"
 
-#: gifts/templates/gifts/dashboard.html:224
+#: gifts/templates/gifts/dashboard.html:249
 msgid "Today"
 msgstr "Aujourd’hui"
 
-#: gifts/templates/gifts/dashboard.html:226
+#: gifts/templates/gifts/dashboard.html:251
 #, python-format
 msgid "in %(days)s day"
 msgid_plural "in %(days)s days"
 msgstr[0] "dans %(days)s jour"
 msgstr[1] "dans %(days)s jours"
 
-#: gifts/templates/gifts/dashboard.html:233
+#: gifts/templates/gifts/dashboard.html:258
 msgid "No upcoming event or birthday in your groups."
 msgstr "Aucun événement ou anniversaire à venir dans vos groupes."
 
-#: gifts/templates/gifts/dashboard.html:241
+#: gifts/templates/gifts/dashboard.html:266
 msgid "Reservations"
 msgstr "Réservations"
 
-#: gifts/templates/gifts/dashboard.html:242
+#: gifts/templates/gifts/dashboard.html:267
 msgid "Gifts you reserved"
 msgstr "Cadeaux que vous avez réservés"
 
-#: gifts/templates/gifts/dashboard.html:264
-#, fuzzy
-#| msgid "Reserved elsewhere"
+#: gifts/templates/gifts/dashboard.html:289
 msgid "Reserved gifts are hidden"
-msgstr "Réservé ailleurs"
+msgstr "Les cadeaux réservés sont masqués"
 
-#: gifts/templates/gifts/dashboard.html:265
-#, fuzzy
-#| msgid "Gifts you reserved"
+#: gifts/templates/gifts/dashboard.html:290
 msgid "Click to show your reserved gifts."
-msgstr "Cadeaux que vous avez réservés"
+msgstr "Cliquez pour afficher les cadeaux que vous avez réservés."
 
-#: gifts/templates/gifts/dashboard.html:275
+#: gifts/templates/gifts/dashboard.html:300
 msgid "exclusive"
 msgstr "exclusif"
 
-#: gifts/templates/gifts/dashboard.html:281
+#: gifts/templates/gifts/dashboard.html:306
 msgid "You have no active reservation yet."
 msgstr "Vous n’avez pas encore de réservation active."
 
-#: gifts/templates/gifts/dashboard.html:294
+#: gifts/templates/gifts/dashboard.html:319
 msgid "Money to settle"
 msgstr "Remboursements à régler"
 
-#: gifts/templates/gifts/dashboard.html:309
+#: gifts/templates/gifts/dashboard.html:334
 msgid "Suggested repayments available"
 msgstr "Remboursements suggérés disponibles"
 
-#: gifts/templates/gifts/dashboard.html:323
+#: gifts/templates/gifts/dashboard.html:348
 msgid "Recent activity"
 msgstr "Activité récente"
 
-#: gifts/templates/gifts/dashboard.html:324
+#: gifts/templates/gifts/dashboard.html:349
 msgid "New wishes in your groups"
 msgstr "Nouveaux souhaits dans vos groupes"
 
-#: gifts/templates/gifts/dashboard.html:362
+#: gifts/templates/gifts/dashboard.html:387
 msgid "What do you want to create?"
 msgstr "Que voulez-vous créer ?"
 
-#: gifts/templates/gifts/dashboard.html:366
+#: gifts/templates/gifts/dashboard.html:391
 msgid "Classic group"
 msgstr "Groupe classique"
 
-#: gifts/templates/gifts/dashboard.html:367
+#: gifts/templates/gifts/dashboard.html:392
 msgid "Private group, share gift lists with your circle"
 msgstr "Groupe privé, partagez vos listes avec votre cercle"
 
-#: gifts/templates/gifts/dashboard.html:372
+#: gifts/templates/gifts/dashboard.html:397
 msgid "Public list, anyone with the link can reserve"
 msgstr "Liste publique, accessible à tous avec le lien"
 
-#: gifts/templates/gifts/dashboard.html:377
+#: gifts/templates/gifts/dashboard.html:402
 msgid "Draw names, set a budget, manage exclusions"
 msgstr "Tirez au sort, fixez un budget, gérez les exclusions"
 
-#: gifts/templates/gifts/dashboard.html:389
-#: gifts/templates/gifts/dashboard.html:415
+#: gifts/templates/gifts/dashboard.html:414
+#: gifts/templates/gifts/dashboard.html:440
 #: gifts/templates/registration/change_password.html:62
 msgid "Back"
 msgstr "Retour"
 
-#: gifts/templates/gifts/dashboard.html:392
+#: gifts/templates/gifts/dashboard.html:417
 #: gifts/templates/groups/includes/_group_modals.html:16
 msgid "Group Name"
 msgstr "Nom du groupe"
 
-#: gifts/templates/gifts/dashboard.html:394
+#: gifts/templates/gifts/dashboard.html:419
 msgid "e.g. Smith Family"
 msgstr "ex. Famille Martin"
 
-#: gifts/templates/gifts/dashboard.html:398
+#: gifts/templates/gifts/dashboard.html:423
 msgid "Once created, you will get a unique code to share."
 msgstr "Une fois créé, vous obtiendrez un code unique à partager."
 
-#: gifts/templates/gifts/dashboard.html:403
+#: gifts/templates/gifts/dashboard.html:428
 msgid "Create Group"
 msgstr "Créer un groupe"
 
-#: gifts/templates/gifts/dashboard.html:418
-#: gifts/templates/gifts/dashboard.html:493
+#: gifts/templates/gifts/dashboard.html:443
+#: gifts/templates/gifts/dashboard.html:512
+#: gifts/templates/gifts/dashboard.html:544
+#: gifts/templates/shared_lists/detail.html:27
 msgid "List name"
 msgstr "Nom de la liste"
 
-#: gifts/templates/gifts/dashboard.html:423
+#: gifts/templates/gifts/dashboard.html:448
 msgid "Date"
 msgstr "Date"
 
-#: gifts/templates/gifts/dashboard.html:442
+#: gifts/templates/gifts/dashboard.html:467
 msgid "Create list"
 msgstr "Créer la liste"
 
-#: gifts/templates/gifts/dashboard.html:461
+#: gifts/templates/gifts/dashboard.html:486
 msgid "Group Code"
 msgstr "Code du groupe"
 
-#: gifts/templates/gifts/dashboard.html:470
+#: gifts/templates/gifts/dashboard.html:495
 msgid "See group"
 msgstr "Voir le groupe"
 
-#: gifts/templates/gifts/dashboard.html:492
+#: gifts/templates/gifts/dashboard.html:515
+msgid "e.g. Our new home"
+msgstr "p. ex. Notre nouvelle maison"
+
+#: gifts/templates/gifts/dashboard.html:543
 msgid "Secret Santa name"
 msgstr "Nom du Secret Santa"
 
-#: gifts/templates/gifts/dashboard.html:495
+#: gifts/templates/gifts/dashboard.html:546
 msgid "e.g. Family Christmas"
 msgstr "ex. Noël en famille"
 
-#: gifts/templates/gifts/dashboard.html:548
+#: gifts/templates/gifts/dashboard.html:599
 msgid "Please enter a valid code."
 msgstr "Merci d'utiliser un code valide."
 
@@ -1927,6 +2211,107 @@ msgstr "Vous vous connectez en tant que %(nickname)s."
 #: gifts/templates/gifts/extension_authorize.html:23
 msgid "Authorize extension"
 msgstr "Autoriser l'extension"
+
+#: gifts/templates/gifts/extension_privacy.html:4
+#: gifts/templates/gifts/extension_privacy.html:9
+msgid "Quick Add privacy policy"
+msgstr "Politique de confidentialité d’Ajout rapide"
+
+#: gifts/templates/gifts/extension_privacy.html:10
+msgid "Last updated: 8 July 2026"
+msgstr "Dernière mise à jour : 8 juillet 2026"
+
+#: gifts/templates/gifts/extension_privacy.html:12
+msgid "Data handled by the extension"
+msgstr "Données traitées par l’extension"
+
+#: gifts/templates/gifts/extension_privacy.html:14
+msgid ""
+"Quick Add reads the active shop page only after you click its toolbar button "
+"and grant access to that shop. It extracts candidate product titles, URLs, "
+"images, prices, currencies, and product metadata."
+msgstr ""
+"Ajout rapide lit la page de la boutique active uniquement après que vous "
+"avez cliqué sur son bouton dans la barre d’outils et autorisé l’accès à "
+"cette boutique. Il extrait les titres, URL, images, prix, devises et "
+"métadonnées de produit possibles."
+
+#: gifts/templates/gifts/extension_privacy.html:17
+msgid ""
+"Extraction and review happen locally in Firefox. Product information is sent "
+"to nosCadeaux only after you click “Add to my list.” Pages that you scan but "
+"do not add are not sent to nosCadeaux."
+msgstr ""
+"L’extraction et la vérification ont lieu localement dans Firefox. Les "
+"informations du produit sont envoyées à nosCadeaux uniquement après avoir "
+"cliqué sur « Ajouter à ma liste ». Les pages que vous analysez sans les "
+"ajouter ne sont pas envoyées à nosCadeaux."
+
+#: gifts/templates/gifts/extension_privacy.html:20
+msgid "Account connection"
+msgstr "Connexion au compte"
+
+#: gifts/templates/gifts/extension_privacy.html:22
+msgid ""
+"The extension uses an authorization code and a scoped access token to "
+"connect to your nosCadeaux account. It never receives or stores your "
+"password. The token is stored in Firefox extension storage; the server "
+"stores only its cryptographic hash."
+msgstr ""
+"L’extension utilise un code d’autorisation et un jeton d’accès à portée "
+"limitée pour se connecter à votre compte nosCadeaux. Elle ne reçoit ni ne "
+"stocke jamais votre mot de passe. Le jeton est conservé dans le stockage de "
+"l’extension Firefox ; le serveur ne conserve que son empreinte "
+"cryptographique."
+
+#: gifts/templates/gifts/extension_privacy.html:25
+msgid "Purpose and retention"
+msgstr "Finalité et conservation"
+
+#: gifts/templates/gifts/extension_privacy.html:27
+msgid ""
+"Submitted product information is stored as a gift in your nosCadeaux account "
+"and remains there until you edit or delete it. You can revoke the extension "
+"token with the Disconnect button. Temporary authorization codes expire after "
+"five minutes and cannot be reused."
+msgstr ""
+"Les informations de produit envoyées sont enregistrées comme un cadeau dans "
+"votre compte nosCadeaux et y restent jusqu’à ce que vous les modifiiez ou "
+"les supprimiez. Vous pouvez révoquer le jeton de l’extension avec le bouton "
+"« Se déconnecter ». Les codes d’autorisation temporaires expirent après cinq "
+"minutes et ne peuvent pas être réutilisés."
+
+#: gifts/templates/gifts/extension_privacy.html:30
+msgid "Sharing"
+msgstr "Partage"
+
+#: gifts/templates/gifts/extension_privacy.html:32
+msgid ""
+"Quick Add does not sell product or browsing data and does not use it for "
+"advertising. Product data is shared through nosCadeaux only according to the "
+"gift-list and group visibility settings you select."
+msgstr ""
+"Ajout rapide ne vend pas les données de produit ou de navigation et ne les "
+"utilise pas à des fins publicitaires. Les données de produit sont partagées "
+"via nosCadeaux uniquement selon les paramètres de visibilité des listes de "
+"cadeaux et des groupes que vous sélectionnez."
+
+#: gifts/templates/gifts/extension_privacy.html:35
+msgid "Permissions"
+msgstr "Autorisations"
+
+#: gifts/templates/gifts/extension_privacy.html:37
+msgid ""
+"Access to shop pages is requested one shop at a time. You can review or "
+"revoke these permissions in Firefox’s Add-ons Manager. Disconnecting removes "
+"the extension’s local account token and revokes it on the nosCadeaux server "
+"when reachable."
+msgstr ""
+"L’accès aux pages des boutiques est demandé une boutique à la fois. Vous "
+"pouvez consulter ou révoquer ces autorisations dans le gestionnaire de "
+"modules complémentaires de Firefox. La déconnexion supprime le jeton de "
+"compte local de l’extension et le révoque sur le serveur nosCadeaux lorsque "
+"celui-ci est joignable."
 
 #: gifts/templates/gifts/history.html:4
 #: gifts/templates/groups/group_detail.html:40
@@ -1975,11 +2360,11 @@ msgid "Delete this gift from history?"
 msgstr "Supprimer ce cadeau de l'historique ?"
 
 #: gifts/templates/gifts/history.html:163
-#: gifts/templates/gifts/view_list.html:229 gifts/tests.py:1365
+#: gifts/templates/gifts/view_list.html:312 gifts/tests.py:1582
 msgid "An error occurred."
 msgstr "Une erreur s'est produite."
 
-#: gifts/templates/gifts/includes/_add_gift_modal.html:11 gifts/tests.py:270
+#: gifts/templates/gifts/includes/_add_gift_modal.html:11 gifts/tests.py:294
 msgid "New surprise"
 msgstr "Nouvelle surprise"
 
@@ -1998,13 +2383,42 @@ msgid "Link (URL)"
 msgstr "Lien (URL)"
 
 #: gifts/templates/gifts/includes/_add_gift_modal.html:44
+#: gifts/templates/gifts/includes/_add_gift_modal.html:46
 #: gifts/templates/gifts/includes/_edit_gift.html:49
+#: gifts/templates/gifts/includes/_edit_gift.html:50
+#: gifts/templates/gifts/includes/_view_gift.html:33
+#: gifts/templates/gifts/view_list.html:146
+#: gifts/templates/shared_lists/detail.html:145
+#: gifts/templates/shared_lists/detail.html:192
+msgid "Tags"
+msgstr "Tags"
+
+#: gifts/templates/gifts/includes/_add_gift_modal.html:53
+msgid "Choose one or more tags (optional)."
+msgstr "Choisissez un ou plusieurs tags (facultatif)."
+
+#: gifts/templates/gifts/includes/_add_gift_modal.html:60
+#: gifts/templates/gifts/includes/_edit_gift.html:64
 msgid "Visible in"
 msgstr "Visible dans"
 
-#: gifts/templates/gifts/includes/_add_gift_modal.html:50
+#: gifts/templates/gifts/includes/_add_gift_modal.html:66
 msgid "If none selected, visible to all your groups."
 msgstr "Si aucun n'est sélectionné, visible par tous vos groupes."
+
+#: gifts/templates/gifts/includes/_add_gift_modal.html:91
+#: gifts/templates/gifts/includes/_edit_gift.html:84
+msgid "Save as draft"
+msgstr "Enregistrer comme brouillon"
+
+#: gifts/templates/gifts/includes/_add_gift_modal.html:93
+#: gifts/templates/gifts/includes/_edit_gift.html:86
+msgid "Only you can see it. It will not appear in any group."
+msgstr "Vous seul pouvez le voir. Il n’apparaîtra dans aucun groupe."
+
+#: gifts/templates/gifts/includes/_bug_field.html:4
+msgid "(optional)"
+msgstr "(facultatif)"
 
 #: gifts/templates/gifts/includes/_cost_split_fields.html:5
 msgid "Total cost"
@@ -2026,15 +2440,9 @@ msgstr "Réparti entre"
 msgid "Per person"
 msgstr "Par personne"
 
-#: gifts/templates/gifts/includes/_edit_gift.html:15
-#: gifts/templates/gifts/includes/_reserve_modal_content.html:136
-#: gifts/templates/gifts/includes/_view_gift.html:95
-msgid "Close"
-msgstr "Fermer"
-
-#: gifts/templates/gifts/includes/_edit_gift.html:69
+#: gifts/templates/gifts/includes/_edit_gift.html:94
 #: gifts/templates/gifts/includes/_gift_table.html:150
-#: gifts/templates/gifts/includes/_wish_row.html:130
+#: gifts/templates/gifts/includes/_wish_row.html:149
 msgid "Modify"
 msgstr "Modifier"
 
@@ -2043,7 +2451,7 @@ msgid "Edit price"
 msgstr "Modifier le prix"
 
 #: gifts/templates/gifts/includes/_edit_price_modal.html:14
-#: gifts/templates/gifts/includes/_view_gift.html:33
+#: gifts/templates/gifts/includes/_view_gift.html:44
 msgid "Estimated price"
 msgstr "Prix estimé"
 
@@ -2052,7 +2460,7 @@ msgid "This helps others to organize collective gifts."
 msgstr "Cela aide le groupe à s'organiser pour offrir"
 
 #: gifts/templates/gifts/includes/_gift_comments_panel.html:5
-#: gifts/tests.py:464
+#: gifts/tests.py:651
 msgid "Secret group notes"
 msgstr "Notes secrètes du groupe"
 
@@ -2063,12 +2471,12 @@ msgstr ""
 "cadeau."
 
 #: gifts/templates/gifts/includes/_gift_comments_panel.html:20
-#: gifts/tests.py:559 gifts/tests.py:575
+#: gifts/tests.py:746 gifts/tests.py:762
 msgid "edited"
 msgstr "modifié"
 
 #: gifts/templates/gifts/includes/_gift_comments_panel.html:24
-#: gifts/tests.py:511 gifts/tests.py:525 gifts/views.py:818
+#: gifts/tests.py:698 gifts/tests.py:712 gifts/views.py:1021
 msgid "Comment deleted."
 msgstr "Commentaire supprimé."
 
@@ -2098,37 +2506,38 @@ msgid "Add note"
 msgstr "Ajouter la note"
 
 #: gifts/templates/gifts/includes/_gift_modals_logic.html:5
+#: gifts/templates/gifts/includes/_gift_modals_logic.html:12
 msgid "Modify the gift"
 msgstr "Modifier le cadeau"
 
-#: gifts/templates/gifts/includes/_gift_modals_logic.html:12
+#: gifts/templates/gifts/includes/_gift_modals_logic.html:26
 msgid "Modify the surprise"
 msgstr "Modifier la surprise"
 
 #: gifts/templates/gifts/includes/_gift_table.html:34
-#: gifts/templates/gifts/includes/_wish_row.html:25
+#: gifts/templates/gifts/includes/_wish_row.html:28
 msgid "See link"
 msgstr "Voir le lien"
 
 #: gifts/templates/gifts/includes/_gift_table.html:44
-#: gifts/templates/gifts/includes/_wish_row.html:41
+#: gifts/templates/gifts/includes/_wish_row.html:57
 msgid "All groups"
 msgstr "Tous les groupes"
 
 #: gifts/templates/gifts/includes/_gift_table.html:47
-#: gifts/templates/gifts/includes/_wish_row.html:45
+#: gifts/templates/gifts/includes/_wish_row.html:61
 msgid "Exclusive to one group"
 msgstr "Exclusif à un groupe"
 
 #: gifts/templates/gifts/includes/_gift_table.html:49
 #: gifts/templates/gifts/includes/_gift_table.html:72
-#: gifts/templates/gifts/includes/_wish_row.html:46
-#: gifts/templates/gifts/includes/_wish_row.html:63
+#: gifts/templates/gifts/includes/_wish_row.html:62
+#: gifts/templates/gifts/includes/_wish_row.html:79
 msgid "Exclusive"
 msgstr "Exclusif"
 
 #: gifts/templates/gifts/includes/_gift_table.html:59
-#: gifts/templates/gifts/includes/_wish_row.html:51
+#: gifts/templates/gifts/includes/_wish_row.html:67
 msgid "groups"
 msgstr "groupes"
 
@@ -2138,23 +2547,23 @@ msgid "Visible on all of %(name)s's groups"
 msgstr "Visible sur tous les groupes de %(name)s"
 
 #: gifts/templates/gifts/includes/_gift_table.html:69
-#: gifts/templates/gifts/includes/_wish_row.html:59
+#: gifts/templates/gifts/includes/_wish_row.html:75
 msgid "Public"
 msgstr "Publique"
 
 #: gifts/templates/gifts/includes/_gift_table.html:71
-#: gifts/templates/gifts/includes/_wish_row.html:62
+#: gifts/templates/gifts/includes/_wish_row.html:78
 msgid "Exclusive to this group"
 msgstr "Exclusif à ce groupe"
 
 #: gifts/templates/gifts/includes/_gift_table.html:76
-#: gifts/templates/gifts/includes/_wish_row.html:67
+#: gifts/templates/gifts/includes/_wish_row.html:83
 #, python-format
 msgid "Not visible on all of %(name)s's groups"
 msgstr "Non visible sur tous les groupes de %(name)s"
 
 #: gifts/templates/gifts/includes/_gift_table.html:77
-#: gifts/templates/gifts/includes/_wish_row.html:68
+#: gifts/templates/gifts/includes/_wish_row.html:84
 msgid "Private"
 msgstr "Privé"
 
@@ -2170,7 +2579,8 @@ msgid "Mark as received"
 msgstr "Marquer comme reçu"
 
 #: gifts/templates/gifts/includes/_gift_table.html:161
-#: gifts/templates/gifts/includes/_wish_row.html:139
+#: gifts/templates/gifts/includes/_wish_row.html:173
+#: gifts/templates/shared_lists/detail.html:118
 msgid "Delete this gift?"
 msgstr "Supprimer ce cadeau ?"
 
@@ -2307,7 +2717,7 @@ msgid "Open participation"
 msgstr "Ouvrir la participation"
 
 #: gifts/templates/gifts/includes/_reserve_modal_content.html:52
-#: gifts/views.py:142
+#: gifts/views.py:167
 msgid "Participate"
 msgstr "Participer"
 
@@ -2347,21 +2757,38 @@ msgstr "Détails du cadeau"
 msgid "Added on"
 msgstr "Ajouté le"
 
-#: gifts/templates/gifts/includes/_view_gift.html:43
+#: gifts/templates/gifts/includes/_view_gift.html:54
 msgid "See on website"
 msgstr "Voir sur le site web"
 
-#: gifts/templates/gifts/includes/_view_gift.html:88
+#: gifts/templates/gifts/includes/_view_gift.html:99
 msgid "Suggested by"
 msgstr "Suggéré par"
 
-#: gifts/templates/gifts/includes/_wish_row.html:100
+#: gifts/templates/gifts/includes/_wish_row.html:40
+#: gifts/templates/shared_lists/detail.html:92
+msgid "Added by"
+msgstr "Ajouté par"
+
+#: gifts/templates/gifts/includes/_wish_row.html:51
+msgid "Draft"
+msgstr "Brouillon"
+
+#: gifts/templates/gifts/includes/_wish_row.html:117
 msgid "Offered!"
 msgstr "Offert !"
 
-#: gifts/templates/gifts/includes/_wish_row.html:113
+#: gifts/templates/gifts/includes/_wish_row.html:131
 msgid "Received!"
 msgstr "Reçu !"
+
+#: gifts/templates/gifts/includes/_wish_row.html:153
+msgid "Move to a shared list"
+msgstr "Déplacer vers une liste partagée"
+
+#: gifts/templates/gifts/includes/_wish_row.html:160
+msgid "Move this wish? Any existing reservation will be cancelled."
+msgstr "Déplacer ce souhait ? Toute réservation existante sera annulée."
 
 #: gifts/templates/gifts/notification_center.html:10
 #: gifts/templates/gifts/welcome.html:115
@@ -2383,6 +2810,7 @@ msgid "People whose list updates or reminders you follow."
 msgstr "Personnes dont vous suivez les mises à jour de liste ou les rappels."
 
 #: gifts/templates/gifts/notification_center.html:41
+#: gifts/templates/shared_lists/detail.html:44
 msgid "Remove"
 msgstr "Supprimer"
 
@@ -2450,13 +2878,13 @@ msgid "No recent visible wish."
 msgstr "Aucun souhait visible récent."
 
 #: gifts/templates/gifts/privacy.html:4 gifts/templates/gifts/privacy.html:12
-#: gifts/tests.py:123 gifts/tests.py:158
+#: gifts/tests.py:126 gifts/tests.py:161
 msgid "Privacy policy"
 msgstr "Politique de confidentialité"
 
 #: gifts/templates/gifts/privacy.html:13
-msgid "Last updated:"
-msgstr "Dernière mise à jour :"
+msgid "Last updated: 26 August 2026"
+msgstr "Dernière mise à jour : 26 août 2026"
 
 #: gifts/templates/gifts/privacy.html:15
 msgid "Data stored by nosCadeaux"
@@ -2525,11 +2953,24 @@ msgstr ""
 "pour la publicité, ne créons pas de profils marketing à partir de celles-ci "
 "et ne les partageons pas avec des tiers pour leurs propres finalités."
 
-#: gifts/templates/gifts/privacy.html:34
+#: gifts/templates/gifts/privacy.html:36
+msgid ""
+"Account creation is protected by Cloudflare Turnstile, which processes the "
+"technical data needed to distinguish people from automated requests."
+msgstr ""
+"La création de compte est protégée par Cloudflare Turnstile, qui traite les "
+"données techniques nécessaires pour distinguer les personnes des requêtes "
+"automatisées."
+
+#: gifts/templates/gifts/privacy.html:38
+msgid "Cloudflare Turnstile Privacy Addendum"
+msgstr "Addendum de confidentialité de Cloudflare Turnstile"
+
+#: gifts/templates/gifts/privacy.html:42
 msgid "Account deletion"
 msgstr "Suppression du compte"
 
-#: gifts/templates/gifts/privacy.html:36
+#: gifts/templates/gifts/privacy.html:44
 msgid ""
 "When you delete your account, the data attached to that account is deleted "
 "immediately from nosCadeaux, including your profile, gifts, reservations, "
@@ -2540,7 +2981,7 @@ msgstr ""
 "vos réservations, vos abonnements, vos jetons d'extension et les listes "
 "d'événements dont vous êtes propriétaire."
 
-#: gifts/templates/gifts/privacy.html:39
+#: gifts/templates/gifts/privacy.html:47
 msgid ""
 "If you belonged to shared groups, those groups may continue to exist for the "
 "remaining members, but your account is removed from them."
@@ -2548,11 +2989,11 @@ msgstr ""
 "Si vous apparteniez à des groupes partagés, ces groupes peuvent continuer "
 "d'exister pour les autres membres, mais votre compte en est retiré."
 
-#: gifts/templates/gifts/privacy.html:42
+#: gifts/templates/gifts/privacy.html:50
 msgid "Contact"
 msgstr "Contact"
 
-#: gifts/templates/gifts/privacy.html:44
+#: gifts/templates/gifts/privacy.html:52
 msgid ""
 "For any privacy question or deletion request, you can contact me by email at"
 msgstr ""
@@ -2663,31 +3104,77 @@ msgstr "Gardez cette URL privée. Toute personne qui l'a peut lire ce flux."
 msgid "Unsubscribe"
 msgstr "Se désabonner"
 
-#: gifts/templates/gifts/view_list.html:144
+#: gifts/templates/gifts/view_list.html:160
+msgid "Sort"
+msgstr "Trier"
+
+#: gifts/templates/gifts/view_list.html:162
+msgid "Oldest first"
+msgstr "Plus anciens d’abord"
+
+#: gifts/templates/gifts/view_list.html:163
+msgid "Newest first"
+msgstr "Plus récents d’abord"
+
+#: gifts/templates/gifts/view_list.html:164
+msgid "Name A–Z"
+msgstr "Nom A–Z"
+
+#: gifts/templates/gifts/view_list.html:167
+msgid "Apply"
+msgstr "Appliquer"
+
+#: gifts/templates/gifts/view_list.html:170
+msgid "Clear filters"
+msgstr "Effacer les filtres"
+
+#: gifts/templates/gifts/view_list.html:181
+#: gifts/templates/shared_lists/detail.html:81
 msgid "Wishes"
 msgstr "Souhaits"
 
-#: gifts/templates/gifts/view_list.html:160
+#: gifts/templates/gifts/view_list.html:198
+msgid "No wish matches these filters."
+msgstr "Aucun souhait ne correspond à ces filtres."
+
+#: gifts/templates/gifts/view_list.html:198
+#: gifts/templates/shared_lists/detail.html:160
 msgid "No wishes yet."
 msgstr "Aucun cadeau ici pour l'instant"
 
-#: gifts/templates/gifts/view_list.html:162
+#: gifts/templates/gifts/view_list.html:202
+msgid "Try changing or clearing the selected filters."
+msgstr "Essayez de modifier ou d’effacer les filtres sélectionnés."
+
+#: gifts/templates/gifts/view_list.html:204
 msgid "Add your first ideas!"
 msgstr "Ajoutez vos premières idées !"
 
-#: gifts/templates/gifts/view_list.html:162
+#: gifts/templates/gifts/view_list.html:206
 msgid "has no list yet."
 msgstr "n'a pas encore de liste."
 
-#: gifts/templates/gifts/view_list.html:174
+#: gifts/templates/gifts/view_list.html:219
+msgid "Shared wishes"
+msgstr "Souhaits partagés"
+
+#: gifts/templates/gifts/view_list.html:237
 msgid "Surprises from others"
 msgstr "Surprises suggérées par d'autres"
 
-#: gifts/templates/gifts/view_list.html:178
+#: gifts/templates/gifts/view_list.html:241
 msgid "Invisible for"
 msgstr "Invisible pour"
 
-#: gifts/templates/gifts/view_list.html:194
+#: gifts/templates/gifts/view_list.html:257 gifts/tests.py:372
+msgid "Drafts"
+msgstr "Brouillons"
+
+#: gifts/templates/gifts/view_list.html:261
+msgid "Visible only to you"
+msgstr "Visible uniquement par vous"
+
+#: gifts/templates/gifts/view_list.html:277
 #: gifts/templates/gifts/welcome.html:135
 msgid "Event lists"
 msgstr "Listes d'événement"
@@ -3113,6 +3600,7 @@ msgstr ""
 "cette personne."
 
 #: gifts/templates/groups/includes/_group_modals.html:178
+#: gifts/templates/shared_lists/detail.html:28
 msgid "Rename"
 msgstr "Renommer"
 
@@ -3191,13 +3679,12 @@ msgstr "Choisir une image"
 
 #: gifts/templates/photos/photo_upload.html:244
 msgid "Or choose one"
-msgstr ""
+msgstr "Ou choisissez-en une"
 
 #: gifts/templates/photos/photo_upload.html:247
-#, fuzzy, python-format
-#| msgid "Choose a member"
+#, python-format
 msgid "Choose %(name)s"
-msgstr "Choisir un participant"
+msgstr "Choisir %(name)s"
 
 #: gifts/templates/photos/photo_upload.html:264
 msgid "Frame your photo"
@@ -3328,7 +3815,7 @@ msgstr "Mot de passe oublié ?"
 
 #: gifts/templates/registration/login.html:58
 msgid "Try the public demo"
-msgstr ""
+msgstr "Essayer la démonstration publique"
 
 #: gifts/templates/registration/login.html:62
 msgid "No account yet ?"
@@ -3410,7 +3897,7 @@ msgid "Send link"
 msgstr "Envoyer le lien"
 
 #: gifts/templates/registration/register.html:12
-#: gifts/templates/registration/register.html:57
+#: gifts/templates/registration/register.html:72
 msgid "Register"
 msgstr "Créer un compte"
 
@@ -3418,171 +3905,229 @@ msgstr "Créer un compte"
 msgid "Register to create your list"
 msgstr "Inscrivez-vous pour créer votre propre liste"
 
-#: gifts/templates/registration/register.html:62
+#: gifts/templates/registration/register.html:77
 msgid "Already registered ?"
 msgstr "Déjà inscrit ?"
 
-#: gifts/templates/registration/register.html:64
+#: gifts/templates/registration/register.html:79
 msgid "Log in here"
 msgstr "Se connecter"
 
-#: gifts/account.py
-msgid "Human verification failed. Please try again."
-msgstr "La vérification humaine a échoué. Veuillez réessayer."
+#: gifts/templates/shared_lists/detail.html:44
+msgid "Remove this member?"
+msgstr "Retirer ce membre ?"
 
-#: gifts/templates/gifts/privacy.html
-msgid "Account creation is protected by Cloudflare Turnstile, which processes the technical data needed to distinguish people from automated requests."
-msgstr "La création de compte est protégée par Cloudflare Turnstile, qui traite les données techniques nécessaires pour distinguer les personnes des requêtes automatisées."
+#: gifts/templates/shared_lists/detail.html:52
+msgid ""
+"This will end the shared list and transfer its wishes to your personal list."
+msgstr ""
+"Cela mettra fin à la liste partagée et transférera ses souhaits vers votre "
+"liste personnelle."
 
-#: gifts/templates/gifts/privacy.html
-msgid "Cloudflare Turnstile Privacy Addendum"
-msgstr "Addendum de confidentialité de Cloudflare Turnstile"
+#: gifts/templates/shared_lists/detail.html:53
+msgid "Remove and transfer"
+msgstr "Retirer et transférer"
 
-#: gifts/views.py:48
+#: gifts/templates/shared_lists/detail.html:63
+#: gifts/templates/shared_lists/detail.html:65
+msgid "Add someone…"
+msgstr "Ajouter quelqu’un…"
+
+#: gifts/templates/shared_lists/detail.html:100
+msgid "Not visible in any group"
+msgstr "Visible dans aucun groupe"
+
+#: gifts/templates/shared_lists/detail.html:139
+#: gifts/templates/shared_lists/detail.html:186
+#: gifts/templates/shared_lists/detail.html:187
+msgid "Wish name"
+msgstr "Nom du souhait"
+
+#: gifts/templates/shared_lists/detail.html:148
+#: gifts/templates/shared_lists/detail.html:195
+msgid "Show this wish under my list in these groups"
+msgstr "Afficher ce souhait dans ma liste pour ces groupes"
+
+#: gifts/templates/shared_lists/detail.html:149
+#: gifts/templates/shared_lists/detail.html:196
+msgid "You do not belong to any group yet."
+msgstr "Vous n’appartenez encore à aucun groupe."
+
+#: gifts/templates/shared_lists/detail.html:171
+msgid "Delete this shared list? It can be restored for 48 hours."
+msgstr ""
+"Supprimer cette liste partagée ? Elle pourra être restaurée pendant 48 "
+"heures."
+
+#: gifts/templates/shared_lists/detail.html:172
+msgid "Delete shared list"
+msgstr "Supprimer la liste partagée"
+
+#: gifts/templates/shared_lists/restore.html:3
+msgid "Restore shared list"
+msgstr "Restaurer la liste partagée"
+
+#: gifts/templates/shared_lists/restore.html:7
+msgid "Restore the shared list?"
+msgstr "Restaurer la liste partagée ?"
+
+#: gifts/templates/shared_lists/restore_expired.html:3
+msgid "Restoration expired"
+msgstr "Délai de restauration expiré"
+
+#: gifts/templates/shared_lists/restore_expired.html:6
+msgid "This restoration link has expired."
+msgstr "Ce lien de restauration a expiré."
+
+#: gifts/templates/shared_lists/restore_expired.html:7
+msgid "Back to dashboard"
+msgstr "Retour à l'accueil"
+
+#: gifts/views.py:58
 msgid "Invalid amount format."
 msgstr "Format du montant invalide."
 
-#: gifts/views.py:51
+#: gifts/views.py:61
 msgid "Comment cannot be empty."
-msgstr ""
+msgstr "Le commentaire ne peut pas être vide."
 
-#: gifts/views.py:52
+#: gifts/views.py:62
 msgid "Comment is too long."
-msgstr ""
+msgstr "Le commentaire est trop long."
 
-#: gifts/views.py:117
+#: gifts/views.py:63
+msgid "Invalid tag selection."
+msgstr "Sélection de tags invalide."
+
+#: gifts/views.py:142
 msgid "Reserve"
 msgstr "Réserver"
 
-#: gifts/views.py:121
+#: gifts/views.py:146
 msgid "Reserved in another group"
 msgstr "Réservé dans un autre groupe"
 
-#: gifts/views.py:122
+#: gifts/views.py:147
 msgid "Reserved elsewhere"
 msgstr "Réservé ailleurs"
 
-#: gifts/views.py:127
+#: gifts/views.py:152
 msgid "My reservation"
 msgstr "Ma réservation"
 
-#: gifts/views.py:132
+#: gifts/views.py:157
 msgid "View reservation"
 msgstr "Voir la réservation"
 
-#: gifts/views.py:136
+#: gifts/views.py:161
 msgid "You participate"
 msgstr "Vous participez"
 
-#: gifts/views.py:137
+#: gifts/views.py:162
 msgid "My participation"
 msgstr "Ma participation"
 
-#: gifts/views.py:141
+#: gifts/views.py:166
 msgid "Participation open"
 msgstr "Participation ouverte"
 
-#: gifts/views.py:196
+#: gifts/views.py:233
 msgid "This gift is already reserved in another group"
 msgstr "Ce cadeau est déjà réservé dans un autre groupe"
 
-#: gifts/views.py:210
+#: gifts/views.py:251
 msgid "Gift comments are hidden from the gift owner."
-msgstr ""
+msgstr "Les commentaires sur le cadeau sont masqués pour son propriétaire."
 
-#: gifts/views.py:325 gifts/views.py:356
+#: gifts/views.py:377 gifts/views.py:408
 msgid "Invalid group ID."
 msgstr "Identifiant de groupe invalide."
 
-#: gifts/views.py:354 gifts/views.py:1385
+#: gifts/views.py:406 gifts/views.py:1630
 msgid "GROUP_NOT_FOUND"
 msgstr "Groupe introuvable."
 
-#: gifts/views.py:609
+#: gifts/views.py:804
 msgid "Subscriptions are disabled for demo accounts."
 msgstr "Les abonnements sont désactivés pour les comptes de démonstration."
 
-#: gifts/views.py:612
+#: gifts/views.py:807
 msgid "You cannot subscribe to yourself"
 msgstr "Vous ne pouvez pas vous abonner à vous-même"
 
-#: gifts/views.py:638
+#: gifts/views.py:833
 #, python-format
 msgid "You are now subscribed to %(name)s's list"
 msgstr "Vous êtes maintenant abonné à la liste de %(name)s"
 
-#: gifts/views.py:682
+#: gifts/views.py:877
 msgid "Notification preferences updated."
 msgstr "Préférences de notification mises à jour."
 
-#: gifts/views.py:692
+#: gifts/views.py:887
 msgid "Digest preference updated."
 msgstr "Préférence de récapitulatif mise à jour."
 
-#: gifts/views.py:698
+#: gifts/views.py:893
 msgid "Notifications are disabled for demo accounts."
 msgstr "Les notifications sont désactivées pour les comptes de démonstration."
 
-#: gifts/views.py:759 gifts/views.py:768
+#: gifts/views.py:962 gifts/views.py:971
 msgid "The unsubscription link is invalid"
 msgstr "Le lien de désabonnement est invalide"
 
-#: gifts/views.py:797
+#: gifts/views.py:1000
 msgid "Comment added."
 msgstr "Commentaire ajouté."
 
-#: gifts/views.py:834
+#: gifts/views.py:1037
 msgid "Deleted comments cannot be edited."
 msgstr "Les commentaires supprimés ne peuvent pas être modifiés."
 
-#: gifts/views.py:855
+#: gifts/views.py:1058
 msgid "Comment updated."
 msgstr "Commentaire mis à jour."
 
-#: gifts/views.py:915
+#: gifts/views.py:1138
 #, python-format
 msgid "New gift on %(name)s's list!"
 msgstr "Nouveau cadeau sur la liste de %(name)s !"
 
-#: gifts/views.py:997
+#: gifts/views.py:1236
 msgid "Estimated price updated!"
 msgstr "Prix estimé mis à jour!"
 
-#: gifts/views.py:999
+#: gifts/views.py:1238
 msgid "Invalid price format."
 msgstr "Format du prix invalide"
 
-#: gifts/views.py:1040
+#: gifts/views.py:1257
 msgid "The gift owner cannot reserve this gift"
 msgstr "Le propriétaire du cadeau ne peut pas le réserver"
 
-#: gifts/views.py:1147
+#: gifts/views.py:1390
 msgid "You cannot mark your own gift as offered"
 msgstr "Vous ne pouvez pas marquer votre propre cadeau comme offert"
 
-#: gifts/views.py:1272
+#: gifts/views.py:1515
 msgid "Gift put back in the list."
 msgstr "Cadeau remis dans la liste."
 
-#: gifts/views.py:1289
+#: gifts/views.py:1532
 msgid "Gift deleted."
 msgstr "Cadeau supprimé."
 
-#: gifts/views.py:1342 gifts/views.py:1345
+#: gifts/views.py:1587 gifts/views.py:1590
 msgid "Only the gift owner can mark it as received"
 msgstr "Seul le propriétaire du cadeau peut le marquer comme reçu"
 
-#: gifts/views.py:1521
+#: gifts/views.py:1766
 msgid "Invalid settlement data."
 msgstr "Données de remboursement invalides."
 
-#: gifts/views.py:1524
+#: gifts/views.py:1769
 msgid "Settlement recorded."
 msgstr "Remboursement enregistré."
-
-#, python-format
-#~ msgid "You are no longer subscribed to %(name)s's list"
-#~ msgstr "Vous n'êtes plus abonné à la liste de %(name)s"
 
 #~ msgid "Create event list"
 #~ msgstr "Créer une liste d’événement"
@@ -3738,7 +4283,6 @@ msgstr "Remboursement enregistré."
 #~ msgid "Wedding date"
 #~ msgstr "Date du mariage"
 
-#, fuzzy
 #~| msgid "Wish lists"
 #~ msgid "Wedding list"
 #~ msgstr "Liste de mariage"
@@ -3756,9 +4300,6 @@ msgstr "Remboursement enregistré."
 
 #~ msgid "Already reserved"
 #~ msgstr "Déjà réservé"
-
-#~ msgid "You are not a member of this group."
-#~ msgstr "Vous n'êtes pas membre de ce groupe."
 
 #~ msgid ""
 #~ "No expenses recorded yet. Offer gifts with amounts to start tracking."
@@ -3825,7 +4366,6 @@ msgstr "Remboursement enregistré."
 #~ msgid "Received by"
 #~ msgstr "Reçu par"
 
-#, fuzzy
 #~| msgid "Total"
 #~ msgid "Total paid"
 #~ msgstr "Total payé"
@@ -3880,149 +4420,3 @@ msgstr "Remboursement enregistré."
 
 #~ msgid "No group members found."
 #~ msgstr "Aucun membre de groupe trouvé."
-
-#: gifts/templates/base.html gifts/templates/gifts/changelog.html
-msgid "Changelog"
-msgstr "Nouveautés"
-
-#: gifts/templates/base.html
-msgid "Latest updates"
-msgstr "Dernières nouveautés"
-
-#: gifts/templates/base.html gifts/templates/gifts/changelog.html
-msgid "What's new"
-msgstr "Quoi de neuf ?"
-
-#: gifts/templates/base.html
-msgid "View the full changelog"
-msgstr "Voir toutes les nouveautés"
-
-#: gifts/templates/gifts/changelog.html
-msgid "Discover the latest improvements to nosCadeaux."
-msgstr "Découvrez les dernières améliorations de nosCadeaux."
-
-#: gifts/templates/gifts/changelog.html
-msgid "No release notes are available yet."
-msgstr "Aucune note de version n’est disponible pour le moment."
-
-#: gifts/templates/gifts/changelog.html
-msgid "Changelog pages"
-msgstr "Pages des nouveautés"
-
-#: gifts/templates/gifts/changelog.html
-msgid "Newer"
-msgstr "Plus récentes"
-
-#: gifts/templates/gifts/changelog.html
-msgid "Older"
-msgstr "Plus anciennes"
-
-# Gift tags and list filters
-msgid "Books"
-msgstr "Livres"
-
-msgid "Video games"
-msgstr "Jeux vidéo"
-
-msgid "Board games"
-msgstr "Jeux de société"
-
-msgid "Movies and TV"
-msgstr "Films et séries"
-
-msgid "Music"
-msgstr "Musique"
-
-msgid "Art and decoration"
-msgstr "Art et décoration"
-
-msgid "Fashion and accessories"
-msgstr "Mode et accessoires"
-
-msgid "Beauty and wellness"
-msgstr "Beauté et bien-être"
-
-msgid "Sports"
-msgstr "Sport"
-
-msgid "Technology"
-msgstr "Technologie"
-
-msgid "Home"
-msgstr "Maison"
-
-msgid "Cooking and food"
-msgstr "Cuisine et gastronomie"
-
-msgid "Creative hobbies"
-msgstr "Loisirs créatifs"
-
-msgid "Travel and experiences"
-msgstr "Voyages et expériences"
-
-msgid "Children"
-msgstr "Enfants"
-
-msgid "Tags"
-msgstr "Tags"
-
-msgid "Choose one or more tags (optional)."
-msgstr "Choisissez un ou plusieurs tags (facultatif)."
-
-msgid "Sort"
-msgstr "Trier"
-
-msgid "Oldest first"
-msgstr "Plus anciens d’abord"
-
-msgid "Newest first"
-msgstr "Plus récents d’abord"
-
-msgid "Name A–Z"
-msgstr "Nom A–Z"
-
-msgid "Apply"
-msgstr "Appliquer"
-
-msgid "Clear filters"
-msgstr "Effacer les filtres"
-
-msgid "No wish matches these filters."
-msgstr "Aucun souhait ne correspond à ces filtres."
-
-msgid "Try changing or clearing the selected filters."
-msgstr "Essayez de modifier ou d’effacer les filtres sélectionnés."
-
-msgid "Invalid tag selection."
-msgstr "Sélection de tags invalide."
-
-msgid "Save as draft"
-msgstr "Enregistrer comme brouillon"
-
-msgid "Only you can see it. It will not appear in any group."
-msgstr "Vous seul pouvez le voir. Il n’apparaîtra dans aucun groupe."
-
-msgid "Draft"
-msgstr "Brouillon"
-
-msgid "Drafts"
-msgstr "Brouillons"
-
-msgid "Visible only to you"
-msgstr "Visible uniquement par vous"
-
-#: gifts/templates/gifts/view_list.html
-msgid "Shared wishes"
-msgstr "Souhaits partagés"
-
-#: gifts/templates/emails/shared_list_deleted.html
-msgid "Shared list deleted"
-msgstr "Liste partagée supprimée"
-
-#: gifts/templates/emails/shared_gift_reservation_cancelled.html
-msgid "A reservation was cancelled"
-msgstr "Une réservation a été annulée"
-
-#: gifts/templates/emails/shared_list_member_removed.html
-msgid "You were removed from a shared list"
-msgstr "Vous avez été retiré d’une liste partagée"

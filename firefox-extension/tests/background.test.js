@@ -5,11 +5,27 @@ const test = require("node:test");
 const vm = require("node:vm");
 
 const background = fs.readFileSync(path.join(__dirname, "..", "background.js"), "utf8");
+const messages = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "..", "_locales", "en", "messages.json"), "utf8")
+);
+
+function getMessage(key, substitutions = []) {
+  const definition = messages[key];
+  if (!definition) return "";
+  const values = Array.isArray(substitutions) ? substitutions : [substitutions];
+  let message = definition.message;
+  for (const [name, placeholder] of Object.entries(definition.placeholders || {})) {
+    const index = Number(placeholder.content.slice(1)) - 1;
+    message = message.replaceAll(`$${name.toUpperCase()}$`, String(values[index] ?? ""));
+  }
+  return message;
+}
 
 function loadBackground({ executeScript, requestPermission } = {}) {
   const storageWrites = [];
   const browser = {
     action: { onClicked: { addListener() {} } },
+    i18n: { getMessage },
     runtime: { onMessage: { addListener() {} } },
     scripting: {
       executeScript: executeScript || (async () => [])

@@ -1,5 +1,22 @@
 const DEFAULT_BASE_URL = "https://noscadeaux.fr";
 
+const t = (key, substitutions) => browser.i18n.getMessage(key, substitutions);
+
+function localizeDocument() {
+  document.documentElement.lang = browser.i18n.getUILanguage().split("-")[0];
+  for (const element of document.querySelectorAll("[data-i18n]")) {
+    element.textContent = t(element.dataset.i18n);
+  }
+  for (const element of document.querySelectorAll("[data-i18n-title]")) {
+    element.title = t(element.dataset.i18nTitle);
+  }
+  for (const element of document.querySelectorAll("[data-i18n-alt]")) {
+    element.alt = t(element.dataset.i18nAlt);
+  }
+}
+
+localizeDocument();
+
 const elements = {
   account: document.querySelector("#account"),
   connect: document.querySelector("#connect"),
@@ -65,7 +82,7 @@ async function loadCapture() {
 function renderCapture(capture) {
   elements.success.hidden = true;
   if (capture.status === "loading") {
-    showNotice("Extracting product information…");
+    showNotice(t("extractingProduct"));
     elements.form.hidden = true;
     return;
   }
@@ -89,7 +106,7 @@ function renderCapture(capture) {
   );
   updateImage();
   elements.form.hidden = false;
-  showNotice(accessToken ? "Review the extracted information before adding." : "Connect to add this product.");
+  showNotice(accessToken ? t("reviewBeforeAdding") : t("connectToAdd"));
 }
 
 function fillDatalist(element, values = []) {
@@ -158,9 +175,9 @@ elements.connect.addEventListener("click", async () => {
       url: authorizationUrl.href
     });
     const resultUrl = new URL(result);
-    if (resultUrl.searchParams.get("state") !== state) throw new Error("Authorization state mismatch.");
+    if (resultUrl.searchParams.get("state") !== state) throw new Error(t("authorizationMismatch"));
     const code = resultUrl.searchParams.get("code");
-    if (!code) throw new Error("The authorization code is missing.");
+    if (!code) throw new Error(t("authorizationCodeMissing"));
 
     const response = await serverFetch("/api/extension/token/", {
       method: "POST",
@@ -168,13 +185,13 @@ elements.connect.addEventListener("click", async () => {
       body: JSON.stringify({ code, code_verifier: verifier, redirect_uri: redirectUri })
     });
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Could not connect the extension.");
+    if (!response.ok) throw new Error(data.error || t("couldNotConnect"));
     accessToken = data.access_token;
     await browser.storage.local.set({ accessToken });
     await loadAccount();
-    showNotice("Connected. Review the extracted information before adding.");
+    showNotice(t("connectedReview"));
   } catch (error) {
-    showNotice(error.message || "Connection cancelled.", true);
+    showNotice(error.message || t("connectionCancelled"), true);
   } finally {
     elements.connect.disabled = false;
   }
@@ -184,7 +201,7 @@ elements.refresh.addEventListener("click", async () => {
   elements.refresh.disabled = true;
   try {
     const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-    if (!tab?.id) throw new Error("No active page was found.");
+    if (!tab?.id) throw new Error(t("noActivePage"));
     const response = await browser.runtime.sendMessage({
       type: "rescan-product",
       tabId: tab.id,
@@ -192,7 +209,7 @@ elements.refresh.addEventListener("click", async () => {
     });
     if (response?.error) throw new Error(response.error);
   } catch (error) {
-    showNotice(error.message || "The page could not be scanned again.", true);
+    showNotice(error.message || t("couldNotRescan"), true);
   } finally {
     elements.refresh.disabled = false;
   }
@@ -201,7 +218,7 @@ elements.refresh.addEventListener("click", async () => {
 elements.form.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!accessToken) {
-    showNotice("Connect the extension before adding a product.", true);
+    showNotice(t("connectBeforeAdding"), true);
     return;
   }
   elements.submit.disabled = true;
@@ -242,7 +259,7 @@ elements.disconnect.addEventListener("click", async () => {
     // Local disconnection must still work when the server is unavailable.
   }
   await clearToken();
-  showNotice("Disconnected.");
+  showNotice(t("disconnected"));
 });
 
 async function api(path, options = {}) {
@@ -256,7 +273,7 @@ async function api(path, options = {}) {
   });
   const data = response.status === 204 ? null : await response.json().catch(() => null);
   if (!response.ok) {
-    const error = new Error(data?.error || `Request failed (${response.status}).`);
+    const error = new Error(data?.error || t("requestFailed", String(response.status)));
     error.status = response.status;
     throw error;
   }
@@ -268,7 +285,7 @@ async function serverFetch(path, options) {
     return await fetch(new URL(path, baseUrl), options);
   } catch (error) {
     throw new Error(
-      `Cannot reach ${baseUrl}. Check that the server is running and that this origin is listed in manifest.json host_permissions. (${error.message})`
+      t("cannotReachServer", [baseUrl, error.message])
     );
   }
 }
@@ -279,7 +296,7 @@ async function ensureServerPermission() {
   const allowed = await browser.permissions.contains({ origins: [originPattern] });
   if (!allowed) {
     throw new Error(
-      `${baseUrl} is not granted in Firefox. Add ${originPattern} to manifest.json host_permissions, reload the add-on, and accept the permission.`
+      t("originNotGranted", [baseUrl, originPattern])
     );
   }
 }
@@ -292,7 +309,7 @@ async function clearToken() {
 }
 
 function renderDisconnected() {
-  elements.account.textContent = "Not connected";
+  elements.account.textContent = t("notConnected");
   elements.connect.hidden = false;
   elements.disconnect.hidden = true;
   elements.groups.hidden = true;
