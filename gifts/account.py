@@ -20,6 +20,7 @@ from gifts.demo import DEMO_EMAIL, is_demo_user
 from gifts.forms import LocalUserCreationForm, UserProfileForm
 from gifts.models import User
 from gifts.photo_presets import is_valid_photo_preset, list_photo_presets
+from gifts.turnstile import verify_turnstile
 
 
 def send_verification_email(request, user):
@@ -194,6 +195,13 @@ def register(request):
     if request.method == "POST":
         form = LocalUserCreationForm(request.POST)
         if form.is_valid():
+            if settings.TURNSTILE_ENABLED and not verify_turnstile(request, action="register"):
+                form.add_error(None, _("Human verification failed. Please try again."))
+                return render(
+                    request,
+                    "registration/register.html",
+                    {"form": form, "turnstile_site_key": settings.TURNSTILE_SITE_KEY},
+                )
             user = form.save()
             user.last_seen_version = settings.APP_VERSION
             user.save(update_fields=["last_seen_version"])
@@ -204,7 +212,14 @@ def register(request):
             return redirect("dashboard")
     else:
         form = LocalUserCreationForm()
-    return render(request, "registration/register.html", {"form": form})
+    return render(
+        request,
+        "registration/register.html",
+        {
+            "form": form,
+            "turnstile_site_key": settings.TURNSTILE_SITE_KEY if settings.TURNSTILE_ENABLED else "",
+        },
+    )
 
 
 @require_GET

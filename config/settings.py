@@ -56,6 +56,14 @@ GITHUB_API_URL = os.environ.get("GITHUB_API_URL", "https://api.github.com")
 GITHUB_API_VERSION = os.environ.get("GITHUB_API_VERSION", "2022-11-28")
 BUG_REPORT_TIMEOUT = float(os.environ.get("BUG_REPORT_TIMEOUT", "10"))
 
+# Cloudflare Turnstile protects account creation when a secret key is configured.
+# The site key is public; the secret key must only be provided to the backend.
+TURNSTILE_SITE_KEY = os.environ.get("TURNSTILE_SITE_KEY", "")
+TURNSTILE_SECRET_KEY = os.environ.get("TURNSTILE_SECRET_KEY", "")
+TURNSTILE_ENABLED = bool(TURNSTILE_SECRET_KEY)
+TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+TURNSTILE_TIMEOUT = float(os.environ.get("TURNSTILE_TIMEOUT", "5"))
+
 # Application definition
 
 INSTALLED_APPS = [
