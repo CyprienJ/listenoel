@@ -967,8 +967,6 @@ msgid "Edit"
 msgstr "Modifier"
 
 #: gifts/templates/events/event_detail.html:47
-#: gifts/templates/gifts/includes/_gift_table.html:22
-#: gifts/templates/gifts/includes/_wish_row.html:17
 msgid "No description"
 msgstr "Aucune description"
 
