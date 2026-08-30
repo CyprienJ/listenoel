@@ -157,7 +157,10 @@
                     {% include "gifts/includes/_reserve_modal.html" with item=item %}
                 {% endif %}
             {% empty %}
-                <div class="text-center text-muted py-5">{% trans "No wishes yet." %}</div>
+                <div class="text-center text-muted py-5" data-empty-list-easter-egg>
+                    <span data-empty-list-message>{% trans "No wishes yet." %}</span>
+                    <span data-empty-list-surprise hidden>{% trans "Not even a little pair of socks?" %}</span>
+                </div>
             {% endfor %}
         </div>
     </div>

@@ -407,14 +407,15 @@
         {% if not forloop.last %}<div class="nc-event-gift-divider"></div>{% endif %}
         {% endwith %}
         {% empty %}
-        <div class="nc-event-empty-gifts">
+        <div class="nc-event-empty-gifts" data-empty-list-easter-egg>
             {% if is_owner %}
                 <i class="bi bi-gift" style="font-size:28px; color:var(--nc-text-muted)"></i>
-                <p>{% trans "No wishes yet. Add the first one!" %}</p>
+                <p data-empty-list-message>{% trans "No wishes yet. Add the first one!" %}</p>
             {% else %}
                 <i class="bi bi-hourglass-split" style="font-size:28px; color:var(--nc-text-muted)"></i>
-                <p>{% trans "No wishes have been added yet." %}</p>
+                <p data-empty-list-message>{% trans "No wishes have been added yet." %}</p>
             {% endif %}
+            <span data-empty-list-surprise hidden>{% trans "Not even a little pair of socks?" %}</span>
         </div>
         {% endfor %}
     </div>

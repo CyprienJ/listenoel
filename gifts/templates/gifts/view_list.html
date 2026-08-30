@@ -192,11 +192,14 @@
                 {% if not forloop.last %}<div class="nc-wish-divider"></div>{% endif %}
             {% endfor %}
         {% else %}
-            <div class="nc-wish-empty">
+            <div class="nc-wish-empty"{% if not has_list_filters %} data-empty-list-easter-egg{% endif %}>
                 <i class="bi bi-gift" style="font-size:36px; color:var(--nc-border)"></i>
-                <div class="nc-wish-empty-title">
+                <div class="nc-wish-empty-title"{% if not has_list_filters %} data-empty-list-message{% endif %}>
                     {% if has_list_filters %}{% trans "No wish matches these filters." %}{% else %}{% trans "No wishes yet." %}{% endif %}
                 </div>
+                {% if not has_list_filters %}
+                    <span data-empty-list-surprise hidden>{% trans "Not even a little pair of socks?" %}</span>
+                {% endif %}
                 <div class="nc-wish-empty-desc">
                     {% if has_list_filters %}
                         {% trans "Try changing or clearing the selected filters." %}

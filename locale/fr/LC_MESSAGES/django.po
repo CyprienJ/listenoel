@@ -4420,3 +4420,9 @@ msgstr "Remboursement enregistré."
 
 #~ msgid "No group members found."
 #~ msgstr "Aucun membre de groupe trouvé."
+
+#: gifts/templates/events/event_detail.html
+#: gifts/templates/gifts/view_list.html
+#: gifts/templates/shared_lists/detail.html
+msgid "Not even a little pair of socks?"
+msgstr "Même pas une petite paire de chaussettes ?"
