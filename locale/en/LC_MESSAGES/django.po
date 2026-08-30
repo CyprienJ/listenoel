@@ -3793,5 +3793,11 @@ msgstr ""
 msgid "Settlement recorded."
 msgstr ""
 
+#: gifts/templates/events/event_detail.html
+#: gifts/templates/gifts/view_list.html
+#: gifts/templates/shared_lists/detail.html
+msgid "Not even a little pair of socks?"
+msgstr "Not even a little pair of socks?"
+
 #~ msgid "He already has it, cheaper link, coordination..."
 #~ msgstr "He already has it, cheaper link, coordination..."

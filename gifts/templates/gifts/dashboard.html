@@ -584,6 +584,79 @@
             }
         });
 
+        /* Gift wrapping: hold a dashboard card, then click it to unwrap. */
+        document.querySelectorAll('.nc-dashboard-groups-sidebar .nc-group-card').forEach(card => {
+            const holdDuration = 650;
+            const moveTolerance = 12;
+            let holdTimer = null;
+            let startX = 0;
+            let startY = 0;
+            let suppressNextClick = false;
+            let suppressClickFallback = null;
+            let isUnwrapping = false;
+
+            const cancelHold = () => {
+                if (holdTimer !== null) {
+                    window.clearTimeout(holdTimer);
+                    holdTimer = null;
+                }
+            };
+
+            card.addEventListener('pointerdown', event => {
+                if (event.button !== 0 || card.classList.contains('nc-gift-wrapped')) return;
+
+                startX = event.clientX;
+                startY = event.clientY;
+                cancelHold();
+                holdTimer = window.setTimeout(() => {
+                    card.classList.add('nc-gift-wrapped');
+                    suppressNextClick = true;
+                    window.clearTimeout(suppressClickFallback);
+                    suppressClickFallback = window.setTimeout(() => {
+                        suppressNextClick = false;
+                    }, 500);
+                    holdTimer = null;
+                }, holdDuration);
+            });
+
+            card.addEventListener('pointermove', event => {
+                if (Math.hypot(event.clientX - startX, event.clientY - startY) > moveTolerance) {
+                    cancelHold();
+                }
+            });
+
+            ['pointerup', 'pointercancel', 'pointerleave'].forEach(eventName => {
+                card.addEventListener(eventName, cancelHold);
+            });
+
+            card.addEventListener('dragstart', cancelHold);
+            card.addEventListener('contextmenu', event => {
+                if (holdTimer !== null || card.classList.contains('nc-gift-wrapped')) {
+                    event.preventDefault();
+                }
+            });
+
+            card.addEventListener('click', event => {
+                if (!card.classList.contains('nc-gift-wrapped')) return;
+
+                event.preventDefault();
+                event.stopPropagation();
+                if (suppressNextClick) {
+                    suppressNextClick = false;
+                    window.clearTimeout(suppressClickFallback);
+                    return;
+                }
+                if (isUnwrapping) return;
+
+                isUnwrapping = true;
+                card.classList.add('nc-gift-unwrapping');
+                window.setTimeout(() => {
+                    card.classList.remove('nc-gift-wrapped', 'nc-gift-unwrapping');
+                    isUnwrapping = false;
+                }, 480);
+            });
+        });
+
         /* Join group redirect */
         document.addEventListener('DOMContentLoaded', function () {
             const btn   = document.getElementById('btnJoinConfirm');
