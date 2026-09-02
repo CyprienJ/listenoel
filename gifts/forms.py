@@ -12,13 +12,13 @@ class LocalUserCreationForm(UserCreationForm):
 
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = (
-            "nickname",
-            "email",
-        )
+        fields = ("email",)
 
-    def clean_nickname(self):
-        return self.cleaned_data["nickname"].lower()
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError(_("A user with that email already exists."), code="unique")
+        return email
 
 
 class GroupForm(forms.ModelForm):

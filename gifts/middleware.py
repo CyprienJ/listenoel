@@ -1,6 +1,8 @@
 from django.shortcuts import redirect
 from django.urls import reverse
 
+from gifts.onboarding import get_onboarding_next_url
+
 
 class EmailVerificationMiddleware:
     def __init__(self, get_response):
@@ -34,6 +36,6 @@ class EmailVerificationMiddleware:
                 request.path == url or (url != reverse("welcome") and request.path.startswith(url))
                 for url in allowed_urls
             ) and not request.path.startswith("/event/"):
-                return redirect("verify_email_sent")
+                return redirect(get_onboarding_next_url(request.user, request))
 
         return self.get_response(request)

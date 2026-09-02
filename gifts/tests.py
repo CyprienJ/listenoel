@@ -179,7 +179,7 @@ class AccessControlTest(TestCase):
 
         # Redirect to dashboard as already verified
         self.assertRedirects(self.client.get(reverse("verify_email_sent")), reverse("dashboard"))
-        self.assertRedirects(self.client.get(reverse("resend_verification")), reverse("dashboard"))
+        self.assertEqual(self.client.get(reverse("resend_verification")).status_code, 405)
 
         # Authorized access
         self.assertEqual(self.client.get(reverse("dashboard")).status_code, 200)

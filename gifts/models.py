@@ -82,6 +82,9 @@ class User(AbstractUser):
     is_verified = models.BooleanField(default=False)
     is_managed = models.BooleanField(default=False)
     is_demo = models.BooleanField(default=False)
+    onboarding_version = models.PositiveSmallIntegerField(default=0)
+    onboarding_completed_at = models.DateTimeField(blank=True, null=True)
+    verification_email_sent_at = models.DateTimeField(blank=True, null=True)
     last_seen_version = models.CharField(max_length=20, blank=True, default="")
     managed_by = models.ForeignKey("self", on_delete=models.CASCADE, related_name="sub_accounts", blank=True, null=True)
     subscriptions = models.ManyToManyField(
