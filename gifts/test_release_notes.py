@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from .models import User
+from .onboarding import CURRENT_ONBOARDING_VERSION
 from .release_notes import ReleaseNoteError, _load_release_notes, localized_release_notes, parse_version
 
 
@@ -52,6 +53,7 @@ class ReleaseNotesTest(TestCase):
             nickname="Alice",
             password="secret-password",
             is_verified=True,
+            onboarding_version=CURRENT_ONBOARDING_VERSION,
             profile_completed_at=timezone.now(),
             last_seen_version=last_seen_version,
         )

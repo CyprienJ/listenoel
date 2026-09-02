@@ -4,7 +4,6 @@ from django.urls import Resolver404, resolve
 
 from gifts.onboarding import get_onboarding_next_url
 
-
 COMMON_SETUP_URL_NAMES = {
     "login",
     "logout",
@@ -24,11 +23,23 @@ UNVERIFIED_URL_NAMES = COMMON_SETUP_URL_NAMES | {
     "verify_email_sent",
     "verify_email_confirm",
     "resend_verification",
+    "join_group",
 }
 
 PROFILE_SETUP_URL_NAMES = COMMON_SETUP_URL_NAMES | {
     "onboarding_profile",
     "photo_upload_profile",
+    "join_group",
+}
+
+GROUP_SETUP_URL_NAMES = COMMON_SETUP_URL_NAMES | {
+    "onboarding_group",
+    "onboarding_join_group",
+    "onboarding_group_skip",
+    "create_group",
+    "join_group",
+    "join_group_confirm",
+    "dismiss_group_invite",
 }
 
 
@@ -68,6 +79,8 @@ class AccountSetupMiddleware:
                 allowed_url_names = UNVERIFIED_URL_NAMES
             elif next_url_name == "onboarding_profile":
                 allowed_url_names = PROFILE_SETUP_URL_NAMES
+            elif next_url_name in {"onboarding_group", "join_group"}:
+                allowed_url_names = GROUP_SETUP_URL_NAMES
             else:
                 allowed_url_names = None
 

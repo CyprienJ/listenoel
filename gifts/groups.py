@@ -10,16 +10,70 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
 from gifts.demo import demo_scope_forbidden_response, has_same_demo_scope
-from gifts.forms import GroupForm
+from gifts.forms import GroupForm, OnboardingJoinGroupForm
 from gifts.models import EventList, Group, ManagedMember, SharedGiftPublication, User
+from gifts.onboarding import (
+    clear_pending_group_invite,
+    complete_onboarding,
+    get_onboarding_next_url,
+    get_pending_group_invite,
+    onboarding_is_complete,
+    remember_pending_group_invite,
+)
 from gifts.photo_presets import is_valid_photo_preset, list_photo_presets
 
 NOT_A_MEMBER = "You are not a member of this group."
 
 
 @login_required
+@require_GET
+def onboarding_group(request):
+    next_url = get_onboarding_next_url(request.user, request)
+    if onboarding_is_complete(request.user):
+        return redirect(next_url)
+    if next_url != reverse("onboarding_group"):
+        return redirect(next_url)
+    return render(
+        request,
+        "registration/onboarding_group.html",
+        {"group_form": GroupForm(), "join_form": OnboardingJoinGroupForm()},
+    )
+
+
+@login_required
+@require_POST
+def onboarding_join_group(request):
+    if onboarding_is_complete(request.user):
+        return redirect("dashboard")
+
+    form = OnboardingJoinGroupForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, _("Please enter a valid group code."))
+        return redirect("onboarding_group")
+
+    token = form.cleaned_data["code"]
+    group = Group.objects.filter(group_token=token).first()
+    if not group or not has_same_demo_scope(request.user, group):
+        messages.error(request, _("No group found with this code."))
+        return redirect("onboarding_group")
+
+    remember_pending_group_invite(request, token)
+    return redirect("join_group", token=token)
+
+
+@login_required
+@require_POST
+def onboarding_group_skip(request):
+    complete_onboarding(request.user)
+    clear_pending_group_invite(request)
+    messages.success(request, _("You can create or join a group whenever you like."))
+    return redirect("dashboard")
+
+
+@login_required
 @require_POST
 def create_group(request):
+    is_onboarding = not onboarding_is_complete(request.user)
     form = GroupForm(request.POST)
     if form.is_valid():
         group = form.save(commit=False)
@@ -32,36 +86,81 @@ def create_group(request):
             "token": group.group_token,
         }
         messages.success(request, msg)
+        if is_onboarding:
+            complete_onboarding(request.user)
+            clear_pending_group_invite(request)
+            # Lot 4 will replace this provisional destination with the invite page.
+            return redirect("group_detail", group_id=group.id)
     else:
         for error in form.errors.values():
             messages.error(request, error.as_text())
 
+        if is_onboarding:
+            return redirect("onboarding_group")
+
     return redirect("dashboard")
 
 
-@login_required
 @require_GET
 def join_group(request, token=None):
+    token = (token or "").strip()
     # Redirect to event detail if the token belongs to an event list
     if EventList.objects.filter(access_token=token).exists():
         return redirect("event_detail", token=token)
 
-    group = Group.objects.filter(group_token=token).first()
+    group = Group.objects.filter(group_token__iexact=token).first()
     if not group:
+        if request.user.is_authenticated and get_pending_group_invite(request.user, request) == token:
+            clear_pending_group_invite(request)
+            if not onboarding_is_complete(request.user) and request.user.profile_completed_at is not None:
+                messages.error(request, _("This invitation is no longer valid. Choose another group."))
+                return redirect("onboarding_group")
         return render(request, "groups/group_not_found.html", status=404)
 
-    if not has_same_demo_scope(request.user, group):
+    if not request.user.is_authenticated and group.is_demo:
         return demo_scope_forbidden_response()
+    if request.user.is_authenticated and not has_same_demo_scope(request.user, group):
+        return demo_scope_forbidden_response()
+
+    token = group.group_token
+    remember_pending_group_invite(request, token)
+
+    if not request.user.is_authenticated:
+        return render(request, "groups/group_preview.html", {"group": group, "show_members": False})
+
+    if not request.user.is_verified or request.user.profile_completed_at is None:
+        return redirect(get_onboarding_next_url(request.user, request))
 
     if request.user in group.members.all():
         messages.info(request, _("You are already a member of the group '%s'.") % group.name)
-        return redirect("dashboard")
+        if onboarding_is_complete(request.user):
+            clear_pending_group_invite(request)
+            return redirect("group_detail", group_id=group.id)
+        return render(
+            request,
+            "groups/group_preview.html",
+            {
+                "group": group,
+                "show_members": True,
+                "onboarding_incomplete": True,
+                "already_member": True,
+            },
+        )
 
-    return render(request, "groups/group_preview.html", status=200, context={"group": group})
+    return render(
+        request,
+        "groups/group_preview.html",
+        status=200,
+        context={
+            "group": group,
+            "show_members": True,
+            "onboarding_incomplete": not onboarding_is_complete(request.user),
+        },
+    )
 
 
 @login_required
-@require_GET
+@require_POST
 def join_group_confirm(request, token):
     group = Group.objects.filter(group_token=token).first()
 
@@ -73,10 +172,28 @@ def join_group_confirm(request, token):
         else:
             group.members.add(request.user)
             messages.success(request, _("You have joined the group '%s'!") % group.name)
+        if not onboarding_is_complete(request.user):
+            complete_onboarding(request.user)
+        clear_pending_group_invite(request)
         return redirect("group_detail", group_id=group.id)
     else:
+        if get_pending_group_invite(request.user, request) == token:
+            clear_pending_group_invite(request)
         messages.error(request, _("No group found with this code."))
 
+    if not onboarding_is_complete(request.user):
+        return redirect("onboarding_group")
+    return redirect("dashboard")
+
+
+@require_POST
+def dismiss_group_invite(request, token):
+    if get_pending_group_invite(request.user, request) == token:
+        clear_pending_group_invite(request)
+    if not request.user.is_authenticated:
+        return redirect("welcome")
+    if not onboarding_is_complete(request.user):
+        return redirect("onboarding_group")
     return redirect("dashboard")
 
 

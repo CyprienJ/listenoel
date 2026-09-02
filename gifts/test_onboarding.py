@@ -3,15 +3,20 @@ from datetime import timedelta
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
-from django.test import TestCase, override_settings
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
 
-from .models import User
-from .onboarding import CURRENT_ONBOARDING_VERSION, get_onboarding_next_url, onboarding_is_complete
+from .models import Group, User
+from .onboarding import (
+    CURRENT_ONBOARDING_VERSION,
+    PENDING_GROUP_INVITE_SESSION_KEY,
+    get_onboarding_next_url,
+    onboarding_is_complete,
+)
 
 
 @override_settings(TURNSTILE_ENABLED=False)
@@ -145,7 +150,7 @@ class OnboardingResolverTest(TestCase):
         self.assertFalse(onboarding_is_complete(user))
         self.assertEqual(get_onboarding_next_url(user), reverse("onboarding_profile"))
 
-    def test_user_with_profile_temporarily_goes_to_dashboard(self):
+    def test_user_with_profile_goes_to_group_choice(self):
         user = User(
             is_verified=True,
             onboarding_version=0,
@@ -153,7 +158,20 @@ class OnboardingResolverTest(TestCase):
         )
 
         self.assertFalse(onboarding_is_complete(user))
-        self.assertEqual(get_onboarding_next_url(user), reverse("dashboard"))
+        self.assertEqual(get_onboarding_next_url(user), reverse("onboarding_group"))
+
+    def test_pending_invitation_takes_priority_over_group_choice(self):
+        user = User(
+            is_verified=True,
+            onboarding_version=0,
+            profile_completed_at=timezone.now(),
+            pending_group_invite_token="ABC123",
+        )
+
+        self.assertEqual(
+            get_onboarding_next_url(user),
+            reverse("join_group", kwargs={"token": "ABC123"}),
+        )
 
     def test_existing_user_at_current_version_is_complete(self):
         user = User(
@@ -163,6 +181,7 @@ class OnboardingResolverTest(TestCase):
         )
 
         self.assertTrue(onboarding_is_complete(user))
+        self.assertEqual(get_onboarding_next_url(user), reverse("dashboard"))
 
 
 class OnboardingProfileTest(TestCase):
@@ -214,7 +233,7 @@ class OnboardingProfileTest(TestCase):
     def test_profile_can_be_completed_without_birthday_or_photo(self):
         response = self.client.post(reverse("onboarding_profile"), {"nickname": "  Alice  "})
 
-        self.assertRedirects(response, reverse("dashboard"))
+        self.assertRedirects(response, reverse("onboarding_group"))
         self.user.refresh_from_db()
         self.assertEqual(self.user.nickname, "Alice")
         self.assertIsNone(self.user.birthday)
@@ -228,7 +247,7 @@ class OnboardingProfileTest(TestCase):
             {"nickname": "Alice", "birthday_month": "12", "birthday_day": "24"},
         )
 
-        self.assertRedirects(response, reverse("dashboard"))
+        self.assertRedirects(response, reverse("onboarding_group"))
         self.user.refresh_from_db()
         self.assertEqual(self.user.birthday_month, 12)
         self.assertEqual(self.user.birthday_day, 24)
@@ -241,7 +260,7 @@ class OnboardingProfileTest(TestCase):
 
         response = self.client.get(reverse("onboarding_profile"))
 
-        self.assertRedirects(response, reverse("dashboard"))
+        self.assertRedirects(response, reverse("onboarding_group"))
 
     def test_photo_editor_returns_to_onboarding_without_completing_profile(self):
         response = self.client.get(reverse("photo_upload_profile"))
@@ -259,3 +278,203 @@ class OnboardingProfileTest(TestCase):
         response = self.client.get(reverse("onboarding_profile"))
 
         self.assertRedirects(response, reverse("verify_email_sent"))
+
+
+class GroupOnboardingTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="new@example.com",
+            username="new@example.com",
+            password="password",
+            nickname="New member",
+            is_verified=True,
+            profile_completed_at=timezone.now(),
+        )
+        self.owner = User.objects.create_user(
+            email="owner@example.com",
+            username="owner@example.com",
+            password="password",
+            nickname="SecretOwner",
+            is_verified=True,
+            profile_completed_at=timezone.now(),
+            onboarding_version=CURRENT_ONBOARDING_VERSION,
+            onboarding_completed_at=timezone.now(),
+        )
+        self.group = Group.objects.create(name="Family", created_by=self.owner)
+        self.group.members.add(self.owner)
+        self.client.force_login(self.user)
+
+    def test_choice_page_offers_create_join_and_later(self):
+        response = self.client.get(reverse("onboarding_group"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, _("Create a group"))
+        self.assertContains(response, _("Join with a code"))
+        self.assertContains(response, _("I'll do this later"))
+
+    def test_skip_is_post_only_and_completes_onboarding(self):
+        self.assertEqual(self.client.get(reverse("onboarding_group_skip")).status_code, 405)
+
+        response = self.client.post(reverse("onboarding_group_skip"))
+
+        self.assertRedirects(response, reverse("dashboard"))
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.onboarding_version, CURRENT_ONBOARDING_VERSION)
+        self.assertIsNotNone(self.user.onboarding_completed_at)
+
+    def test_create_group_adds_creator_and_completes_onboarding(self):
+        response = self.client.post(reverse("create_group"), {"name": "Friends"})
+
+        created_group = Group.objects.get(name="Friends")
+        self.assertRedirects(response, reverse("group_detail", args=[created_group.id]))
+        self.assertTrue(created_group.members.filter(pk=self.user.pk).exists())
+        self.user.refresh_from_db()
+        self.assertTrue(onboarding_is_complete(self.user))
+
+    def test_valid_code_opens_preview_then_post_joins_group(self):
+        response = self.client.post(reverse("onboarding_join_group"), {"code": self.group.group_token.lower()})
+
+        preview_url = reverse("join_group", kwargs={"token": self.group.group_token})
+        self.assertRedirects(response, preview_url, fetch_redirect_response=False)
+        self.user.refresh_from_db()
+        self.assertFalse(onboarding_is_complete(self.user))
+        self.assertEqual(self.user.pending_group_invite_token, self.group.group_token)
+
+        preview = self.client.get(preview_url)
+        self.assertEqual(preview.status_code, 200)
+
+        confirm_url = reverse("join_group_confirm", kwargs={"token": self.group.group_token})
+        self.assertEqual(self.client.get(confirm_url).status_code, 405)
+        accepted = self.client.post(confirm_url)
+
+        self.assertRedirects(accepted, reverse("group_detail", args=[self.group.id]))
+        self.assertTrue(self.group.members.filter(pk=self.user.pk).exists())
+        self.user.refresh_from_db()
+        self.assertTrue(onboarding_is_complete(self.user))
+        self.assertEqual(self.user.pending_group_invite_token, "")
+
+    def test_accepting_twice_is_idempotent(self):
+        confirm_url = reverse("join_group_confirm", kwargs={"token": self.group.group_token})
+
+        self.client.post(confirm_url)
+        self.client.post(confirm_url)
+
+        self.assertEqual(self.group.members.filter(pk=self.user.pk).count(), 1)
+
+    def test_acceptance_requires_a_csrf_token(self):
+        csrf_client = Client(enforce_csrf_checks=True)
+        csrf_client.force_login(self.user)
+
+        response = csrf_client.post(
+            reverse("join_group_confirm", kwargs={"token": self.group.group_token})
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(self.group.members.filter(pk=self.user.pk).exists())
+
+    def test_preview_does_not_complete_an_existing_members_onboarding(self):
+        self.group.members.add(self.user)
+
+        response = self.client.get(reverse("join_group", kwargs={"token": self.group.group_token}))
+
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertFalse(onboarding_is_complete(self.user))
+        self.assertContains(response, _("Continue to the group"))
+
+    def test_invalid_code_keeps_onboarding_open(self):
+        response = self.client.post(reverse("onboarding_join_group"), {"code": "UNKNOWN"}, follow=True)
+
+        self.assertRedirects(response, reverse("onboarding_group"))
+        self.assertContains(response, _("No group found with this code."))
+        self.user.refresh_from_db()
+        self.assertFalse(onboarding_is_complete(self.user))
+
+    def test_invitation_that_becomes_invalid_returns_to_group_choice(self):
+        self.user.pending_group_invite_token = "REMOVED"
+        self.user.save(update_fields=["pending_group_invite_token"])
+        session = self.client.session
+        session[PENDING_GROUP_INVITE_SESSION_KEY] = "REMOVED"
+        session.save()
+
+        response = self.client.get(reverse("dashboard"), follow=True)
+
+        self.assertRedirects(response, reverse("onboarding_group"))
+        self.assertContains(response, _("This invitation is no longer valid. Choose another group."))
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.pending_group_invite_token, "")
+
+
+@override_settings(TURNSTILE_ENABLED=False)
+class PendingInvitationRegistrationTest(TestCase):
+    registration_data = {
+        "email": "invited@example.com",
+        "password1": "a-secure-test-password-2026",
+        "password2": "a-secure-test-password-2026",
+    }
+
+    def setUp(self):
+        self.owner = User.objects.create_user(
+            email="owner@example.com",
+            username="owner@example.com",
+            password="password",
+            nickname="PrivateNickname",
+            is_verified=True,
+            profile_completed_at=timezone.now(),
+            onboarding_version=CURRENT_ONBOARDING_VERSION,
+        )
+        self.group = Group.objects.create(name="Invited group", created_by=self.owner)
+        self.group.members.add(self.owner)
+
+    def test_anonymous_preview_is_limited_and_remembers_invitation(self):
+        response = self.client.get(reverse("join_group", kwargs={"token": self.group.group_token}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.group.name)
+        self.assertContains(response, _("Create an account"))
+        self.assertNotContains(response, self.owner.nickname)
+        self.assertEqual(
+            self.client.session[PENDING_GROUP_INVITE_SESSION_KEY],
+            self.group.group_token,
+        )
+
+    def test_invitation_survives_registration_verification_and_profile(self):
+        invite_url = reverse("join_group", kwargs={"token": self.group.group_token})
+        self.client.get(invite_url)
+        registration = self.client.post(
+            f"{reverse('register')}?next=https://attacker.example/escape",
+            self.registration_data,
+        )
+
+        self.assertRedirects(registration, reverse("verify_email_sent"))
+        user = User.objects.get(email="invited@example.com")
+        self.assertEqual(user.pending_group_invite_token, self.group.group_token)
+
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        verified = self.client.get(reverse("verify_email_confirm", kwargs={"uidb64": uid, "token": token}))
+        self.assertRedirects(verified, reverse("onboarding_profile"), fetch_redirect_response=False)
+
+        profile = self.client.post(reverse("onboarding_profile"), {"nickname": "Invited"})
+        self.assertRedirects(profile, invite_url, fetch_redirect_response=False)
+
+    def test_persisted_invitation_is_available_on_another_device(self):
+        user = User.objects.create_user(
+            email="cross-device@example.com",
+            username="cross-device@example.com",
+            password="password",
+            nickname="Cross device",
+            is_verified=True,
+            profile_completed_at=timezone.now(),
+            pending_group_invite_token=self.group.group_token,
+        )
+        other_client = self.client_class()
+        other_client.force_login(user)
+
+        response = other_client.get(reverse("dashboard"))
+
+        self.assertRedirects(
+            response,
+            reverse("join_group", kwargs={"token": self.group.group_token}),
+            fetch_redirect_response=False,
+        )

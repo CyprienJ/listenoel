@@ -23,7 +23,11 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 from gifts.demo import DEMO_EMAIL, is_demo_user
 from gifts.forms import LocalUserCreationForm, OnboardingProfileForm, UserProfileForm
 from gifts.models import User
-from gifts.onboarding import get_onboarding_next_url
+from gifts.onboarding import (
+    get_onboarding_next_url,
+    get_pending_group_invite,
+    remember_pending_group_invite,
+)
 from gifts.photo_presets import is_valid_photo_preset, list_photo_presets
 from gifts.turnstile import verify_turnstile
 
@@ -250,6 +254,10 @@ def register(request):
             user = form.save()
             user.last_seen_version = settings.APP_VERSION
             user.save(update_fields=["last_seen_version"])
+
+            pending_invite = get_pending_group_invite(user, request)
+            if pending_invite:
+                remember_pending_group_invite(request, pending_invite, user=user)
 
             login(request, user, backend="gifts.backends.CaseInsensitiveModelBackend")
             send_verification_email(request, user)

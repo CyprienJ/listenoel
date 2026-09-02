@@ -22,6 +22,9 @@ urlpatterns = [
     # Settings
     path("register/", account.register, name="register"),
     path("onboarding/profile/", account.onboarding_profile, name="onboarding_profile"),
+    path("onboarding/group/", groups.onboarding_group, name="onboarding_group"),
+    path("onboarding/group/join/", groups.onboarding_join_group, name="onboarding_join_group"),
+    path("onboarding/group/skip/", groups.onboarding_group_skip, name="onboarding_group_skip"),
     path(
         "account/change_password/",
         account.DemoProtectedPasswordChangeView.as_view(
@@ -68,6 +71,7 @@ urlpatterns = [
     path("group/join/", groups.join_group, name="join_group"),
     path("group/join/<str:token>/", groups.join_group, name="join_group"),
     path("group/join/<str:token>/confirm/", groups.join_group_confirm, name="join_group_confirm"),
+    path("group/join/<str:token>/dismiss/", groups.dismiss_group_invite, name="dismiss_group_invite"),
     path("group/<int:group_id>/", groups.group_detail, name="group_detail"),
     path("group/<int:group_id>/edit/", groups.edit_group, name="edit_group"),
     path("group/<int:group_id>/photo/", groups.group_photo_upload, name="photo_upload_group"),

@@ -35,6 +35,23 @@ class GroupForm(forms.ModelForm):
         }
 
 
+class OnboardingJoinGroupForm(forms.Form):
+    code = forms.CharField(
+        max_length=12,
+        label=_("Group code"),
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control form-control-lg rounded-4 text-uppercase",
+                "autocomplete": "off",
+                "placeholder": _("Enter the group code"),
+            }
+        ),
+    )
+
+    def clean_code(self):
+        return self.cleaned_data["code"].strip().upper()
+
+
 class BirthdayValidationMixin:
     def clean(self):
         cleaned_data = super().clean()

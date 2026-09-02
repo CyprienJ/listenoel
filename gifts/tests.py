@@ -569,6 +569,7 @@ class ReservationFlowTest(TestCase):
             password="password",
             is_verified=True,
             nickname="Outsider",
+            onboarding_version=CURRENT_ONBOARDING_VERSION,
             profile_completed_at=timezone.now(),
         )
 
@@ -624,6 +625,7 @@ class GiftCommentTest(TestCase):
             password="password",
             is_verified=True,
             nickname="Outsider",
+            onboarding_version=CURRENT_ONBOARDING_VERSION,
             profile_completed_at=timezone.now(),
         )
         self.group = Group.objects.create(name="Family", created_by=self.member)
@@ -2592,6 +2594,7 @@ class PublicDemoTest(TestCase):
             password="password",
             is_verified=True,
             nickname="Real",
+            onboarding_version=CURRENT_ONBOARDING_VERSION,
             profile_completed_at=timezone.now(),
         )
 
