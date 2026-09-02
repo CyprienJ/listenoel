@@ -1,4 +1,5 @@
 import os
+import secrets
 import uuid
 
 from django.contrib.auth.models import AbstractUser
@@ -22,10 +23,15 @@ def get_avatar_path(instance, filename):
     return os.path.join("profiles", str(instance.id), filename)
 
 
+def generate_group_invitation_token():
+    return secrets.token_urlsafe(32)
+
+
 class Group(models.Model):
     name = models.CharField(max_length=100)
     members = models.ManyToManyField("User", related_name="gift_groups")
     group_token = models.CharField(max_length=12, unique=True, blank=True)
+    invitation_token = models.CharField(max_length=64, unique=True, default=generate_group_invitation_token)
     created_at = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey("User", on_delete=models.SET_NULL, null=True, related_name="owned_groups")
     description = models.TextField(blank=True)
@@ -136,6 +142,18 @@ class User(AbstractUser):
         month, day = str(value).split("-")[-2:]
         self.birthday_month = int(month)
         self.birthday_day = int(day)
+
+
+class GroupInvitationDispatch(models.Model):
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="invitation_dispatches")
+    sender = models.ForeignKey(User, on_delete=models.SET_NULL, related_name="invitation_dispatches", null=True)
+    requested_count = models.PositiveSmallIntegerField()
+    sent_count = models.PositiveSmallIntegerField(default=0)
+    failed_count = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    def __str__(self):
+        return f"{self.group}: {self.sent_count}/{self.requested_count}"
 
 
 class Subscription(models.Model):

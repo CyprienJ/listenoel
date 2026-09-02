@@ -1,7 +1,10 @@
 import calendar
+import re
 
 from django import forms
+from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
+from django.core.validators import validate_email
 from django.utils.translation import gettext as _
 
 from .models import Group, User
@@ -50,6 +53,37 @@ class OnboardingJoinGroupForm(forms.Form):
 
     def clean_code(self):
         return self.cleaned_data["code"].strip().upper()
+
+
+class GroupInvitationEmailForm(forms.Form):
+    emails = forms.CharField(
+        label=_("Email addresses"),
+        max_length=2000,
+        widget=forms.Textarea(
+            attrs={
+                "class": "form-control rounded-4",
+                "rows": 4,
+                "placeholder": _("alex@example.com, sam@example.com"),
+                "autocomplete": "email",
+            }
+        ),
+        help_text=_("Separate addresses with commas, spaces, semicolons or line breaks."),
+    )
+
+    def clean_emails(self):
+        values = [value.strip().lower() for value in re.split(r"[,;\s]+", self.cleaned_data["emails"]) if value]
+        recipients = list(dict.fromkeys(values))
+        if len(recipients) > settings.GROUP_INVITATION_MAX_RECIPIENTS_PER_REQUEST:
+            raise forms.ValidationError(
+                _("You can invite up to %(count)s people at a time."),
+                params={"count": settings.GROUP_INVITATION_MAX_RECIPIENTS_PER_REQUEST},
+            )
+        for recipient in recipients:
+            try:
+                validate_email(recipient)
+            except forms.ValidationError as error:
+                raise forms.ValidationError(_("Enter valid email addresses.")) from error
+        return recipients
 
 
 class BirthdayValidationMixin:

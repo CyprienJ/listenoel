@@ -10,13 +10,16 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_POST
 
 from gifts.demo import demo_scope_forbidden_response, has_same_demo_scope
-from gifts.forms import GroupForm, OnboardingJoinGroupForm
-from gifts.models import EventList, Group, ManagedMember, SharedGiftPublication, User
+from gifts.forms import GroupForm, GroupInvitationEmailForm, OnboardingJoinGroupForm
+from gifts.group_invitations import InvitationRateLimitError, build_group_invitation_url, send_group_invitations
+from gifts.group_permissions import can_manage_group_invitations, group_invitation_forbidden_response
+from gifts.models import EventList, Group, ManagedMember, SharedGiftPublication, User, generate_group_invitation_token
 from gifts.onboarding import (
     clear_pending_group_invite,
     complete_onboarding,
     get_onboarding_next_url,
     get_pending_group_invite,
+    group_invitation_pending_value,
     onboarding_is_complete,
     remember_pending_group_invite,
 )
@@ -89,8 +92,7 @@ def create_group(request):
         if is_onboarding:
             complete_onboarding(request.user)
             clear_pending_group_invite(request)
-            # Lot 4 will replace this provisional destination with the invite page.
-            return redirect("group_detail", group_id=group.id)
+        return redirect("group_invitations", group_id=group.id)
     else:
         for error in form.errors.values():
             messages.error(request, error.as_text())
@@ -101,32 +103,34 @@ def create_group(request):
     return redirect("dashboard")
 
 
-@require_GET
-def join_group(request, token=None):
-    token = (token or "").strip()
-    # Redirect to event detail if the token belongs to an event list
-    if EventList.objects.filter(access_token=token).exists():
-        return redirect("event_detail", token=token)
+def _invalid_group_invitation(request, pending_value):
+    if request.user.is_authenticated and get_pending_group_invite(request.user, request) == pending_value:
+        clear_pending_group_invite(request)
+        if not onboarding_is_complete(request.user) and request.user.profile_completed_at is not None:
+            messages.error(request, _("This invitation is no longer valid. Choose another group."))
+            return redirect("onboarding_group")
+    return render(request, "groups/group_not_found.html", status=404)
 
-    group = Group.objects.filter(group_token__iexact=token).first()
-    if not group:
-        if request.user.is_authenticated and get_pending_group_invite(request.user, request) == token:
-            clear_pending_group_invite(request)
-            if not onboarding_is_complete(request.user) and request.user.profile_completed_at is not None:
-                messages.error(request, _("This invitation is no longer valid. Choose another group."))
-                return redirect("onboarding_group")
-        return render(request, "groups/group_not_found.html", status=404)
 
+def _group_invitation_preview(request, group, pending_value, accept_url, dismiss_url):
     if not request.user.is_authenticated and group.is_demo:
         return demo_scope_forbidden_response()
     if request.user.is_authenticated and not has_same_demo_scope(request.user, group):
         return demo_scope_forbidden_response()
 
-    token = group.group_token
-    remember_pending_group_invite(request, token)
+    remember_pending_group_invite(request, pending_value)
 
     if not request.user.is_authenticated:
-        return render(request, "groups/group_preview.html", {"group": group, "show_members": False})
+        return render(
+            request,
+            "groups/group_preview.html",
+            {
+                "group": group,
+                "show_members": False,
+                "accept_url": accept_url,
+                "dismiss_url": dismiss_url,
+            },
+        )
 
     if not request.user.is_verified or request.user.profile_completed_at is None:
         return redirect(get_onboarding_next_url(request.user, request))
@@ -144,6 +148,8 @@ def join_group(request, token=None):
                 "show_members": True,
                 "onboarding_incomplete": True,
                 "already_member": True,
+                "accept_url": accept_url,
+                "dismiss_url": dismiss_url,
             },
         )
 
@@ -155,32 +161,87 @@ def join_group(request, token=None):
             "group": group,
             "show_members": True,
             "onboarding_incomplete": not onboarding_is_complete(request.user),
+            "accept_url": accept_url,
+            "dismiss_url": dismiss_url,
         },
     )
+
+
+@require_GET
+def join_group(request, token=None):
+    token = (token or "").strip()
+    # Preserve the historical event-token shortcut.
+    if EventList.objects.filter(access_token=token).exists():
+        return redirect("event_detail", token=token)
+
+    group = Group.objects.filter(group_token__iexact=token).first()
+    if not group:
+        return _invalid_group_invitation(request, token)
+    token = group.group_token
+    return _group_invitation_preview(
+        request,
+        group,
+        token,
+        reverse("join_group_confirm", kwargs={"token": token}),
+        reverse("dismiss_group_invite", kwargs={"token": token}),
+    )
+
+
+@require_GET
+def group_invitation(request, token):
+    pending_value = group_invitation_pending_value(token)
+    group = Group.objects.filter(invitation_token=token).first()
+    if not group:
+        return _invalid_group_invitation(request, pending_value)
+    return _group_invitation_preview(
+        request,
+        group,
+        pending_value,
+        reverse("group_invitation_accept", kwargs={"token": token}),
+        reverse("group_invitation_dismiss", kwargs={"token": token}),
+    )
+
+
+def _accept_group_invitation(request, group, pending_value):
+    if not has_same_demo_scope(request.user, group):
+        return demo_scope_forbidden_response()
+    if request.user in group.members.all():
+        messages.info(request, _("You are already a member of the group '%s'.") % group.name)
+    else:
+        group.members.add(request.user)
+        messages.success(request, _("You have joined the group '%s'!") % group.name)
+    if not onboarding_is_complete(request.user):
+        complete_onboarding(request.user)
+    if get_pending_group_invite(request.user, request) == pending_value:
+        clear_pending_group_invite(request)
+    return redirect("group_detail", group_id=group.id)
 
 
 @login_required
 @require_POST
 def join_group_confirm(request, token):
-    group = Group.objects.filter(group_token=token).first()
-
-    if group:
-        if not has_same_demo_scope(request.user, group):
-            return demo_scope_forbidden_response()
-        if request.user in group.members.all():
-            messages.info(request, _("You are already a member of the group '%s'.") % group.name)
-        else:
-            group.members.add(request.user)
-            messages.success(request, _("You have joined the group '%s'!") % group.name)
-        if not onboarding_is_complete(request.user):
-            complete_onboarding(request.user)
-        clear_pending_group_invite(request)
-        return redirect("group_detail", group_id=group.id)
-    else:
-        if get_pending_group_invite(request.user, request) == token:
-            clear_pending_group_invite(request)
+    group = Group.objects.filter(group_token__iexact=token).first()
+    if not group:
         messages.error(request, _("No group found with this code."))
+        return _invalid_group_invitation(request, token)
+    return _accept_group_invitation(request, group, group.group_token)
 
+
+@login_required
+@require_POST
+def accept_group_invitation(request, token):
+    pending_value = group_invitation_pending_value(token)
+    group = Group.objects.filter(invitation_token=token).first()
+    if not group:
+        return _invalid_group_invitation(request, pending_value)
+    return _accept_group_invitation(request, group, pending_value)
+
+
+def _dismiss_group_invitation(request, pending_value):
+    if get_pending_group_invite(request.user, request) == pending_value:
+        clear_pending_group_invite(request)
+    if not request.user.is_authenticated:
+        return redirect("welcome")
     if not onboarding_is_complete(request.user):
         return redirect("onboarding_group")
     return redirect("dashboard")
@@ -188,13 +249,76 @@ def join_group_confirm(request, token):
 
 @require_POST
 def dismiss_group_invite(request, token):
-    if get_pending_group_invite(request.user, request) == token:
-        clear_pending_group_invite(request)
-    if not request.user.is_authenticated:
-        return redirect("welcome")
-    if not onboarding_is_complete(request.user):
-        return redirect("onboarding_group")
-    return redirect("dashboard")
+    return _dismiss_group_invitation(request, token)
+
+
+@require_POST
+def dismiss_secure_group_invitation(request, token):
+    return _dismiss_group_invitation(request, group_invitation_pending_value(token))
+
+
+def _render_group_invitations(request, group, form=None, status=200):
+    return render(
+        request,
+        "groups/group_invitations.html",
+        {
+            "group": group,
+            "invitation_url": build_group_invitation_url(group),
+            "form": form or GroupInvitationEmailForm(),
+            "email_invites_enabled": not group.is_demo,
+        },
+        status=status,
+    )
+
+
+@login_required
+@require_GET
+def group_invitations(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    if not can_manage_group_invitations(request.user, group):
+        return group_invitation_forbidden_response()
+    return _render_group_invitations(request, group)
+
+
+@login_required
+@require_POST
+def send_group_invitation_emails(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    if not can_manage_group_invitations(request.user, group):
+        return group_invitation_forbidden_response()
+    if group.is_demo:
+        return HttpResponseForbidden(_("The public demo cannot send invitation emails."))
+
+    form = GroupInvitationEmailForm(request.POST)
+    if not form.is_valid():
+        return _render_group_invitations(request, group, form=form, status=400)
+
+    try:
+        result = send_group_invitations(group, request.user, form.cleaned_data["emails"])
+    except InvitationRateLimitError:
+        form.add_error(None, _("Too many invitations were sent recently. Please try again later."))
+        return _render_group_invitations(request, group, form=form, status=429)
+
+    if result.failed_count:
+        messages.warning(
+            request,
+            _("Some invitations could not be sent. You can try again without recreating the group."),
+        )
+    else:
+        messages.success(request, _("Invitations sent."))
+    return redirect("group_invitations", group_id=group.id)
+
+
+@login_required
+@require_POST
+def regenerate_group_invitation_token(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    if not can_manage_group_invitations(request.user, group):
+        return group_invitation_forbidden_response()
+    group.invitation_token = generate_group_invitation_token()
+    group.save(update_fields=["invitation_token"])
+    messages.success(request, _("A new invitation link has been generated. The previous link no longer works."))
+    return redirect("group_invitations", group_id=group.id)
 
 
 @login_required

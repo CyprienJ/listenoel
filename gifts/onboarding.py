@@ -3,6 +3,7 @@ from django.utils import timezone
 
 CURRENT_ONBOARDING_VERSION = 1
 PENDING_GROUP_INVITE_SESSION_KEY = "pending_group_invite_token"
+GROUP_INVITATION_PENDING_PREFIX = "invite:"
 
 
 def onboarding_is_complete(user):
@@ -52,6 +53,10 @@ def complete_onboarding(user):
         user.save(update_fields=update_fields)
 
 
+def group_invitation_pending_value(token):
+    return f"{GROUP_INVITATION_PENDING_PREFIX}{token}"
+
+
 def get_onboarding_next_url(user, request=None):
     """Return the next safe, internal URL for the account setup flow."""
     if not user.is_authenticated:
@@ -63,6 +68,11 @@ def get_onboarding_next_url(user, request=None):
     if not onboarding_is_complete(user):
         pending_token = get_pending_group_invite(user, request)
         if pending_token:
+            if pending_token.startswith(GROUP_INVITATION_PENDING_PREFIX):
+                return reverse(
+                    "group_invitation",
+                    kwargs={"token": pending_token.removeprefix(GROUP_INVITATION_PENDING_PREFIX)},
+                )
             return reverse("join_group", kwargs={"token": pending_token})
         return reverse("onboarding_group")
     return reverse("dashboard")

@@ -326,7 +326,7 @@ class GroupOnboardingTest(TestCase):
         response = self.client.post(reverse("create_group"), {"name": "Friends"})
 
         created_group = Group.objects.get(name="Friends")
-        self.assertRedirects(response, reverse("group_detail", args=[created_group.id]))
+        self.assertRedirects(response, reverse("group_invitations", args=[created_group.id]))
         self.assertTrue(created_group.members.filter(pk=self.user.pk).exists())
         self.user.refresh_from_db()
         self.assertTrue(onboarding_is_complete(self.user))

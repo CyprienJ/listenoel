@@ -43,7 +43,7 @@
 
             {# CTA buttons #}
             {% if request.user.is_authenticated %}
-                <form method="post" action="{% url 'join_group_confirm' group.group_token %}">
+                <form method="post" action="{{ accept_url }}">
                     {% csrf_token %}
                     <button type="submit" class="nc-invitation-accept-btn w-100 border-0">
                         <i class="bi bi-person-plus-fill" style="font-size:16px"></i>
@@ -60,7 +60,7 @@
                     {% trans "Create an account" %}
                 </a>
             {% endif %}
-            <form method="post" action="{% url 'dismiss_group_invite' group.group_token %}">
+            <form method="post" action="{{ dismiss_url }}">
                 {% csrf_token %}
                 <button type="submit" class="nc-invitation-decline-btn w-100">
                     {% trans "Decline invitation" %}
