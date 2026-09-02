@@ -1,41 +1,81 @@
+from django.conf import settings
 from django.shortcuts import redirect
-from django.urls import reverse
+from django.urls import Resolver404, resolve
 
 from gifts.onboarding import get_onboarding_next_url
 
 
-class EmailVerificationMiddleware:
+COMMON_SETUP_URL_NAMES = {
+    "login",
+    "logout",
+    "welcome",
+    "privacy",
+    "bug_report",
+    "bug_report_success",
+    "account/password_reset",
+    "account/password_reset_done",
+    "account/password_reset_confirm",
+    "account/password_reset_complete",
+    "set_language",
+}
+
+UNVERIFIED_URL_NAMES = COMMON_SETUP_URL_NAMES | {
+    "account",
+    "verify_email_sent",
+    "verify_email_confirm",
+    "resend_verification",
+}
+
+PROFILE_SETUP_URL_NAMES = COMMON_SETUP_URL_NAMES | {
+    "onboarding_profile",
+    "photo_upload_profile",
+}
+
+
+def _url_name(path):
+    try:
+        return resolve(path).url_name
+    except Resolver404:
+        return None
+
+
+def _setup_access_is_allowed(request, allowed_url_names):
+    if request.path.startswith((settings.STATIC_URL, settings.MEDIA_URL)):
+        return True
+
+    try:
+        match = resolve(request.path)
+    except Resolver404:
+        match = None
+    if request.user.is_staff and match and match.namespace == "admin":
+        return True
+
+    url_name = match.url_name if match else None
+    return url_name in allowed_url_names or bool(url_name and url_name.startswith("event_"))
+
+
+class AccountSetupMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.user.is_authenticated and not request.user.is_verified:
-            # List of authorised URL even if not verified
-            allowed_urls = [
-                reverse("account"),
-                reverse("verify_email_sent"),
-                reverse("verify_email_confirm", kwargs={"uidb64": "dummy", "token": "dummy"}).split("dummy")[0],
-                reverse("resend_verification"),
-                reverse("logout"),
-                reverse("login"),
-                reverse("welcome"),
-                reverse("privacy"),
-                reverse("bug_report"),
-                reverse("bug_report_success"),
-                reverse("account/password_reset"),
-                reverse("account/password_reset_done"),
-                reverse("account/password_reset_confirm", kwargs={"uidb64": "dummy", "token": "dummy"}).split("dummy")[
-                    0
-                ],
-                reverse("account/password_reset_complete"),
-                "/fr/admin/",
-                "/en/admin/",
-            ]
+        if request.user.is_authenticated:
+            next_url = get_onboarding_next_url(request.user, request)
+            next_url_name = _url_name(next_url)
+            current_url_name = _url_name(request.path)
 
-            if not any(
-                request.path == url or (url != reverse("welcome") and request.path.startswith(url))
-                for url in allowed_urls
-            ) and not request.path.startswith("/event/"):
-                return redirect(get_onboarding_next_url(request.user, request))
+            if next_url_name == "verify_email_sent":
+                allowed_url_names = UNVERIFIED_URL_NAMES
+            elif next_url_name == "onboarding_profile":
+                allowed_url_names = PROFILE_SETUP_URL_NAMES
+            else:
+                allowed_url_names = None
+
+            if (
+                allowed_url_names is not None
+                and current_url_name != next_url_name
+                and not _setup_access_is_allowed(request, allowed_url_names)
+            ):
+                return redirect(next_url)
 
         return self.get_response(request)

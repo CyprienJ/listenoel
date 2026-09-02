@@ -21,6 +21,7 @@ urlpatterns = [
     path("logout/", auth_views.LogoutView.as_view(next_page="welcome"), name="logout"),
     # Settings
     path("register/", account.register, name="register"),
+    path("onboarding/profile/", account.onboarding_profile, name="onboarding_profile"),
     path(
         "account/change_password/",
         account.DemoProtectedPasswordChangeView.as_view(

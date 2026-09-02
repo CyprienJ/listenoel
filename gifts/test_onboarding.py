@@ -36,6 +36,7 @@ class RegistrationOnboardingTest(TestCase):
         self.assertFalse(user.is_verified)
         self.assertEqual(user.onboarding_version, 0)
         self.assertIsNone(user.onboarding_completed_at)
+        self.assertIsNone(user.profile_completed_at)
         self.assertIsNotNone(user.verification_email_sent_at)
         self.assertEqual(len(mail.outbox), 1)
 
@@ -71,7 +72,7 @@ class RegistrationOnboardingTest(TestCase):
             reverse("verify_email_confirm", kwargs={"uidb64": uid, "token": token})
         )
 
-        self.assertRedirects(response, reverse("dashboard"), fetch_redirect_response=False)
+        self.assertRedirects(response, reverse("onboarding_profile"), fetch_redirect_response=False)
         user.refresh_from_db()
         self.assertTrue(user.is_verified)
         self.assertEqual(user.onboarding_version, 0)
@@ -125,7 +126,7 @@ class VerificationEmailCooldownTest(TestCase):
 
         response = self.client.post(reverse("resend_verification"))
 
-        self.assertRedirects(response, reverse("dashboard"))
+        self.assertRedirects(response, reverse("onboarding_profile"))
         self.assertEqual(len(mail.outbox), 0)
 
 
@@ -138,14 +139,123 @@ class OnboardingResolverTest(TestCase):
 
         self.assertEqual(get_onboarding_next_url(user), reverse("verify_email_sent"))
 
-    def test_verified_incomplete_user_temporarily_goes_to_dashboard(self):
-        user = User(is_verified=True, onboarding_version=0)
+    def test_verified_user_without_profile_goes_to_profile_setup(self):
+        user = User(is_verified=True, onboarding_version=0, profile_completed_at=None)
+
+        self.assertFalse(onboarding_is_complete(user))
+        self.assertEqual(get_onboarding_next_url(user), reverse("onboarding_profile"))
+
+    def test_user_with_profile_temporarily_goes_to_dashboard(self):
+        user = User(
+            is_verified=True,
+            onboarding_version=0,
+            profile_completed_at=timezone.now(),
+        )
 
         self.assertFalse(onboarding_is_complete(user))
         self.assertEqual(get_onboarding_next_url(user), reverse("dashboard"))
 
-    def test_user_at_current_version_is_complete(self):
-        user = User(is_verified=True, onboarding_version=CURRENT_ONBOARDING_VERSION)
+    def test_existing_user_at_current_version_is_complete(self):
+        user = User(
+            is_verified=True,
+            onboarding_version=CURRENT_ONBOARDING_VERSION,
+            profile_completed_at=timezone.now(),
+        )
 
         self.assertTrue(onboarding_is_complete(user))
-        self.assertEqual(get_onboarding_next_url(user), reverse("dashboard"))
+
+
+class OnboardingProfileTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="profile@example.com",
+            username="profile@example.com",
+            password="password",
+            nickname="",
+            is_verified=True,
+        )
+        self.client.force_login(self.user)
+
+    def test_incomplete_user_is_redirected_from_dashboard_to_profile(self):
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertRedirects(response, reverse("onboarding_profile"))
+
+    def test_profile_page_explains_each_piece_of_information(self):
+        response = self.client.get(reverse("onboarding_profile"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, _("This name is visible to people in your groups."))
+        self.assertContains(response, _("We do not ask for the year."), html=False)
+        self.assertContains(response, _("Optional — it helps members of your groups recognize you."))
+
+    def test_profile_requires_a_nickname(self):
+        response = self.client.post(reverse("onboarding_profile"), {"nickname": ""})
+
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertIsNone(self.user.profile_completed_at)
+
+    def test_profile_rejects_partial_or_impossible_birthday(self):
+        partial = self.client.post(
+            reverse("onboarding_profile"),
+            {"nickname": "Alice", "birthday_month": "2", "birthday_day": ""},
+        )
+        impossible = self.client.post(
+            reverse("onboarding_profile"),
+            {"nickname": "Alice", "birthday_month": "2", "birthday_day": "30"},
+        )
+
+        self.assertEqual(partial.status_code, 200)
+        self.assertEqual(impossible.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertIsNone(self.user.profile_completed_at)
+
+    def test_profile_can_be_completed_without_birthday_or_photo(self):
+        response = self.client.post(reverse("onboarding_profile"), {"nickname": "  Alice  "})
+
+        self.assertRedirects(response, reverse("dashboard"))
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.nickname, "Alice")
+        self.assertIsNone(self.user.birthday)
+        self.assertFalse(self.user.avatar)
+        self.assertIsNotNone(self.user.profile_completed_at)
+        self.assertEqual(self.user.onboarding_version, 0)
+
+    def test_profile_saves_birthday_without_year(self):
+        response = self.client.post(
+            reverse("onboarding_profile"),
+            {"nickname": "Alice", "birthday_month": "12", "birthday_day": "24"},
+        )
+
+        self.assertRedirects(response, reverse("dashboard"))
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.birthday_month, 12)
+        self.assertEqual(self.user.birthday_day, 24)
+        self.assertFalse(hasattr(self.user, "birthday_year"))
+
+    def test_completed_profile_cannot_reenter_setup(self):
+        self.user.nickname = "Alice"
+        self.user.profile_completed_at = timezone.now()
+        self.user.save(update_fields=["nickname", "profile_completed_at"])
+
+        response = self.client.get(reverse("onboarding_profile"))
+
+        self.assertRedirects(response, reverse("dashboard"))
+
+    def test_photo_editor_returns_to_onboarding_without_completing_profile(self):
+        response = self.client.get(reverse("photo_upload_profile"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["back_url"], reverse("onboarding_profile"))
+        self.assertTrue(response.context["is_onboarding"])
+        self.user.refresh_from_db()
+        self.assertIsNone(self.user.profile_completed_at)
+
+    def test_unverified_user_cannot_open_profile_setup(self):
+        self.user.is_verified = False
+        self.user.save(update_fields=["is_verified"])
+
+        response = self.client.get(reverse("onboarding_profile"))
+
+        self.assertRedirects(response, reverse("verify_email_sent"))

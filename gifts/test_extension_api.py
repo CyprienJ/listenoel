@@ -4,6 +4,7 @@ from urllib.parse import parse_qs, urlsplit
 
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from .models import Gift, Group, User
 
@@ -24,6 +25,7 @@ class ExtensionApiTest(TestCase):
             email="quick@example.com",
             nickname="Quick",
             is_verified=True,
+            profile_completed_at=timezone.now(),
         )
 
     def authorize(self, verifier=None):
@@ -148,6 +150,7 @@ class ExtensionApiTest(TestCase):
             email="other@example.com",
             nickname="Other",
             is_verified=True,
+            profile_completed_at=timezone.now(),
         )
         group = Group.objects.create(name="Other group", created_by=other)
         group.members.add(other)

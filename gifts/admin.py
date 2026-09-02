@@ -78,6 +78,7 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
                     "is_managed",
                     "onboarding_version",
                     "onboarding_completed_at",
+                    "profile_completed_at",
                     "verification_email_sent_at",
                     "last_seen_version",
                     "avatar",

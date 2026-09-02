@@ -35,9 +35,11 @@ class GroupForm(forms.ModelForm):
         }
 
 
-class UserProfileForm(forms.ModelForm):
+class BirthdayValidationMixin:
     def clean(self):
         cleaned_data = super().clean()
+        if cleaned_data is None:
+            return cleaned_data
         month = cleaned_data.get("birthday_month")
         day = cleaned_data.get("birthday_day")
         if bool(month) != bool(day):
@@ -45,6 +47,42 @@ class UserProfileForm(forms.ModelForm):
         if month and day and day > calendar.monthrange(2000, month)[1]:
             self.add_error("birthday_day", _("Please enter a valid birthday."))
         return cleaned_data
+
+
+class OnboardingProfileForm(BirthdayValidationMixin, forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["nickname", "birthday_month", "birthday_day"]
+        labels = {
+            "nickname": _("Nickname"),
+            "birthday_month": _("Birthday month"),
+            "birthday_day": _("Birthday day"),
+        }
+        widgets = {
+            "nickname": forms.TextInput(
+                attrs={
+                    "class": "form-control form-control-lg rounded-4 border-1",
+                    "autocomplete": "nickname",
+                }
+            ),
+            "birthday_month": forms.Select(
+                choices=[("", _("Month"))] + [(month, calendar.month_name[month]) for month in range(1, 13)],
+                attrs={"class": "form-select form-select-lg rounded-4 border-1"},
+            ),
+            "birthday_day": forms.Select(
+                choices=[("", _("Day"))] + [(day, day) for day in range(1, 32)],
+                attrs={"class": "form-select form-select-lg rounded-4 border-1"},
+            ),
+        }
+
+    def clean_nickname(self):
+        nickname = self.cleaned_data["nickname"].strip()
+        if not nickname:
+            raise forms.ValidationError(_("This field is required."), code="required")
+        return nickname
+
+
+class UserProfileForm(BirthdayValidationMixin, forms.ModelForm):
 
     class Meta:
         model = User

@@ -21,7 +21,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from gifts.demo import DEMO_EMAIL, is_demo_user
-from gifts.forms import LocalUserCreationForm, UserProfileForm
+from gifts.forms import LocalUserCreationForm, OnboardingProfileForm, UserProfileForm
 from gifts.models import User
 from gifts.onboarding import get_onboarding_next_url
 from gifts.photo_presets import is_valid_photo_preset, list_photo_presets
@@ -155,6 +155,28 @@ def resend_verification(request):
     return redirect("verify_email_sent")
 
 
+@login_required
+@require_http_methods(["GET", "POST"])
+def onboarding_profile(request):
+    if not request.user.is_verified:
+        return redirect("verify_email_sent")
+    if request.user.profile_completed_at is not None:
+        return redirect(get_onboarding_next_url(request.user, request))
+
+    if request.method == "POST":
+        form = OnboardingProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.profile_completed_at = timezone.now()
+            user.save(update_fields=["nickname", "birthday_month", "birthday_day", "profile_completed_at"])
+            messages.success(request, _("Your profile is ready!"))
+            return redirect(get_onboarding_next_url(user, request))
+    else:
+        form = OnboardingProfileForm(instance=request.user)
+
+    return render(request, "registration/onboarding_profile.html", {"form": form})
+
+
 def set_profile_preset(user, preset):
     if not is_valid_photo_preset("profile", preset):
         return JsonResponse({"success": False, "error": _("Invalid preset photo.")}, status=400)
@@ -199,7 +221,12 @@ def photo_upload(request):
         {
             "context_type": "profile",
             "photo_presets": list_photo_presets("profile"),
-            "back_url": reverse("account"),
+            "back_url": (
+                reverse("onboarding_profile")
+                if request.user.profile_completed_at is None
+                else reverse("account")
+            ),
+            "is_onboarding": request.user.profile_completed_at is None,
         },
     )
 
